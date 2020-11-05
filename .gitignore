@@ -1,0 +1,10 @@
+build*
+lib
+.gdb*
+*.swp
+.tags
+.ackrc
+.vimrc
+.nvimrc
+compile_commands.json
+.ccls-cache

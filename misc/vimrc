@@ -1,0 +1,15 @@
+
+set tw=120
+
+function! s:insertTestHeader()
+    execute "normal! i\n#include \"\"\n#include \"doctest/doctest.h\""
+    execute "normal! o\nusing namespace sym2;"
+    normal! kkk$
+endfunction
+
+autocmd BufNewFile tests/*.cpp call <SID>insertTestHeader()
+autocmd BufRead,BufReadPost README.md set spell spelllang=en_us
+
+call add(g:UltiSnipsSnippetDirectories, getcwd() . '/misc')
+
+set path=bin,src/**,tests
