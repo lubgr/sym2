@@ -3,6 +3,7 @@
 #include <boost/static_string/static_string.hpp>
 #include <boost/variant2/variant.hpp>
 #include <cstdint>
+#include <initializer_list>
 #include <span>
 #include "number.h"
 #include "smallvec.h"
@@ -41,6 +42,7 @@ namespace sym2 {
         explicit Expr(const Number& num, const Number& denom);
         explicit Expr(ExprView e);
         Expr(Tag info, std::span<const ExprView> ops);
+        Expr(Tag info, std::initializer_list<ExprView> ops);
         Expr(Tag info, SmallVecBase<Expr>&& ops);
 
         operator ExprView() const;
