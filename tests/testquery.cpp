@@ -1,4 +1,5 @@
 
+#include "abc.h"
 #include "canonical.h"
 #include "doctest/doctest.h"
 #include "query.h"
@@ -7,10 +8,6 @@ using namespace sym2;
 
 TEST_CASE("Common queries")
 {
-    const Expr pi{"pi"};
-    const Expr euler{"euler"};
-    const Expr a{"a"};
-    const Expr b{"b"};
     const Expr n{42};
     const Expr s = sum(42, "a", "b");
     const Expr pr = product(42, "a", "b");

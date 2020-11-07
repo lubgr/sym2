@@ -1,14 +1,11 @@
 
+#include "abc.h"
 #include "canonical.h"
 #include "doctest/doctest.h"
 #include "query.h"
 
 using namespace sym2;
 
-const Expr pi{"pi"};
-const Expr a{"a"};
-const Expr b{"b"};
-const Expr c{"c"};
 const Expr n{42};
 
 TEST_CASE("Automatic power simplification")
