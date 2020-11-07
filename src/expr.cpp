@@ -69,13 +69,8 @@ sym2::Expr::Expr(Tag info, std::span<const ExprView> ops)
 }
 
 sym2::Expr::Expr(Tag info, std::initializer_list<ExprView> ops)
-    : structure{{info, static_cast<std::uint32_t>(ops.size())}}
-{
-    for (ExprView e : ops) {
-        boost::copy(e.structure, std::back_inserter(structure));
-        boost::copy(e.leaves, std::back_inserter(leaves));
-    }
-}
+    : Expr{info, std::span<const ExprView>{ops.begin(), ops.end()}}
+{}
 
 sym2::Expr::Expr(Tag info, SmallVecBase<Expr>&& ops)
     : structure{{info, static_cast<std::uint32_t>(ops.size())}}
