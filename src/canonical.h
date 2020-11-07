@@ -7,9 +7,9 @@
 #include "expr.h"
 
 namespace sym2 {
-    Expr autoSum(std::span<const ExprView> ops);
-    Expr autoProduct(std::span<const ExprView> ops);
-    Expr autoPower(std::span<const ExprView, 2> ops);
+    Expr autoSum(std::span<ExprView> ops);
+    Expr autoProduct(std::span<ExprView> ops);
+    Expr autoPower(std::span<ExprView, 2> ops);
 
     namespace detail {
         template <class T>
@@ -45,7 +45,7 @@ namespace sym2 {
         Expr construct(Simplifier f, T&&... args)
         {
             const auto withLifetimeWhenNecessary = literalsToExpr(std::forward<T>(args)...);
-            const std::array<ExprView, sizeof...(T)> views = tupleToExprViewArray(withLifetimeWhenNecessary);
+            std::array<ExprView, sizeof...(T)> views = tupleToExprViewArray(withLifetimeWhenNecessary);
 
             return std::invoke(f, views);
         }

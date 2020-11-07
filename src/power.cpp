@@ -2,7 +2,7 @@
 #include "power.h"
 #include "query.h"
 
-sym2::Expr sym2::power(std::span<const ExprView, 2> ops)
+sym2::Expr sym2::power(std::span<ExprView, 2> ops)
 {
     const auto [b, exp] = ops;
 
