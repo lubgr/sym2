@@ -43,11 +43,12 @@ namespace sym2 {
         explicit Expr(ExprView e);
         Expr(Tag info, std::span<const ExprView> ops);
         Expr(Tag info, std::initializer_list<ExprView> ops);
-        Expr(Tag info, SmallVecBase<Expr>&& ops);
 
         operator ExprView() const;
 
       private:
+        static SmallVec<OpDesc, staticStructureBufferSize> structureFrom(Tag info, std::span<const ExprView> ops);
+
         SmallVec<OpDesc, staticStructureBufferSize> structure;
         SmallVec<LeafUnion, staticLeafBufferSize> leaves;
     };

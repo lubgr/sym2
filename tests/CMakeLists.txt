@@ -2,6 +2,7 @@
 add_executable(unit-tests
     testcanonical.cpp
     testequality.cpp
+    testexpr.cpp
     testquery.cpp
     main.cpp)
 

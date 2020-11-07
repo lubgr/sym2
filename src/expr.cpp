@@ -2,6 +2,7 @@
 #include "expr.h"
 #include <algorithm>
 #include <boost/range/algorithm.hpp>
+#include <stdexcept>
 
 sym2::Tag sym2::operator|(Tag lhs, Tag rhs)
 {
@@ -60,25 +61,34 @@ sym2::Expr::Expr(ExprView e)
 {}
 
 sym2::Expr::Expr(Tag info, std::span<const ExprView> ops)
-    : structure{{info, static_cast<std::uint32_t>(ops.size())}}
+    : structure{structureFrom(info, ops)}
 {
-    for (ExprView e : ops) {
-        boost::copy(e.structure, std::back_inserter(structure));
+    if (info == Tag::scalar)
+        throw std::invalid_argument{"Composite Expr instantiated with scalar tag"};
+    else if (ops.empty())
+        throw std::invalid_argument{"Composite Expr instantiated with empty operands"};
+
+    for (ExprView e : ops)
         boost::copy(e.leaves, std::back_inserter(leaves));
-    }
 }
 
 sym2::Expr::Expr(Tag info, std::initializer_list<ExprView> ops)
     : Expr{info, std::span<const ExprView>{ops.begin(), ops.end()}}
 {}
 
-sym2::Expr::Expr(Tag info, SmallVecBase<Expr>&& ops)
-    : structure{{info, static_cast<std::uint32_t>(ops.size())}}
+sym2::SmallVec<sym2::OpDesc, sym2::staticStructureBufferSize> sym2::Expr::structureFrom(
+  Tag info, std::span<const ExprView> ops)
 {
-    for (ExprView e : ops) {
-        std::move(e.structure.begin(), e.structure.end(), std::back_inserter(structure));
-        std::move(e.leaves.begin(), e.leaves.end(), std::back_inserter(leaves));
-    }
+    SmallVec<OpDesc, staticStructureBufferSize> result{{info, static_cast<std::uint32_t>(ops.size())}};
+
+    for (const ExprView op : ops)
+        for (const OpDesc& desc : op.structure)
+            if (desc.info == Tag::scalar && result.back().info == Tag::scalar)
+                ++result.back().count;
+            else
+                result.push_back(desc);
+
+    return result;
 }
 
 sym2::Expr::operator sym2::ExprView() const
