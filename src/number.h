@@ -2,8 +2,7 @@
 
 #include <boost/operators.hpp>
 #include <boost/rational.hpp>
-#include <optional>
-#include <variant>
+#include <boost/variant2/variant.hpp>
 #include "int.h"
 
 namespace sym2 {
@@ -31,10 +30,12 @@ namespace sym2 {
 
       private:
         using Rational = boost::rational<Int>;
-        using Rep = std::variant<Rational, double>;
+        using Rep = boost::variant2::variant<Rational, double>;
 
-        template <class Operation> struct Operate {
-            template <class T> Rep operator()(const T& lhs, const T& rhs)
+        template <class Operation>
+        struct Operate {
+            template <class T>
+            Rep operator()(const T& lhs, const T& rhs)
             {
                 return Operation{}(lhs, rhs);
             }
@@ -58,7 +59,8 @@ namespace sym2 {
 }
 
 namespace std {
-    template <> struct hash<sym2::Number> {
+    template <>
+    struct hash<sym2::Number> {
         size_t operator()(const sym2::Number& n) const;
     };
 }

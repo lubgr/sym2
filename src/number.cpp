@@ -20,13 +20,12 @@ sym2::Number::Number(const Int& value)
 {}
 
 sym2::Number::Number(const Int& numerator, const Int& denominator)
-    /* The implementation doesn't move from input rvalues, hence const references are fine here: */
-    : rep(std::in_place_type_t<Rational>(), denominator < 0 ? -numerator : numerator, abs(denominator))
+    : rep{Rational{denominator < 0 ? -numerator : numerator, abs(denominator)}}
 {}
 
 sym2::Number& sym2::Number::operator+=(const Number& rhs)
 {
-    rep = std::visit(Operate<std::plus<>>{}, rep, rhs.rep);
+    rep = visit(Operate<std::plus<>>{}, rep, rhs.rep);
 
     return *this;
 }
@@ -38,14 +37,14 @@ sym2::Number& sym2::Number::operator-=(const Number& rhs)
 
 sym2::Number& sym2::Number::operator*=(const Number& rhs)
 {
-    rep = std::visit(Operate<std::multiplies<>>{}, rep, rhs.rep);
+    rep = visit(Operate<std::multiplies<>>{}, rep, rhs.rep);
 
     return *this;
 }
 
 sym2::Number& sym2::Number::operator/=(const Number& rhs)
 {
-    rep = std::visit(Operate<std::divides<>>{}, rep, rhs.rep);
+    rep = visit(Operate<std::divides<>>{}, rep, rhs.rep);
 
     return *this;
 }
@@ -65,18 +64,18 @@ sym2::Number sym2::Number::operator-() const
 
 bool sym2::Number::isRational() const
 {
-    return std::holds_alternative<Rational>(rep);
+    return holds_alternative<Rational>(rep);
 }
 
 bool sym2::Number::isDouble() const
 {
-    return std::holds_alternative<double>(rep);
+    return holds_alternative<double>(rep);
 }
 
 sym2::Int sym2::Number::numerator() const
 {
     if (isRational())
-        return std::get<Rational>(rep).numerator();
+        return get<Rational>(rep).numerator();
     else
         return 0;
 }
@@ -84,7 +83,7 @@ sym2::Int sym2::Number::numerator() const
 sym2::Int sym2::Number::denominator() const
 {
     if (isRational())
-        return std::get<Rational>(rep).denominator();
+        return get<Rational>(rep).denominator();
     else
         return 1;
 }
@@ -92,9 +91,9 @@ sym2::Int sym2::Number::denominator() const
 double sym2::Number::toDouble() const
 {
     if (isRational())
-        return boost::rational_cast<double>(std::get<Rational>(rep));
+        return boost::rational_cast<double>(get<Rational>(rep));
     else
-        return std::get<double>(rep);
+        return get<double>(rep);
 }
 
 bool sym2::operator==(const Number& lhs, const Number& rhs)
