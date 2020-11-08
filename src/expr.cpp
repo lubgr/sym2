@@ -2,7 +2,6 @@
 #include "expr.h"
 #include <algorithm>
 #include <boost/range/algorithm.hpp>
-#include <stdexcept>
 
 sym2::Tag sym2::operator|(Tag lhs, Tag rhs)
 {
@@ -63,10 +62,7 @@ sym2::Expr::Expr(ExprView e)
 sym2::Expr::Expr(Tag info, std::span<const ExprView> ops)
     : structure{structureFrom(info, ops)}
 {
-    if (info == Tag::scalar)
-        throw std::invalid_argument{"Composite Expr instantiated with scalar tag"};
-    else if (ops.empty())
-        throw std::invalid_argument{"Composite Expr instantiated with empty operands"};
+    assert(info != Tag::scalar && !ops.empty());
 
     for (ExprView e : ops)
         boost::copy(e.leaves, std::back_inserter(leaves));
