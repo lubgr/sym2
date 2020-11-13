@@ -3,7 +3,7 @@ set(gccFlags -pedantic-errors -Wall -Wextra -pedantic -Wredundant-decls -Wwrite-
     -Wformat=2 -Wmissing-include-dirs -Wcast-align -Wnon-virtual-dtor -Wctor-dtor-privacy -Wdisabled-optimization
     -Winvalid-pch -Wconversion -Wno-ctor-dtor-privacy -Wno-format-nonliteral -Wno-shadow)
 
-set(clangFlags -Wall -Wextra -pedantic -Wconversion -Wno-sign-conversion)
+set(clangFlags -Wall -Wextra -pedantic -Wconversion -Wno-sign-conversion -Wno-c99-extensions)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 4.6)
