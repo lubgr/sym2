@@ -7,13 +7,13 @@
 sym2::Expr sym2::autoSum(std::span<ExprView> ops)
 {
     // TODO
-    return {Tag::sum, ops};
+    return {Flag::sum, ops};
 }
 
 sym2::Expr sym2::autoProduct(std::span<ExprView> ops)
 {
     // TODO
-    return {Tag::product, ops};
+    return {Flag::product, ops};
 }
 
 sym2::Expr sym2::autoPower(std::span<ExprView, 2> ops)

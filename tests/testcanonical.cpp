@@ -6,13 +6,11 @@
 
 using namespace sym2;
 
-const Expr n{42};
-
 TEST_CASE("Automatic power simplification")
 {
-    CHECK(power(a, 0) == 1);
-    CHECK(power(0, a) == 0);
-    CHECK(power(1, n) == 1);
+    CHECK(power(a, 0) == 1_ex);
+    CHECK(power(0, a) == 0_ex);
+    CHECK(power(1, 42_ex) == 1_ex);
     CHECK(power(a, 1) == a);
-    CHECK(power(42, 1) == 42);
+    CHECK(power(42, 1) == 42_ex);
 }

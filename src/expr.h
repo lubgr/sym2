@@ -1,67 +1,86 @@
 #pragma once
 
-#include <boost/static_string/static_string.hpp>
-#include <boost/variant2/variant.hpp>
+#include <array>
+#include <boost/rational.hpp>
 #include <cstdint>
 #include <initializer_list>
 #include <span>
-#include "number.h"
+#include <string_view>
+#include "rational.h"
 #include "smallvec.h"
 
 namespace sym2 {
-    constexpr inline std::size_t maxSymbolNameSize = 10;
-    constexpr inline std::uint32_t staticLeafBufferSize = 4;
-    constexpr inline std::uint32_t staticStructureBufferSize = 4;
-
-    using String = boost::static_string<maxSymbolNameSize>;
-    using LeafUnion = boost::variant2::variant<Number, String>;
-
-    enum class Tag : std::uint32_t { scalar = 1, sum = 1 << 1, product = 1 << 2, power = 1 << 3, function = 1 << 4 };
-
-    Tag operator|(Tag lhs, Tag rhs);
-    Tag& operator|=(Tag& lhs, Tag rhs);
-    Tag operator&(Tag lhs, Tag rhs);
-    Tag& operator&=(Tag& lhs, Tag rhs);
-
-    struct OpDesc {
-        Tag info;
-        /* For composite types, the number of children - for scalar types, the number of scalars
-         * within the parent (>= 1): */
-        std::uint32_t count;
+    enum class Flag : std::uint8_t {
+        symbol,
+        constant,
+        smallInt,
+        smallRational,
+        floatingPoint,
+        largeRational,
+        complexNumber,
+        sum,
+        product,
+        power,
+        function
     };
 
-    struct ExprView;
+    struct SmallRational {
+        std::int32_t num;
+        std::int32_t denom;
+    };
+
+    struct Operand {
+        Flag header = Flag::smallInt;
+        bool hasLargeRationals = false;
+        /* Use the rest to allow for longer variable names: */
+        char name[6] = {'\0'};
+
+        union {
+            std::size_t count;
+            char name[8];
+            SmallRational exact;
+            double inexact;
+            Rational* large;
+        } data{0};
+    };
+
+    using ExprView = std::span<const Operand>;
+
+    bool operator==(ExprView lhs, ExprView rhs);
+    bool operator!=(ExprView lhs, ExprView rhs);
 
     class Expr {
       public:
         Expr(int n);
         Expr(double n);
-        explicit Expr(const Number& n);
-        explicit Expr(const char* symbol);
-        explicit Expr(const String& symbol);
-        explicit Expr(const Number& num, const Number& denom);
+        Expr(int num, int denom);
+        explicit Expr(const Rational& n);
+        explicit Expr(Rational&& n);
+        explicit Expr(std::string_view symbol);
         explicit Expr(ExprView e);
-        Expr(Tag info, std::span<const ExprView> ops);
-        Expr(Tag info, std::initializer_list<ExprView> ops);
+        Expr(Flag composite, std::span<const ExprView> ops);
+        Expr(Flag composite, std::initializer_list<ExprView> ops);
+        Expr(const Expr& other);
+        Expr& operator=(Expr other);
+        Expr(Expr&& other) = default;
+        Expr& operator=(Expr&& other) = default;
+        ~Expr() = default;
 
         operator ExprView() const;
 
+        friend void swap(Expr& lhs, Expr& rhs);
+
       private:
-        static SmallVec<OpDesc, staticStructureBufferSize> structureFrom(Tag info, std::span<const ExprView> ops);
+        void storeAndUpdateRationals();
+        void updateRationalPointer();
 
-        SmallVec<OpDesc, staticStructureBufferSize> structure;
-        SmallVec<LeafUnion, staticLeafBufferSize> leaves;
+        SmallVec<Operand, 10> small;
+        /* Importante note: when changing this to a vector with a local buffer, we need to implemented move (assignment)
+         * constructors that are currently = defaulted above: */
+        std::vector<Rational> large;
     };
 
-    struct ExprView {
-        std::span<const OpDesc> structure;
-        std::span<const LeafUnion> leaves;
-    };
-
-    bool operator==(ExprView lhs, ExprView rhs);
-    bool operator==(ExprView lhs, int rhs);
-    bool operator==(int lhs, ExprView rhs);
-    bool operator!=(ExprView lhs, ExprView rhs);
-    bool operator!=(ExprView lhs, int rhs);
-    bool operator!=(int lhs, ExprView rhs);
+    void swap(Expr& lhs, Expr& rhs);
+    Expr operator"" _ex(const char* str, std::size_t);
+    Expr operator"" _ex(unsigned long long n);
 }

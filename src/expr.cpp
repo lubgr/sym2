@@ -1,114 +1,137 @@
 
 #include "expr.h"
 #include <algorithm>
-#include <boost/range/algorithm.hpp>
-
-sym2::Tag sym2::operator|(Tag lhs, Tag rhs)
-{
-    return lhs |= rhs;
-}
-
-sym2::Tag& sym2::operator|=(Tag& lhs, Tag rhs)
-{
-    using T = std::underlying_type_t<Tag>;
-
-    lhs = Tag{static_cast<T>(lhs) | static_cast<T>(rhs)};
-
-    return lhs;
-}
-
-sym2::Tag sym2::operator&(Tag lhs, Tag rhs)
-{
-    return lhs &= rhs;
-}
-
-sym2::Tag& sym2::operator&=(Tag& lhs, Tag rhs)
-{
-    using T = std::underlying_type_t<Tag>;
-
-    lhs = Tag{static_cast<T>(lhs) & static_cast<T>(rhs)};
-
-    return lhs;
-}
+#include <limits>
+#include <stdexcept>
+#include "query.h"
 
 sym2::Expr::Expr(int n)
-    : Expr{Number{n}}
-{}
-
-sym2::Expr::Expr(double n)
-    : Expr{Number{n}}
-{}
-
-sym2::Expr::Expr(const Number& n)
-    : structure{{Tag::scalar, 1}}
-    , leaves{{n}}
-{}
-
-sym2::Expr::Expr(const char* symbol)
-    : structure{{Tag::scalar, 1}}
-    , leaves{{symbol}}
-{}
-
-sym2::Expr::Expr(const String& symbol)
-    : structure{{Tag::scalar, 1}}
-    , leaves{{symbol}}
-{}
-
-sym2::Expr::Expr(ExprView e)
-    : structure{e.structure.begin(), e.structure.end()}
-    , leaves{e.leaves.begin(), e.leaves.end()}
-{}
-
-sym2::Expr::Expr(Tag info, std::span<const ExprView> ops)
-    : structure{structureFrom(info, ops)}
+    : small{Operand{.header = Flag::smallInt, .data = {.exact = {n, 1}}}}
 {
-    assert(info != Tag::scalar && !ops.empty());
-
-    for (ExprView e : ops)
-        boost::copy(e.leaves, std::back_inserter(leaves));
+    /* Importante note: when changing this to a vector with a local buffer, we need to implemented move (assignment)
+     * constructors that are currently = defaulted above: */
+    static_assert(std::is_same_v<decltype(large), std::vector<sym2::Rational>>);
 }
 
-sym2::Expr::Expr(Tag info, std::initializer_list<ExprView> ops)
-    : Expr{info, std::span<const ExprView>{ops.begin(), ops.end()}}
+sym2::Expr::Expr(double n)
+    : small{Operand{.header = Flag::floatingPoint, .data = {.inexact = n}}}
 {}
 
-sym2::SmallVec<sym2::OpDesc, sym2::staticStructureBufferSize> sym2::Expr::structureFrom(
-  Tag info, std::span<const ExprView> ops)
+sym2::Expr::Expr(int num, int denom)
+    : small{Operand{.header = Flag::smallRational, .data = {.exact = {num, denom}}}}
+{}
+
+sym2::Expr::Expr(const Rational& n)
+    : large{n}
 {
-    SmallVec<OpDesc, staticStructureBufferSize> result{{info, static_cast<std::uint32_t>(ops.size())}};
+    small.push_back({.header = Flag::largeRational, .hasLargeRationals = true, .data = {.large = &large.front()}});
+}
 
-    for (const ExprView op : ops)
-        for (const OpDesc& desc : op.structure)
-            if (desc.info == Tag::scalar && result.back().info == Tag::scalar)
-                ++result.back().count;
-            else
-                result.push_back(desc);
+sym2::Expr::Expr(Rational&& n)
+    : large{std::move(n)}
+{
+    small.push_back({.header = Flag::largeRational, .hasLargeRationals = true, .data = {.large = &large.front()}});
+}
 
-    return result;
+sym2::Expr::Expr(std::string_view symbol)
+{
+    if (symbol.length() > 13)
+        throw std::invalid_argument("Symbol names must be < 13 characters long");
+
+    Operand op{Flag::symbol};
+
+    if (symbol == "pi" || symbol == "euler")
+        op.header = Flag::constant;
+
+    auto* dest = std::next(reinterpret_cast<char*>(&op), 2);
+
+    std::copy(symbol.cbegin(), symbol.cend(), dest);
+
+    small.push_back(op);
+}
+
+sym2::Expr::Expr(ExprView e)
+    : small{e.begin(), e.end()}
+{
+    storeAndUpdateRationals();
+}
+
+sym2::Expr::Expr(Flag composite, std::span<const ExprView> ops)
+    : small{Operand{.header = composite, .data = {.count = ops.size()}}}
+{
+    assert(
+      composite == Flag::sum || composite == Flag::product || composite == Flag::power || composite == Flag::function);
+
+    for (ExprView e : ops) {
+        if (e.front().hasLargeRationals)
+            small.front().hasLargeRationals = true;
+
+        std::copy(e.begin(), e.end(), std::back_inserter(small));
+    }
+
+    storeAndUpdateRationals();
+}
+
+void sym2::Expr::storeAndUpdateRationals()
+{
+    for (const Operand& op : small)
+        if (op.header == Flag::largeRational)
+            large.push_back(*op.data.large);
+
+    /* We need a second step after the first one is finished, due to possible iterator/reference invalidation. */
+    updateRationalPointer();
+}
+
+void sym2::Expr::updateRationalPointer()
+{
+    auto rational = large.begin();
+
+    for (Operand& op : small)
+        if (op.header == Flag::largeRational)
+            op.data.large = &*rational++;
+}
+
+sym2::Expr::Expr(Flag composite, std::initializer_list<ExprView> ops)
+    : Expr{composite, std::span<const ExprView>{ops.begin(), ops.end()}}
+{}
+
+sym2::Expr::Expr(const Expr& other)
+    : small{other.small}
+    , large{other.large}
+{
+    updateRationalPointer();
+}
+
+sym2::Expr& sym2::Expr::operator=(Expr other)
+{
+    swap(*this, other);
+
+    return *this;
 }
 
 sym2::Expr::operator sym2::ExprView() const
 {
-    return {structure, leaves};
+    assert(small.size() >= 1);
+
+    return ExprView{small.data(), small.size()};
 }
 
 bool sym2::operator==(ExprView lhs, ExprView rhs)
 {
-    static const auto eqDesc = [](OpDesc lhs, OpDesc rhs) {
-        return std::tie(lhs.info, lhs.count) == std::tie(rhs.info, rhs.count);
+    if (lhs.size() != rhs.size())
+        return false;
+    else if (!lhs.front().hasLargeRationals)
+        /* Take shortcut if we have only trivial data to compare: */
+        return std::memcmp(&lhs.front(), &rhs.front(), lhs.size() * sizeof(Operand)) == 0;
+
+    const auto operandsEqual = [](const Operand& lhs, const Operand& rhs) {
+        if (lhs.header == Flag::largeRational && rhs.header == Flag::largeRational)
+            return *lhs.data.large == *rhs.data.large;
+        else
+            return std::memcmp(&lhs, &rhs, sizeof(Operand)) == 0;
     };
 
-    return boost::equal(lhs.structure, rhs.structure, eqDesc) && boost::equal(lhs.leaves, rhs.leaves);
-}
-
-bool sym2::operator==(ExprView lhs, int rhs)
-{
-    return lhs == Expr{rhs};
-}
-
-bool sym2::operator==(int lhs, ExprView rhs)
-{
-    return Expr{lhs} == rhs;
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), operandsEqual);
 }
 
 bool sym2::operator!=(ExprView lhs, ExprView rhs)
@@ -116,12 +139,23 @@ bool sym2::operator!=(ExprView lhs, ExprView rhs)
     return !(lhs == rhs);
 }
 
-bool sym2::operator!=(ExprView lhs, int rhs)
+void sym2::swap(Expr& lhs, Expr& rhs)
 {
-    return !(lhs == rhs);
+    using std::swap;
+
+    swap(lhs.small, rhs.small);
+    swap(lhs.large, rhs.large);
 }
 
-bool sym2::operator!=(int lhs, ExprView rhs)
+sym2::Expr sym2::operator"" _ex(const char* str, std::size_t)
 {
-    return !(lhs == rhs);
+    return Expr{str};
+}
+
+sym2::Expr sym2::operator"" _ex(unsigned long long n)
+{
+    if (n > std::numeric_limits<int>::max())
+        throw std::domain_error("Integral Expr literals must fit into an int");
+
+    return Expr{static_cast<int>(n)};
 }
