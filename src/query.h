@@ -5,9 +5,12 @@
 #include "expr.h"
 
 namespace sym2 {
-    Flag flag(ExprView e);
+    Type type(ExprView e);
+    Sign sign(ExprView e);
+    Flag flags(ExprView e);
 
     bool isScalar(ExprView e);
+
     bool isNumber(ExprView e);
     bool isInteger(ExprView e);
     bool isSymbolOrConstant(ExprView e);
@@ -18,6 +21,8 @@ namespace sym2 {
     bool isPower(ExprView e);
     bool isFunction(ExprView e);
     bool isFunction(ExprView e, std::string_view name);
+
+    bool isNumericallyEvaluable(ExprView e);
 
     ExprView base(ExprView e);
     ExprView exponent(ExprView e);

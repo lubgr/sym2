@@ -14,7 +14,8 @@ namespace sym2 {
     using boost::multiprecision::lcm;
     using boost::multiprecision::pow;
 
-    template <class IntegralType> bool fitsInto(const Int& i)
+    template <class IntegralType>
+    bool fitsInto(const Int& i)
     {
         static const Int upperLimit(std::numeric_limits<IntegralType>::max());
         static const Int lowerLimit(std::numeric_limits<IntegralType>::min());

@@ -10,13 +10,14 @@
 #include "smallvec.h"
 
 namespace sym2 {
-    enum class Flag : std::uint8_t {
+    enum class Type : std::uint8_t {
         symbol,
         constant,
         smallInt,
         smallRational,
-        floatingPoint,
+        largeInt,
         largeRational,
+        floatingPoint,
         complexNumber,
         sum,
         product,
@@ -24,24 +25,33 @@ namespace sym2 {
         function
     };
 
+    enum class Sign : std::uint8_t { unknown, positive, negative, neither };
+    enum class Flag : std::uint8_t { none, numericallyEvaluable };
+
+    Flag operator|(Flag lhs, Flag rhs);
+    Flag& operator|=(Flag& lhs, Flag rhs);
+    Flag operator&(Flag lhs, Flag rhs);
+    Flag& operator&=(Flag& lhs, Flag rhs);
+
     struct SmallRational {
         std::int32_t num;
         std::int32_t denom;
     };
 
     struct Operand {
-        Flag header = Flag::smallInt;
-        bool hasLargeRationals = false;
+        Type header;
+        Sign sign : 2;
+        Flag flags : 6;
         /* Use the rest to allow for longer variable names: */
-        char name[6] = {'\0'};
+        char name[6];
 
         union {
             std::size_t count;
             char name[8];
             SmallRational exact;
             double inexact;
-            Rational* large;
-        } data{0};
+            std::uint64_t limb;
+        } data;
     };
 
     using ExprView = std::span<const Operand>;
@@ -54,33 +64,23 @@ namespace sym2 {
         Expr(int n);
         Expr(double n);
         Expr(int num, int denom);
+        explicit Expr(const Int& n);
         explicit Expr(const Rational& n);
-        explicit Expr(Rational&& n);
         explicit Expr(std::string_view symbol);
         explicit Expr(ExprView e);
-        Expr(Flag composite, std::span<const ExprView> ops);
-        Expr(Flag composite, std::initializer_list<ExprView> ops);
-        Expr(const Expr& other);
-        Expr& operator=(Expr other);
-        Expr(Expr&& other) = default;
-        Expr& operator=(Expr&& other) = default;
-        ~Expr() = default;
+        Expr(Type composite, std::span<const ExprView> ops);
+        Expr(Type composite, std::initializer_list<ExprView> ops);
 
         operator ExprView() const;
 
-        friend void swap(Expr& lhs, Expr& rhs);
-
       private:
-        void storeAndUpdateRationals();
-        void updateRationalPointer();
+        void appendSmallInt(std::int32_t n);
+        void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
+        void appendLargeInt(const Int& n);
 
         SmallVec<Operand, 10> small;
-        /* Importante note: when changing this to a vector with a local buffer, we need to implemented move (assignment)
-         * constructors that are currently = defaulted above: */
-        std::vector<Rational> large;
     };
 
-    void swap(Expr& lhs, Expr& rhs);
     Expr operator"" _ex(const char* str, std::size_t);
     Expr operator"" _ex(unsigned long long n);
 }

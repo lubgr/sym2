@@ -1,5 +1,6 @@
 
 add_executable(unit-tests
+    testassumptions.cpp
     testcanonical.cpp
     testequality.cpp
     testexpr.cpp

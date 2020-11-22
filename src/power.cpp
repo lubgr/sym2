@@ -14,5 +14,5 @@ sym2::Expr sym2::power(std::span<ExprView, 2> ops)
     else if (exp == 1_ex)
         return Expr{b};
 
-    return Expr{Flag::power, ops};
+    return Expr{Type::power, ops};
 }

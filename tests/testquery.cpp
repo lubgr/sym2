@@ -11,7 +11,8 @@ TEST_CASE("Common queries")
     const Expr fp{3.14};
     const Expr sr{7, 11};
     const Int largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr lr{Rational{Int{"12345"}, largeInt}};
+    const Expr li{largeInt};
+    const Expr lr{Rational{Int{"1234528973498279834827384284"}, largeInt}};
     const Expr s = sum(42, "a", "b");
     const Expr pr = product(42, "a", "b");
     const Expr pw = power(42, "a");
@@ -27,7 +28,7 @@ TEST_CASE("Common queries")
 
     SUBCASE("Number")
     {
-        for (ExprView number : {42_ex, fp, sr, lr})
+        for (ExprView number : {42_ex, fp, sr, li, lr})
             CHECK(isNumber(number));
 
         for (ExprView e : {pi, euler, a, b, s, pr, pw})
@@ -36,7 +37,7 @@ TEST_CASE("Common queries")
 
     SUBCASE("Integer")
     {
-        for (ExprView number : {42_ex, Expr{largeInt}})
+        for (ExprView number : {42_ex, Expr{li}})
             CHECK(isInteger(number));
 
         for (ExprView e : {pi, euler, a, b, s, pr, pw, fp, sr, lr})

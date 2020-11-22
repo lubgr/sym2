@@ -14,7 +14,7 @@
     }
 
 namespace sym2 {
-    ExprView view(const Expr& e)
+    inline ExprView view(const Expr& e)
     {
         return e;
     }
