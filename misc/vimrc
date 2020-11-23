@@ -13,3 +13,13 @@ autocmd BufRead,BufReadPost README.md set spell spelllang=en_us
 call add(g:UltiSnipsSnippetDirectories, getcwd() . '/misc')
 
 set path=bin,src/**,tests
+
+fun s:addUDLSyntax()
+    syn match udl "_ex\>"
+    hi link udl cppType
+endfun
+
+augroup ft_cpp
+  autocmd!
+  autocmd Syntax cpp call s:addUDLSyntax()
+augroup end
