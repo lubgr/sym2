@@ -60,7 +60,7 @@ sym2::Expr::Expr(int n)
 }
 
 sym2::Expr::Expr(double n)
-    : small{Operand{.header = Type::floatingPoint,
+    : buffer{Operand{.header = Type::floatingPoint,
       .sign = numberSign(n),
       .flags = Flag::numericallyEvaluable,
       .name = {'\0'},
@@ -96,7 +96,7 @@ sym2::Expr::Expr(const Rational& n)
     if (fitsInto<std::int32_t>(num) && fitsInto<std::int32_t>(denom))
         appendSmallRationalOrInt(static_cast<std::int32_t>(num), static_cast<std::int32_t>(denom));
     else {
-        small.push_back(Operand{.header = Type::largeRational,
+        buffer.push_back(Operand{.header = Type::largeRational,
           .sign = numberSign(n),
           .flags = Flag::numericallyEvaluable,
           .name = {'\0'},
@@ -124,32 +124,32 @@ sym2::Expr::Expr(std::string_view symbol)
 
     std::copy(symbol.cbegin(), symbol.cend(), dest);
 
-    small.push_back(op);
+    buffer.push_back(op);
 }
 
 sym2::Expr::Expr(ExprView e)
-    : small{e.begin(), e.end()}
+    : buffer{e.begin(), e.end()}
 {}
 
 sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
-    : small{Operand{
+    : buffer{Operand{
       .header = composite, .sign = Sign::unknown, .flags = Flag::none, .name = {'\0'}, .data = {.count = ops.size()}}}
 {
     assert(
       composite == Type::sum || composite == Type::product || composite == Type::power || composite == Type::function);
 
     /* Likely to be more, but we also don't premature allocation if it might just fit in-place: */
-    small.reserve(ops.size());
+    buffer.reserve(ops.size());
 
     bool numEval = true;
 
     for (ExprView ev : ops) {
         numEval = numEval && isNumericallyEvaluable(ev);
-        small.insert(small.end(), ev.begin(), ev.end());
+        buffer.insert(buffer.end(), ev.begin(), ev.end());
     }
 
     if (numEval)
-        small.front().flags = Flag::numericallyEvaluable;
+        buffer.front().flags = Flag::numericallyEvaluable;
 }
 
 sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
@@ -158,7 +158,7 @@ sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
 {
-    small.push_back(Operand{.header = Type::smallInt,
+    buffer.push_back(Operand{.header = Type::smallInt,
       .sign = numberSign(n),
       .flags = Flag::numericallyEvaluable,
       .name = {'\0'},
@@ -175,7 +175,7 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
     if (denom == 1)
         appendSmallInt(num);
     else
-        small.push_back(Operand{.header = Type::smallRational,
+        buffer.push_back(Operand{.header = Type::smallRational,
           .sign = numberSign(static_cast<double>(num) / denom),
           .flags = Flag::numericallyEvaluable,
           .name = {'\0'},
@@ -186,14 +186,14 @@ void sym2::Expr::appendLargeInt(const Int& n)
 {
     static constexpr auto opSize = sizeof(Operand);
 
-    small.push_back(Operand{.header = Type::largeInt,
+    buffer.push_back(Operand{.header = Type::largeInt,
       .sign = numberSign(n),
       .flags = Flag::numericallyEvaluable,
       .name = {'\0'},
       .data = {.count = 0 /* Not known yet. */}});
 
     /* Save the index instead of a reference to back(), which might be invalidated below. */
-    const std::size_t frontIdx = small.size() - 1;
+    const std::size_t frontIdx = buffer.size() - 1;
 
     std::size_t byteCount = 0;
     const auto toCountedAliasedOps = [&byteCount, this](unsigned char byte) mutable {
@@ -202,11 +202,11 @@ void sym2::Expr::appendLargeInt(const Int& n)
         ++byteCount;
 
         if (opByteIndex == 0) {
-            small.push_back({});
-            std::memset(&small.back(), 0, opSize);
+            buffer.push_back({});
+            std::memset(&buffer.back(), 0, opSize);
         }
 
-        auto* aliased = reinterpret_cast<unsigned char*>(&small.back());
+        auto* aliased = reinterpret_cast<unsigned char*>(&buffer.back());
         aliased[opByteIndex] = byte;
     };
 
@@ -214,11 +214,11 @@ void sym2::Expr::appendLargeInt(const Int& n)
 
     const auto remainder = byteCount % opSize;
 
-    auto* aliased = reinterpret_cast<unsigned char*>(&small[frontIdx + 1]);
-    assert(small.size() > frontIdx + 1);
-    const auto length = small.size() - frontIdx - 1;
+    auto* aliased = reinterpret_cast<unsigned char*>(&buffer[frontIdx + 1]);
+    assert(buffer.size() > frontIdx + 1);
+    const auto length = buffer.size() - frontIdx - 1;
 
-    small[frontIdx].data.count = length;
+    buffer[frontIdx].data.count = length;
 
     /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits happens with the
      * most significant bits first, leading zeros are dropped. This allows for an easier import, as the whole
@@ -228,9 +228,9 @@ void sym2::Expr::appendLargeInt(const Int& n)
 
 sym2::Expr::operator sym2::ExprView() const
 {
-    assert(small.size() >= 1);
+    assert(buffer.size() >= 1);
 
-    return ExprView{small.data(), small.size()};
+    return ExprView{buffer.data(), buffer.size()};
 }
 
 bool sym2::operator==(ExprView lhs, ExprView rhs)

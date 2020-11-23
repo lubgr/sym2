@@ -78,7 +78,7 @@ namespace sym2 {
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
         void appendLargeInt(const Int& n);
 
-        SmallVec<Operand, 10> small;
+        SmallVec<Operand, 10> buffer;
     };
 
     Expr operator"" _ex(const char* str, std::size_t);
