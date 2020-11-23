@@ -96,10 +96,10 @@ sym2::Expr::Expr(const Rational& n)
     if (fitsInto<std::int32_t>(num) && fitsInto<std::int32_t>(denom))
         appendSmallRationalOrInt(static_cast<std::int32_t>(num), static_cast<std::int32_t>(denom));
     else {
-        small.push_back({.header = Type::largeRational,
+        small.push_back(Operand{.header = Type::largeRational,
           .sign = numberSign(n),
-          .name = {'\0'},
           .flags = Flag::numericallyEvaluable,
+          .name = {'\0'},
           .data = {.count = 0}});
         appendLargeInt(num);
         appendLargeInt(denom);
@@ -111,7 +111,8 @@ sym2::Expr::Expr(std::string_view symbol)
     if (symbol.length() > 13)
         throw std::invalid_argument("Symbol names must be < 13 characters long");
 
-    Operand op{Type::symbol, Sign::neither, Flag::none, {'\0'}, .data = {.name = {'\0'}}};
+    Operand op{
+      .header = Type::symbol, .sign = Sign::neither, .flags = Flag::none, .name = {'\0'}, .data = {.name = {'\0'}}};
 
     if (symbol == "pi" || symbol == "euler") {
         op.header = Type::constant;
@@ -131,7 +132,8 @@ sym2::Expr::Expr(ExprView e)
 {}
 
 sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
-    : small{Operand{.header = composite, .sign = Sign::unknown, .data = {.count = ops.size()}}}
+    : small{Operand{
+      .header = composite, .sign = Sign::unknown, .flags = Flag::none, .name = {'\0'}, .data = {.count = ops.size()}}}
 {
     assert(
       composite == Type::sum || composite == Type::product || composite == Type::power || composite == Type::function);
@@ -156,7 +158,7 @@ sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
 {
-    small.push_back({.header = Type::smallInt,
+    small.push_back(Operand{.header = Type::smallInt,
       .sign = numberSign(n),
       .flags = Flag::numericallyEvaluable,
       .name = {'\0'},
@@ -173,7 +175,7 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
     if (denom == 1)
         appendSmallInt(num);
     else
-        small.push_back({.header = Type::smallRational,
+        small.push_back(Operand{.header = Type::smallRational,
           .sign = numberSign(static_cast<double>(num) / denom),
           .flags = Flag::numericallyEvaluable,
           .name = {'\0'},
@@ -184,7 +186,7 @@ void sym2::Expr::appendLargeInt(const Int& n)
 {
     static constexpr auto opSize = sizeof(Operand);
 
-    small.push_back({.header = Type::largeInt,
+    small.push_back(Operand{.header = Type::largeInt,
       .sign = numberSign(n),
       .flags = Flag::numericallyEvaluable,
       .name = {'\0'},
