@@ -108,8 +108,8 @@ sym2::Expr::Expr(const Rational& n)
 
 sym2::Expr::Expr(std::string_view symbol)
 {
-    if (symbol.length() > 13)
-        throw std::invalid_argument("Symbol names must be < 13 characters long");
+    if (symbol.length() > 13 || symbol.empty())
+        throw std::invalid_argument("Symbol names must be non-empty and < 13 characters long");
 
     Operand op{
       .header = Type::symbol, .sign = Sign::neither, .flags = Flag::none, .name = {'\0'}, .data = {.name = {'\0'}}};
@@ -119,6 +119,9 @@ sym2::Expr::Expr(std::string_view symbol)
         op.sign = Sign::positive;
         op.flags = Flag::numericallyEvaluable;
     }
+
+    if (symbol[0] == '+')
+        op.sign = Sign::positive;
 
     auto* dest = std::next(reinterpret_cast<char*>(&op), 2);
 

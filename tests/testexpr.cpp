@@ -125,4 +125,34 @@ TEST_CASE("Expr constructor")
             CHECK(isLargeRational(Expr{-lr}, Sign::negative));
         }
     }
+
+    SUBCASE("Too long symbol name throws")
+    {
+        CHECK_THROWS(Expr{"12345678901234"});
+    }
+
+    SUBCASE("Empty symbol name throws")
+    {
+        CHECK_THROWS(Expr{""});
+    }
+
+    SUBCASE("Successfull symbol creation")
+    {
+        const Expr symbol{"abcdef_{gh}^i"};
+        auto e = view(symbol);
+
+        CHECK(e.size() == 1);
+        CHECK(e[0].flags == Flag::none);
+        CHECK(e[0].sign == Sign::neither);
+
+        CHECK(e[0].name == std::string_view{"abcdef_{gh}^i"});
+    }
+
+    SUBCASE("Symbol starting with + is positive")
+    {
+        const Expr symbol{"+a"};
+        auto e = view(symbol);
+
+        CHECK(e[0].sign == Sign::positive);
+    }
 }
