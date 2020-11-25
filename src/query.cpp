@@ -78,8 +78,14 @@ bool sym2::isNumericallyEvaluable(ExprView e)
 
 std::size_t sym2::nOps(ExprView e)
 {
-    if (isScalar(e))
-        return 0;
-
-    return e[0].data.count;
+    switch (type(e)) {
+        case Type::smallInt:
+        case Type::smallRational:
+        case Type::floatingPoint:
+        case Type::symbol:
+        case Type::constant:
+            return 0;
+        default:
+            return e[0].data.count;
+    }
 }

@@ -73,9 +73,10 @@ TEST_CASE("Common queries")
 
     SUBCASE("Number of operands")
     {
-        for (ExprView e : {pi, euler, a, b, 42_ex, fp, sr, lr})
+        for (ExprView e : {pi, euler, a, b, 42_ex, fp, sr})
             CHECK(nOps(e) == 0);
 
+        CHECK(nOps(lr) == 2);
         CHECK(nOps(s) == 3);
         CHECK(nOps(pr) == 3);
         CHECK(nOps(pw) == 2);

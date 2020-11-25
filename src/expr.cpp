@@ -100,7 +100,7 @@ sym2::Expr::Expr(const Rational& n)
           .sign = numberSign(n),
           .flags = Flag::numericallyEvaluable,
           .name = {'\0'},
-          .data = {.count = 0}});
+          .data = {.count = 2}});
         appendLargeInt(num);
         appendLargeInt(denom);
     }
