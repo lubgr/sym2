@@ -13,9 +13,18 @@ namespace sym2 {
 
     bool isNumber(ExprView e);
     bool isInteger(ExprView e);
+    bool isSmallInt(ExprView e);
+    bool isLargeInt(ExprView e);
+    bool isRational(ExprView e);
+    bool isSmallRational(ExprView e);
+    bool isLargeRational(ExprView e);
+    bool isDouble(ExprView e);
+    bool isComplexNumber(ExprView e);
+
     bool isSymbolOrConstant(ExprView e);
     bool isSymbol(ExprView e);
     bool isConstant(ExprView e);
+
     bool isSum(ExprView e);
     bool isProduct(ExprView e);
     bool isPower(ExprView e);

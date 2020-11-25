@@ -47,13 +47,42 @@ bool sym2::isNumber(ExprView e)
 
 bool sym2::isInteger(ExprView e)
 {
-    switch (type(e)) {
-        case Type::smallInt:
-        case Type::largeInt:
-            return true;
-        default:
-            return false;
-    }
+    return isSmallInt(e) || isLargeInt(e);
+}
+
+bool sym2::isSmallInt(ExprView e)
+{
+    return type(e) == Type::smallInt;
+}
+
+bool sym2::isLargeInt(ExprView e)
+{
+    return type(e) == Type::largeInt;
+}
+
+bool sym2::isRational(ExprView e)
+{
+    return isSmallRational(e) || isLargeRational(e);
+}
+
+bool sym2::isSmallRational(ExprView e)
+{
+    return type(e) == Type::smallRational;
+}
+
+bool sym2::isLargeRational(ExprView e)
+{
+    return type(e) == Type::largeRational;
+}
+
+bool sym2::isDouble(ExprView e)
+{
+    return type(e) == Type::floatingPoint;
+}
+
+bool sym2::isComplexNumber(ExprView e)
+{
+    return type(e) == Type::complexNumber;
 }
 
 bool sym2::isSymbolOrConstant(ExprView e)

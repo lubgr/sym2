@@ -17,6 +17,16 @@ TEST_CASE("Common queries")
     const Expr pr = product(42, "a", "b");
     const Expr pw = power(42, "a");
 
+    SUBCASE("Numeric subtypes")
+    {
+        CHECK(isLargeInt(li));
+        CHECK(isLargeRational(lr));
+
+        CHECK(isSmallInt(42_ex));
+        CHECK(isSmallRational(sr));
+        CHECK(isDouble(fp));
+    }
+
     SUBCASE("Scalar")
     {
         for (ExprView e : {42_ex, d, a, b, euler, pi})
