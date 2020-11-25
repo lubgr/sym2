@@ -9,7 +9,11 @@ add_executable(unit-tests
 
 target_include_directories(unit-tests
     PRIVATE
-    ${sym2_SOURCE_DIR}/src
+    ${sym2_SOURCE_DIR}/src)
+
+target_include_directories(unit-tests
+    SYSTEM
+    PRIVATE
     $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
 
 target_link_libraries(unit-tests
