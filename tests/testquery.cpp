@@ -1,6 +1,7 @@
 
 #include "abc.h"
 #include "canonical.h"
+#include "constants.h"
 #include "doctest/doctest.h"
 #include "query.h"
 

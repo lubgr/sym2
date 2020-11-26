@@ -10,7 +10,4 @@ namespace sym2 {
     inline const Expr e{"e"};
     inline const Expr f{"f"};
     inline const Expr g{"g"};
-
-    inline const Expr pi{"pi"};
-    inline const Expr euler{"euler"};
 }
