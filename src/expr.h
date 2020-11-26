@@ -16,6 +16,7 @@ namespace sym2 {
         smallInt,
         smallRational,
         largeInt,
+        /* A large rational can still have one small/inplace integer (either numerator or denominator): */
         largeRational,
         floatingPoint,
         complexNumber,
@@ -76,6 +77,7 @@ namespace sym2 {
       private:
         void appendSmallInt(std::int32_t n);
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
+        void appendSmallOrLargeInt(const Int& n);
         void appendLargeInt(const Int& n);
 
         SmallVec<Operand, 10> buffer;

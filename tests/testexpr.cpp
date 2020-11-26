@@ -113,7 +113,8 @@ TEST_CASE("Expr constructor")
 
     SUBCASE("Large rational")
     {
-        const Rational lr{1, Int{"283749237498273489274382709084938593857982374982729874"}};
+        const Int large{"283749237498273489274382709084938593857982374982729873"};
+        const Rational lr{Int{1}, large};
 
         SUBCASE("> 0")
         {
@@ -123,6 +124,15 @@ TEST_CASE("Expr constructor")
         SUBCASE("< 0")
         {
             CHECK(isLargeRational(Expr{-lr}, Sign::negative));
+        }
+
+        SUBCASE("Num/denom saved as small int if possible")
+        {
+            const Expr e{lr};
+            auto v = view(e);
+
+            CHECK(v[1].header == Type::smallInt);
+            CHECK(v[2].header == Type::largeInt);
         }
     }
 

@@ -82,10 +82,7 @@ sym2::Expr::Expr(int num, int denom)
 
 sym2::Expr::Expr(const Int& n)
 {
-    if (fitsInto<std::int32_t>(n))
-        appendSmallInt(static_cast<std::int32_t>(n));
-    else
-        appendLargeInt(n);
+    appendSmallOrLargeInt(n);
 }
 
 sym2::Expr::Expr(const Rational& n)
@@ -93,17 +90,19 @@ sym2::Expr::Expr(const Rational& n)
     const auto num = numerator(n);
     const auto denom = denominator(n);
 
-    if (fitsInto<std::int32_t>(num) && fitsInto<std::int32_t>(denom))
+    if (fitsInto<std::int32_t>(num) && fitsInto<std::int32_t>(denom)) {
         appendSmallRationalOrInt(static_cast<std::int32_t>(num), static_cast<std::int32_t>(denom));
-    else {
-        buffer.push_back(Operand{.header = Type::largeRational,
-          .sign = numberSign(n),
-          .flags = Flag::numericallyEvaluable,
-          .name = {'\0'},
-          .data = {.count = 2}});
-        appendLargeInt(num);
-        appendLargeInt(denom);
+        return;
     }
+
+    buffer.push_back(Operand{.header = Type::largeRational,
+      .sign = numberSign(n),
+      .flags = Flag::numericallyEvaluable,
+      .name = {'\0'},
+      .data = {.count = 2}});
+
+    appendSmallOrLargeInt(num);
+    appendSmallOrLargeInt(denom);
 }
 
 sym2::Expr::Expr(std::string_view symbol)
@@ -183,6 +182,14 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
           .flags = Flag::numericallyEvaluable,
           .name = {'\0'},
           .data = {.exact = {num, denom}}});
+}
+
+void sym2::Expr::appendSmallOrLargeInt(const Int& n)
+{
+    if (fitsInto<std::int32_t>(n))
+        appendSmallInt(static_cast<std::int32_t>(n));
+    else
+        appendLargeInt(n);
 }
 
 void sym2::Expr::appendLargeInt(const Int& n)
