@@ -68,6 +68,8 @@ namespace sym2 {
         explicit Expr(const Int& n);
         explicit Expr(const Rational& n);
         explicit Expr(std::string_view symbol);
+        /* Construct a constant: */
+        explicit Expr(std::string_view constant, double value);
         explicit Expr(ExprView e);
         Expr(Type composite, std::span<const ExprView> ops);
         Expr(Type composite, std::initializer_list<ExprView> ops);
@@ -76,6 +78,7 @@ namespace sym2 {
 
       private:
         void appendSmallInt(std::int32_t n);
+        void appendFloatingPoint(double n);
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
         void appendSmallOrLargeInt(const Int& n);
         void appendLargeInt(const Int& n);

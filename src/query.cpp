@@ -112,7 +112,6 @@ std::size_t sym2::nOps(ExprView e)
         case Type::smallRational:
         case Type::floatingPoint:
         case Type::symbol:
-        case Type::constant:
             return 0;
         default:
             return e[0].data.count;

@@ -165,4 +165,26 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].sign == Sign::positive);
     }
+
+    SUBCASE("Constant creation")
+    {
+        const double value = -1.234;
+        const Expr c{"test", value};
+        auto e = view(c);
+
+        CHECK(e.size() == 2);
+
+        CHECK(e[0].header == Type::constant);
+        CHECK(e[0].flags == Flag::numericallyEvaluable);
+        CHECK(e[0].sign == Sign::negative);
+        CHECK(e[0].name == "test"sv);
+        CHECK(e[0].data.count == 1);
+
+        CHECK(e[1].header == Type::floatingPoint);
+        CHECK(e[1].flags == Flag::numericallyEvaluable);
+        CHECK(e[1].sign == Sign::negative);
+        CHECK(e[1].data.inexact == doctest::Approx(value));
+    }
+}
+
 }

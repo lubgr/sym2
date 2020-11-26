@@ -60,12 +60,9 @@ sym2::Expr::Expr(int n)
 }
 
 sym2::Expr::Expr(double n)
-    : buffer{Operand{.header = Type::floatingPoint,
-      .sign = numberSign(n),
-      .flags = Flag::numericallyEvaluable,
-      .name = {'\0'},
-      .data = {.inexact = n}}}
-{}
+{
+    appendFloatingPoint(n);
+}
 
 sym2::Expr::Expr(int num, int denom)
 {
@@ -113,12 +110,6 @@ sym2::Expr::Expr(std::string_view symbol)
     Operand op{
       .header = Type::symbol, .sign = Sign::neither, .flags = Flag::none, .name = {'\0'}, .data = {.name = {'\0'}}};
 
-    if (symbol == "pi" || symbol == "euler") {
-        op.header = Type::constant;
-        op.sign = Sign::positive;
-        op.flags = Flag::numericallyEvaluable;
-    }
-
     if (symbol[0] == '+')
         op.sign = Sign::positive;
 
@@ -127,6 +118,19 @@ sym2::Expr::Expr(std::string_view symbol)
     std::copy(symbol.cbegin(), symbol.cend(), dest);
 
     buffer.push_back(op);
+}
+
+sym2::Expr::Expr(std::string_view constant, double value)
+    : Expr{constant}
+{
+    appendFloatingPoint(value);
+
+    Operand& first = buffer.front();
+
+    first.header = Type::constant;
+    first.sign = numberSign(value);
+    first.flags = Flag::numericallyEvaluable;
+    first.data.count = 1;
 }
 
 sym2::Expr::Expr(ExprView e)
@@ -165,6 +169,15 @@ void sym2::Expr::appendSmallInt(std::int32_t n)
       .flags = Flag::numericallyEvaluable,
       .name = {'\0'},
       .data = {.exact = {n, 1}}});
+}
+
+void sym2::Expr::appendFloatingPoint(double n)
+{
+    buffer.push_back(Operand{.header = Type::floatingPoint,
+      .sign = numberSign(n),
+      .flags = Flag::numericallyEvaluable,
+      .name = {'\0'},
+      .data = {.inexact = n}});
 }
 
 void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
