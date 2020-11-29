@@ -51,7 +51,6 @@ namespace sym2 {
             char name[8];
             SmallRational exact;
             double inexact;
-            std::uint64_t limb;
         } data;
     };
 
