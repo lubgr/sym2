@@ -6,6 +6,7 @@
 
 using namespace sym2;
 using namespace std::string_literals;
+using namespace std::literals::string_view_literals;
 
 bool numEvalAndSize1(ExprView e)
 {
@@ -173,18 +174,25 @@ TEST_CASE("Expr constructor")
         const Expr c{"test", value};
         auto e = view(c);
 
-        CHECK(e.size() == 2);
+        CHECK(e.size() == 3);
 
         CHECK(e[0].header == Type::constant);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
         CHECK(e[0].sign == Sign::negative);
-        CHECK(e[0].name == "test"sv);
-        CHECK(e[0].data.count == 1);
+        CHECK(std::find_if(e[0].name, std::cend(e[0].name), [](char c) { return c != '\0'; }) == std::cend(e[0].name));
+        CHECK(e[0].data.count == 2);
 
-        CHECK(e[1].header == Type::floatingPoint);
-        CHECK(e[1].flags == Flag::numericallyEvaluable);
-        CHECK(e[1].sign == Sign::negative);
-        CHECK(e[1].data.inexact == doctest::Approx(value));
+        CHECK(e[1].header == Type::symbol);
+        CHECK(e[1].flags == Flag::none);
+        CHECK(e[1].sign == Sign::neither);
+        CHECK(e[1].name == "test"sv);
+        CHECK(std::find_if(e[1].data.name, std::cend(e[1].data.name), [](char c) { return c != '\0'; })
+          == std::cend(e[1].data.name));
+
+        CHECK(e[2].header == Type::floatingPoint);
+        CHECK(e[2].flags == Flag::numericallyEvaluable);
+        CHECK(e[2].sign == Sign::negative);
+        CHECK(e[2].data.inexact == doctest::Approx(value));
     }
 }
 

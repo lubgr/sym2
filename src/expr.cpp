@@ -2,6 +2,7 @@
 #include "expr.h"
 #include <algorithm>
 #include <boost/iterator/function_output_iterator.hpp>
+#include <boost/range/algorithm.hpp>
 #include <cstring>
 #include <limits>
 #include <numeric>
@@ -123,6 +124,11 @@ sym2::Expr::Expr(std::string_view symbol)
 sym2::Expr::Expr(std::string_view constant, double value)
     : Expr{constant}
 {
+    /* After reusing the symbol constructor, we copy the first Operand to the second slot and append the number at the
+     * third. The first slot is used purely for tagging and being consistent with the .count, as constants are saved as
+     * composites. */
+    buffer.push_back(buffer.front());
+
     appendFloatingPoint(value);
 
     Operand& first = buffer.front();
@@ -130,7 +136,8 @@ sym2::Expr::Expr(std::string_view constant, double value)
     first.header = Type::constant;
     first.sign = numberSign(value);
     first.flags = Flag::numericallyEvaluable;
-    first.data.count = 1;
+    boost::fill(first.name, '\0');
+    first.data.count = 2;
 }
 
 sym2::Expr::Expr(ExprView e)
