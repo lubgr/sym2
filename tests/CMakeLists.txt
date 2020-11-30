@@ -23,3 +23,23 @@ target_link_libraries(unit-tests
     doctest::doctest)
 
 add_test(NAME sym2.unittests COMMAND unit-tests)
+
+add_executable(pretty
+    prettydebug.cpp)
+
+target_include_directories(pretty
+    PRIVATE
+    ${sym2_SOURCE_DIR}/src)
+
+target_include_directories(pretty
+    SYSTEM
+    PRIVATE
+    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+
+target_link_libraries(pretty
+    PRIVATE
+    sym2)
+
+add_test(NAME sym2.pretty
+    COMMAND ${PROJECT_SOURCE_DIR}/bin/test-lldb-formatter.sh ${CMAKE_CURRENT_BINARY_DIR}/pretty
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})

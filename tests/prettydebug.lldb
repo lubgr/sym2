@@ -1,0 +1,18 @@
+
+command script import ./misc/pretty.py
+command script import ./lib/lldb-formatters/stl.py
+
+command script add frametofile
+    import sys
+    debugger.SetOutputFileHandle(sys.stderr, False)
+    debugger.HandleCommand('frame variable')
+    debugger.SetOutputFileHandle(sys.stdout, False)
+DONE
+
+break set -X check -p return
+break command add 1
+frametofile
+process continue
+DONE
+
+process launch

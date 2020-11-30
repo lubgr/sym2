@@ -11,7 +11,7 @@
 
 namespace sym2 {
     enum class Type : std::uint8_t {
-        symbol,
+        symbol = 1, /* Not starting at 0 helps pretty-printing in a debugger */
         constant,
         smallInt,
         smallRational,
