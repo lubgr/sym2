@@ -288,3 +288,63 @@ sym2::Expr sym2::operator"" _ex(unsigned long long n)
 
     return Expr{static_cast<int>(n)};
 }
+
+template <>
+std::int32_t sym2::get<std::int32_t>(ExprView e)
+{
+    assert(isSmallInt(e));
+
+    return e[0].data.exact.num;
+}
+
+template <>
+sym2::SmallRational sym2::get<sym2::SmallRational>(ExprView e)
+{
+    assert(isSmallRational(e) || isSmallInt(e));
+
+    return e[0].data.exact;
+}
+
+template <>
+sym2::Int sym2::get<sym2::Int>(ExprView e)
+{
+    assert(isInteger(e));
+
+    if (isSmallInt(e))
+        return Int{get<std::int32_t>(e)};
+
+    assert(isLargeInt(e));
+
+    Int result;
+
+    const auto* first = reinterpret_cast<const unsigned char*>(std::next(e.data()));
+    const auto* last = std::next(first, nOps(e) * sizeof(Operand));
+
+    import_bits(result, first, last);
+
+    return result;
+}
+
+template <>
+sym2::Rational sym2::get<sym2::Rational>(ExprView e)
+{
+    assert(isRational(e) || isInteger(e));
+
+    if (isInteger(e))
+        return Rational{get<Int>(e)};
+    else if (isSmallRational(e)) {
+        const auto value = get<SmallRational>(e);
+        return Rational{value.num, value.denom};
+    } else
+        return Rational{get<Int>(first(e)), get<Int>(second(e))};
+}
+
+template <>
+std::string_view sym2::get<std::string_view>(ExprView e)
+{
+    assert(isSymbolOrConstant(e));
+
+    const auto nameEntry = isSymbol(e) ? e : first(e);
+
+    return std::string_view{static_cast<const char*>(nameEntry[0].name)};
+}
