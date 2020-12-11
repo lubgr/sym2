@@ -36,6 +36,18 @@ bool isLargeRational(ExprView e, Sign expected)
     return e[0].header == Type::largeRational && e[0].sign == expected && e[0].flags == Flag::numericallyEvaluable;
 }
 
+bool isShortSymbol(Operand op, std::string_view expectedName)
+{
+    return op.header == Type::symbol && op.flags == Flag::none && op.sign == Sign::neither && op.name == expectedName
+      && std::find_if(op.data.name, std::end(op.data.name), [](char c) { return c != '\0'; }) == std::end(op.data.name);
+}
+
+template <std::size_t N>
+bool allNullChars(const char (&str)[N])
+{
+    return std::find_if(str, std::cend(str), [](char c) { return c != '\0'; }) == std::cend(str);
+}
+
 TEST_CASE("Expr constructor")
 {
     SUBCASE("Zero")
@@ -179,20 +191,65 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].header == Type::constant);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
         CHECK(e[0].sign == Sign::negative);
-        CHECK(std::find_if(e[0].name, std::cend(e[0].name), [](char c) { return c != '\0'; }) == std::cend(e[0].name));
+        CHECK(allNullChars(e[0].name));
         CHECK(e[0].data.count == 2);
 
-        CHECK(e[1].header == Type::symbol);
-        CHECK(e[1].flags == Flag::none);
-        CHECK(e[1].sign == Sign::neither);
-        CHECK(e[1].name == "test"sv);
-        CHECK(std::find_if(e[1].data.name, std::cend(e[1].data.name), [](char c) { return c != '\0'; })
-          == std::cend(e[1].data.name));
+        CHECK(isShortSymbol(e[1], "test"));
 
         CHECK(e[2].header == Type::floatingPoint);
         CHECK(e[2].flags == Flag::numericallyEvaluable);
         CHECK(e[2].sign == Sign::negative);
         CHECK(e[2].data.inexact == doctest::Approx(value));
+    }
+
+    SUBCASE("Unary function creation")
+    {
+        const Expr sinA{"sin", "a"_ex, std::sin};
+        auto e = view(sinA);
+
+        CHECK(e.size() == 3);
+
+        CHECK(e[0].header == Type::unaryFunction);
+        CHECK(e[0].flags == Flag::none);
+        CHECK(e[0].sign == Sign::unknown);
+        CHECK(allNullChars(e[0].name));
+        CHECK(e[0].data.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
+
+        CHECK(isShortSymbol(e[1], "sin"));
+        CHECK(isShortSymbol(e[2], "a"));
+    }
+
+    SUBCASE("Binary function creation")
+    {
+        const Expr atan2ab{"atan2", "a"_ex, "b"_ex, std::atan2};
+        auto e = view(atan2ab);
+
+        CHECK(e.size() == 4);
+
+        CHECK(e[0].header == Type::binaryFunction);
+        CHECK(e[0].flags == Flag::none);
+        CHECK(e[0].sign == Sign::unknown);
+        CHECK(allNullChars(e[0].name));
+        CHECK(e[0].data.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
+
+        CHECK(isShortSymbol(e[1], "atan2"));
+        CHECK(isShortSymbol(e[2], "a"));
+        CHECK(isShortSymbol(e[3], "b"));
+    }
+
+    SUBCASE("Complex number creation")
+    {
+        const auto two = 2_ex;
+        const Expr frac{3, 7};
+        const std::vector<ExprView> args{two, frac};
+        const Expr c{Type::complexNumber, args};
+        auto e = view(c);
+
+        CHECK(e[0].header == Type::complexNumber);
+        CHECK(e[0].flags == Flag::numericallyEvaluable);
+        CHECK(e[0].sign == Sign::neither);
+        CHECK(allNullChars(e[0].name));
+        CHECK(e[0].data.count == 2);
     }
 }
 

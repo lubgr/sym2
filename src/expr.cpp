@@ -140,6 +140,40 @@ sym2::Expr::Expr(std::string_view constant, double value)
     first.data.count = 2;
 }
 
+sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval)
+    : Expr{function}
+{
+    buffer.push_back(buffer.front());
+
+    Operand& first = buffer.front();
+
+    first.header = Type::unaryFunction;
+    first.sign = Sign::unknown; // TODO
+    first.flags = Flag::none; // TODO
+    boost::fill(first.name, '\0');
+
+    first.data.unaryEval = eval;
+
+    boost::copy(arg, std::back_inserter(buffer));
+}
+
+sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, BinaryDoubleFctPtr eval)
+    : Expr{function}
+{
+    buffer.push_back(buffer.front());
+
+    Operand& first = buffer.front();
+
+    first.header = Type::binaryFunction;
+    first.sign = Sign::unknown; // TODO
+    first.flags = Flag::none; // TODO
+    boost::fill(first.name, '\0');
+    first.data.binaryEval = eval;
+
+    for (ExprView arg : {arg1, arg2})
+        boost::copy(arg, std::back_inserter(buffer));
+}
+
 sym2::Expr::Expr(ExprView e)
     : buffer{e.begin(), e.end()}
 {}
@@ -148,8 +182,11 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
     : buffer{Operand{
       .header = composite, .sign = Sign::unknown, .flags = Flag::none, .name = {'\0'}, .data = {.count = ops.size()}}}
 {
-    assert(
-      composite == Type::sum || composite == Type::product || composite == Type::power || composite == Type::function);
+    assert(composite == Type::sum || composite == Type::product || composite == Type::power
+      || composite == Type::complexNumber);
+
+    if (composite == Type::complexNumber && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), isRealNumber)))
+        throw std::invalid_argument("Complex numbers must be created with two non-complex arguments");
 
     /* Likely to be more, but we also don't premature allocation if it might just fit in-place: */
     buffer.reserve(ops.size());
@@ -163,6 +200,9 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
 
     if (numEval)
         buffer.front().flags = Flag::numericallyEvaluable;
+
+    if (composite == Type::complexNumber)
+        buffer.front().sign = Sign::neither;
 }
 
 sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)

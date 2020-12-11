@@ -23,7 +23,8 @@ namespace sym2 {
         sum,
         product,
         power,
-        function
+        unaryFunction,
+        binaryFunction
     };
 
     enum class Sign : std::uint8_t { unknown, positive, negative, neither };
@@ -39,6 +40,9 @@ namespace sym2 {
         std::int32_t denom;
     };
 
+    using UnaryDoubleFctPtr = double (*)(double);
+    using BinaryDoubleFctPtr = double (*)(double, double);
+
     struct Operand {
         Type header;
         Sign sign : 2;
@@ -51,6 +55,8 @@ namespace sym2 {
             char name[8];
             SmallRational exact;
             double inexact;
+            UnaryDoubleFctPtr unaryEval;
+            BinaryDoubleFctPtr binaryEval;
         } data;
     };
 
@@ -69,6 +75,8 @@ namespace sym2 {
         explicit Expr(std::string_view symbol);
         /* Construct a constant: */
         explicit Expr(std::string_view constant, double value);
+        Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval);
+        Expr(std::string_view function, ExprView arg1, ExprView arg2, BinaryDoubleFctPtr eval);
         explicit Expr(ExprView e);
         Expr(Type composite, std::span<const ExprView> ops);
         Expr(Type composite, std::initializer_list<ExprView> ops);
