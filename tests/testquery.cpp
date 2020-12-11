@@ -7,13 +7,14 @@
 
 using namespace sym2;
 
-TEST_CASE("Common queries")
+TEST_CASE("Type queries")
 {
     const Expr fp{3.14};
     const Expr sr{7, 11};
     const Int largeInt{"2323498273984729837498234029380492839489234902384"};
     const Expr li{largeInt};
     const Expr lr{Rational{Int{"1234528973498279834827384284"}, largeInt}};
+    const Expr cx = cpx(2, 3);
     const Expr s = sum(42, "a", "b");
     const Expr pr = product(42, "a", "b");
     const Expr pw = power(42, "a");
@@ -26,11 +27,16 @@ TEST_CASE("Common queries")
         CHECK(isSmallInt(42_ex));
         CHECK(isSmallRational(sr));
         CHECK(isDouble(fp));
+
+        for (ExprView n : {fp, sr, li, lr})
+            CHECK(isRealNumber(n));
+
+        CHECK(isComplexNumber(cx));
     }
 
     SUBCASE("Scalar")
     {
-        for (ExprView e : {42_ex, d, a, b, euler, pi})
+        for (ExprView e : {42_ex, cx, d, a, b, euler, pi})
             CHECK(isScalar(e));
 
         for (ExprView e : {pw})
@@ -39,7 +45,7 @@ TEST_CASE("Common queries")
 
     SUBCASE("Number")
     {
-        for (ExprView number : {42_ex, fp, sr, li, lr})
+        for (ExprView number : {42_ex, fp, sr, li, lr, cx})
             CHECK(isNumber(number));
 
         for (ExprView e : {pi, euler, a, b, s, pr, pw})
@@ -51,7 +57,7 @@ TEST_CASE("Common queries")
         for (ExprView number : {42_ex, Expr{li}})
             CHECK(isInteger(number));
 
-        for (ExprView e : {pi, euler, a, b, s, pr, pw, fp, sr, lr})
+        for (ExprView e : {pi, euler, a, b, s, pr, pw, fp, sr, lr, cx})
             CHECK_FALSE(isInteger(e));
     }
 
@@ -60,7 +66,7 @@ TEST_CASE("Common queries")
         CHECK(isConstant(pi));
         CHECK(isConstant(euler));
 
-        for (ExprView e : {42_ex, fp, sr, lr, a, b, s, pr, pw})
+        for (ExprView e : {42_ex, fp, sr, lr, cx, a, b, s, pr, pw})
             CHECK_FALSE(isConstant(e));
     }
 
@@ -69,7 +75,7 @@ TEST_CASE("Common queries")
         for (ExprView e : {a, b, c})
             CHECK(isSymbol(e));
 
-        for (ExprView e : {42_ex, fp, sr, lr, pi, euler, s, pr, pw})
+        for (ExprView e : {42_ex, fp, sr, lr, cx, pi, euler, s, pr, pw})
             CHECK_FALSE(isSymbol(e));
     }
 
@@ -78,7 +84,7 @@ TEST_CASE("Common queries")
         for (ExprView e : {a, b, c, pi, euler})
             CHECK(isSymbolOrConstant(e));
 
-        for (ExprView e : {42_ex, fp, sr, lr, s, pr, pw})
+        for (ExprView e : {42_ex, fp, sr, lr, cx, s, pr, pw})
             CHECK_FALSE(isSymbolOrConstant(e));
     }
 
@@ -91,6 +97,7 @@ TEST_CASE("Common queries")
         CHECK(nOps(euler) == 2);
 
         CHECK(nOps(lr) == 2);
+        CHECK(nOps(cx) == 2);
         CHECK(nOps(s) == 3);
         CHECK(nOps(pr) == 3);
         CHECK(nOps(pw) == 2);

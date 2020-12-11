@@ -22,8 +22,14 @@
   [0] = 9.876543 (floatingPoint, positive, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
-  [0] = "pi" (constant, positive, numericallyEvaluable)
-  [1] = 3.142374 (floatingPoint, positive, numericallyEvaluable)
+  [0] = complexNumber: 2 (complexNumber, neither, numericallyEvaluable)
+  [1] = 42 (smallInt, positive, numericallyEvaluable)
+  [2] = 7/11 (smallRational, positive, numericallyEvaluable)
+}
+(sym2::ExprView) e = {
+  [0] = constant: 2 (constant, positive, numericallyEvaluable)
+  [1] = "pi" (symbol, neither, none)
+  [2] = 3.142374 (floatingPoint, positive, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
   [0] = "abc" (symbol, neither, none)

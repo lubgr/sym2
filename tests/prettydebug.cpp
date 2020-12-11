@@ -19,11 +19,12 @@ int main(int, char**)
     const Expr cst{"pi", 3.142373847234};
     const Expr ss{"abc"};
     const Expr ls{"abc_{defy}^g"};
+    const Expr cx{Type::complexNumber, {si, sr}};
     const Expr sum{Type::sum, {si, ss, ls}};
     const Expr pro{Type::product, {si, ss, ls, sum}};
     const Expr pw{Type::power, {pro, li}};
 
-    for (ExprView v : {si, sr, li, lr, fp, cst, ss, ls, sum, pro, pw})
+    for (ExprView v : {si, sr, li, lr, fp, cx, cst, ss, ls, sum, pro, pw})
         check(v);
 
     return 0;
