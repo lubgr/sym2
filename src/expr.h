@@ -74,7 +74,7 @@ namespace sym2 {
         explicit Expr(const Rational& n);
         explicit Expr(std::string_view symbol);
         /* Construct a constant: */
-        explicit Expr(std::string_view constant, double value);
+        Expr(std::string_view constant, double value);
         Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval);
         Expr(std::string_view function, ExprView arg1, ExprView arg2, BinaryDoubleFctPtr eval);
         explicit Expr(ExprView e);
