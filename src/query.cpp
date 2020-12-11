@@ -23,7 +23,8 @@ bool sym2::isScalar(ExprView e)
         case Type::sum:
         case Type::product:
         case Type::power:
-        case Type::function:
+        case Type::unaryFunction:
+        case Type::binaryFunction:
             return false;
         default:
             return true;
@@ -43,6 +44,11 @@ bool sym2::isNumber(ExprView e)
         default:
             return false;
     }
+}
+
+bool sym2::isRealNumber(ExprView e)
+{
+    return isNumber(e) && !isComplexNumber(e);
 }
 
 bool sym2::isInteger(ExprView e)
