@@ -6,7 +6,6 @@
 
 namespace sym2 {
     Type type(ExprView e);
-    Sign sign(ExprView e);
     Flag flags(ExprView e);
 
     bool isScalar(ExprView e);

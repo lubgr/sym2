@@ -7,11 +7,6 @@ sym2::Type sym2::type(ExprView e)
     return e[0].header;
 }
 
-sym2::Sign sym2::sign(ExprView e)
-{
-    return e[0].sign;
-}
-
 sym2::Flag sym2::flags(ExprView e)
 {
     return e[0].flags;

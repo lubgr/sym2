@@ -8,24 +8,10 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
+#include "eval.h"
 #include "query.h"
 
 static_assert(std::is_trivial_v<sym2::Operand>);
-
-namespace sym2 {
-    namespace {
-        template <class Number>
-        Sign numberSign(const Number& n)
-        {
-            if (n > 0)
-                return Sign::positive;
-            else if (n < 0)
-                return Sign::negative;
-
-            return Sign::neither;
-        }
-    }
-}
 
 sym2::Flag sym2::operator|(Flag lhs, Flag rhs)
 {
@@ -93,11 +79,8 @@ sym2::Expr::Expr(const Rational& n)
         return;
     }
 
-    buffer.push_back(Operand{.header = Type::largeRational,
-      .sign = numberSign(n),
-      .flags = Flag::numericallyEvaluable,
-      .name = {'\0'},
-      .data = {.count = 2}});
+    buffer.push_back(Operand{
+      .header = Type::largeRational, .flags = Flag::numericallyEvaluable, .name = {'\0'}, .data = {.count = 2}});
 
     appendSmallOrLargeInt(num);
     appendSmallOrLargeInt(denom);
@@ -108,11 +91,7 @@ sym2::Expr::Expr(std::string_view symbol)
     if (symbol.length() > 13 || symbol.empty())
         throw std::invalid_argument("Symbol names must be non-empty and < 13 characters long");
 
-    Operand op{
-      .header = Type::symbol, .sign = Sign::neither, .flags = Flag::none, .name = {'\0'}, .data = {.name = {'\0'}}};
-
-    if (symbol[0] == '+')
-        op.sign = Sign::positive;
+    Operand op{.header = Type::symbol, .flags = Flag::none, .name = {'\0'}, .data = {.name = {'\0'}}};
 
     auto* dest = std::next(reinterpret_cast<char*>(&op), 2);
 
@@ -134,7 +113,6 @@ sym2::Expr::Expr(std::string_view constant, double value)
     Operand& first = buffer.front();
 
     first.header = Type::constant;
-    first.sign = numberSign(value);
     first.flags = Flag::numericallyEvaluable;
     boost::fill(first.name, '\0');
     first.data.count = 2;
@@ -148,7 +126,6 @@ sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval
     Operand& first = buffer.front();
 
     first.header = Type::unaryFunction;
-    first.sign = Sign::unknown; // TODO
     first.flags = Flag::none; // TODO
     boost::fill(first.name, '\0');
 
@@ -165,7 +142,6 @@ sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, Binary
     Operand& first = buffer.front();
 
     first.header = Type::binaryFunction;
-    first.sign = Sign::unknown; // TODO
     first.flags = Flag::none; // TODO
     boost::fill(first.name, '\0');
     first.data.binaryEval = eval;
@@ -179,8 +155,7 @@ sym2::Expr::Expr(ExprView e)
 {}
 
 sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
-    : buffer{Operand{
-      .header = composite, .sign = Sign::unknown, .flags = Flag::none, .name = {'\0'}, .data = {.count = ops.size()}}}
+    : buffer{Operand{.header = composite, .flags = Flag::none, .name = {'\0'}, .data = {.count = ops.size()}}}
 {
     assert(composite == Type::sum || composite == Type::product || composite == Type::power
       || composite == Type::complexNumber);
@@ -200,9 +175,6 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
 
     if (numEval)
         buffer.front().flags = Flag::numericallyEvaluable;
-
-    if (composite == Type::complexNumber)
-        buffer.front().sign = Sign::neither;
 }
 
 sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
@@ -211,20 +183,14 @@ sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
 {
-    buffer.push_back(Operand{.header = Type::smallInt,
-      .sign = numberSign(n),
-      .flags = Flag::numericallyEvaluable,
-      .name = {'\0'},
-      .data = {.exact = {n, 1}}});
+    buffer.push_back(Operand{
+      .header = Type::smallInt, .flags = Flag::numericallyEvaluable, .name = {'\0'}, .data = {.exact = {n, 1}}});
 }
 
 void sym2::Expr::appendFloatingPoint(double n)
 {
-    buffer.push_back(Operand{.header = Type::floatingPoint,
-      .sign = numberSign(n),
-      .flags = Flag::numericallyEvaluable,
-      .name = {'\0'},
-      .data = {.inexact = n}});
+    buffer.push_back(Operand{
+      .header = Type::floatingPoint, .flags = Flag::numericallyEvaluable, .name = {'\0'}, .data = {.inexact = n}});
 }
 
 void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
@@ -238,7 +204,6 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
         appendSmallInt(num);
     else
         buffer.push_back(Operand{.header = Type::smallRational,
-          .sign = numberSign(static_cast<double>(num) / denom),
           .flags = Flag::numericallyEvaluable,
           .name = {'\0'},
           .data = {.exact = {num, denom}}});
@@ -257,7 +222,6 @@ void sym2::Expr::appendLargeInt(const Int& n)
     static constexpr auto opSize = sizeof(Operand);
 
     buffer.push_back(Operand{.header = Type::largeInt,
-      .sign = numberSign(n),
       .flags = Flag::numericallyEvaluable,
       .name = {'\0'},
       .data = {.count = 0 /* Not known yet. */}});

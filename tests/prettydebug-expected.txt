@@ -1,69 +1,69 @@
 (sym2::ExprView) e = {
-  [0] = 42 (smallInt, positive, numericallyEvaluable)
+  [0] = 42 (smallInt, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
-  [0] = 7/11 (smallRational, positive, numericallyEvaluable)
+  [0] = 7/11 (smallRational, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
-  [0] = largeInt: 2 (largeInt, positive, numericallyEvaluable)
+  [0] = largeInt: 2 (largeInt, numericallyEvaluable)
   [1] = (Large int blob)
   [2] = (Large int blob)
 }
 (sym2::ExprView) e = {
-  [0] = largeRational: 2 (largeRational, positive, numericallyEvaluable)
-  [1] = largeInt: 2 (largeInt, positive, numericallyEvaluable)
+  [0] = largeRational: 2 (largeRational, numericallyEvaluable)
+  [1] = largeInt: 2 (largeInt, numericallyEvaluable)
   [2] = (Large int blob)
   [3] = (Large int blob)
-  [4] = largeInt: 2 (largeInt, positive, numericallyEvaluable)
+  [4] = largeInt: 2 (largeInt, numericallyEvaluable)
   [5] = (Large int blob)
   [6] = (Large int blob)
 }
 (sym2::ExprView) e = {
-  [0] = 9.876543 (floatingPoint, positive, numericallyEvaluable)
+  [0] = 9.876543 (floatingPoint, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
-  [0] = complexNumber: 2 (complexNumber, neither, numericallyEvaluable)
-  [1] = 42 (smallInt, positive, numericallyEvaluable)
-  [2] = 7/11 (smallRational, positive, numericallyEvaluable)
+  [0] = complexNumber: 2 (complexNumber, numericallyEvaluable)
+  [1] = 42 (smallInt, numericallyEvaluable)
+  [2] = 7/11 (smallRational, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
-  [0] = constant: 2 (constant, positive, numericallyEvaluable)
-  [1] = "pi" (symbol, neither, none)
-  [2] = 3.142374 (floatingPoint, positive, numericallyEvaluable)
+  [0] = constant: 2 (constant, numericallyEvaluable)
+  [1] = "pi" (symbol, none)
+  [2] = 3.142374 (floatingPoint, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
-  [0] = "abc" (symbol, neither, none)
+  [0] = "abc" (symbol, none)
 }
 (sym2::ExprView) e = {
-  [0] = "Noneefy}^g" (symbol, neither, none)
+  [0] = "Noneefy}^g" (symbol, none)
 }
 (sym2::ExprView) e = {
-  [0] = sum: 3 (sum, unknown, none)
-  [1] = 42 (smallInt, positive, numericallyEvaluable)
-  [2] = "abc" (symbol, neither, none)
-  [3] = "Noneefy}^g" (symbol, neither, none)
+  [0] = sum: 3 (sum, none)
+  [1] = 42 (smallInt, numericallyEvaluable)
+  [2] = "abc" (symbol, none)
+  [3] = "Noneefy}^g" (symbol, none)
 }
 (sym2::ExprView) e = {
-  [0] = product: 4 (product, unknown, none)
-  [1] = 42 (smallInt, positive, numericallyEvaluable)
-  [2] = "abc" (symbol, neither, none)
-  [3] = "Noneefy}^g" (symbol, neither, none)
-  [4] = sum: 3 (sum, unknown, none)
-  [5] = 42 (smallInt, positive, numericallyEvaluable)
-  [6] = "abc" (symbol, neither, none)
-  [7] = "Noneefy}^g" (symbol, neither, none)
+  [0] = product: 4 (product, none)
+  [1] = 42 (smallInt, numericallyEvaluable)
+  [2] = "abc" (symbol, none)
+  [3] = "Noneefy}^g" (symbol, none)
+  [4] = sum: 3 (sum, none)
+  [5] = 42 (smallInt, numericallyEvaluable)
+  [6] = "abc" (symbol, none)
+  [7] = "Noneefy}^g" (symbol, none)
 }
 (sym2::ExprView) e = {
-  [0] = power: 2 (power, unknown, none)
-  [1] = product: 4 (product, unknown, none)
-  [2] = 42 (smallInt, positive, numericallyEvaluable)
-  [3] = "abc" (symbol, neither, none)
-  [4] = "Noneefy}^g" (symbol, neither, none)
-  [5] = sum: 3 (sum, unknown, none)
-  [6] = 42 (smallInt, positive, numericallyEvaluable)
-  [7] = "abc" (symbol, neither, none)
-  [8] = "Noneefy}^g" (symbol, neither, none)
-  [9] = largeInt: 2 (largeInt, positive, numericallyEvaluable)
+  [0] = power: 2 (power, none)
+  [1] = product: 4 (product, none)
+  [2] = 42 (smallInt, numericallyEvaluable)
+  [3] = "abc" (symbol, none)
+  [4] = "Noneefy}^g" (symbol, none)
+  [5] = sum: 3 (sum, none)
+  [6] = 42 (smallInt, numericallyEvaluable)
+  [7] = "abc" (symbol, none)
+  [8] = "Noneefy}^g" (symbol, none)
+  [9] = largeInt: 2 (largeInt, numericallyEvaluable)
   [10] = (Large int blob)
   [11] = (Large int blob)
 }

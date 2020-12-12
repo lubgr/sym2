@@ -27,7 +27,6 @@ namespace sym2 {
         binaryFunction
     };
 
-    enum class Sign : std::uint8_t { unknown, positive, negative, neither };
     enum class Flag : std::uint8_t { none, numericallyEvaluable };
 
     Flag operator|(Flag lhs, Flag rhs);
@@ -45,8 +44,7 @@ namespace sym2 {
 
     struct Operand {
         Type header;
-        Sign sign : 2;
-        Flag flags : 6;
+        Flag flags;
         /* Use the rest to allow for longer variable names: */
         char name[6];
 

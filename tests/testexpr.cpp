@@ -13,32 +13,31 @@ bool numEvalAndSize1(ExprView e)
     return e.size() == 1 && e[0].flags == Flag::numericallyEvaluable;
 }
 
-bool isSmallInt(ExprView e, int num, Sign expected)
+bool isSmallInt(ExprView e, int num)
 {
-    return e[0].header == Type::smallInt && e[0].sign == expected && numEvalAndSize1(e) && e[0].data.exact.num == num
+    return e[0].header == Type::smallInt && numEvalAndSize1(e) && e[0].data.exact.num == num
       && e[0].data.exact.denom == 1;
 }
 
-bool isSmallRational(ExprView e, int num, int denom, Sign expected)
+bool isSmallRational(ExprView e, int num, int denom)
 {
-    return e[0].header == Type::smallRational && e[0].sign == expected && numEvalAndSize1(e)
-      && e[0].data.exact.num == num && e[0].data.exact.denom == denom;
+    return e[0].header == Type::smallRational && numEvalAndSize1(e) && e[0].data.exact.num == num
+      && e[0].data.exact.denom == denom;
 }
 
-bool isLargeInt(ExprView e, Sign expected)
+bool isLargeInt(ExprView e)
 {
-    return e[0].header == Type::largeInt && e[0].sign == expected && e.size() == e[0].data.count + 1
-      && e[0].flags == Flag::numericallyEvaluable;
+    return e[0].header == Type::largeInt && e.size() == e[0].data.count + 1 && e[0].flags == Flag::numericallyEvaluable;
 }
 
-bool isLargeRational(ExprView e, Sign expected)
+bool isLargeRational(ExprView e)
 {
-    return e[0].header == Type::largeRational && e[0].sign == expected && e[0].flags == Flag::numericallyEvaluable;
+    return e[0].header == Type::largeRational && e[0].flags == Flag::numericallyEvaluable;
 }
 
 bool isShortSymbol(Operand op, std::string_view expectedName)
 {
-    return op.header == Type::symbol && op.flags == Flag::none && op.sign == Sign::neither && op.name == expectedName
+    return op.header == Type::symbol && op.flags == Flag::none && op.name == expectedName
       && std::find_if(op.data.name, std::end(op.data.name), [](char c) { return c != '\0'; }) == std::end(op.data.name);
 }
 
@@ -52,24 +51,24 @@ TEST_CASE("Expr constructor")
 {
     SUBCASE("Zero")
     {
-        CHECK(isSmallInt(0_ex, 0, Sign::neither));
+        CHECK(isSmallInt(0_ex, 0));
     }
 
     SUBCASE("Small int")
     {
-        CHECK(isSmallInt(42_ex, 42, Sign::positive));
-        CHECK(isSmallInt(Expr{-42}, -42, Sign::negative));
+        CHECK(isSmallInt(42_ex, 42));
+        CHECK(isSmallInt(Expr{-42}, -42));
     }
 
     SUBCASE("Small rational")
     {
-        CHECK(isSmallRational(Expr{2, 3}, 2, 3, Sign::positive));
-        CHECK(isSmallRational(Expr{-2, 3}, -2, 3, Sign::negative));
+        CHECK(isSmallRational(Expr{2, 3}, 2, 3));
+        CHECK(isSmallRational(Expr{-2, 3}, -2, 3));
     }
 
     SUBCASE("Small rational normalization")
     {
-        CHECK(isSmallRational(Expr{9, 6}, 3, 2, Sign::positive));
+        CHECK(isSmallRational(Expr{9, 6}, 3, 2));
     }
 
     SUBCASE("Small rational throws if denom == 0")
@@ -79,7 +78,7 @@ TEST_CASE("Expr constructor")
 
     SUBCASE("Small rational negative denom")
     {
-        CHECK(isSmallRational(Expr{2, -3}, -2, 3, Sign::negative));
+        CHECK(isSmallRational(Expr{2, -3}, -2, 3));
     }
 
     SUBCASE("Small rational to small int")
@@ -94,12 +93,12 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            CHECK(isLargeInt(Expr{largeInt}, Sign::positive));
+            CHECK(isLargeInt(Expr{largeInt}));
         }
 
         SUBCASE("< 0")
         {
-            CHECK(isLargeInt(Expr{-largeInt}, Sign::negative));
+            CHECK(isLargeInt(Expr{-largeInt}));
         }
     }
 
@@ -107,22 +106,22 @@ TEST_CASE("Expr constructor")
     {
         const Int fits{"12345"};
 
-        CHECK(isSmallInt(Expr{fits}, 12345, Sign::positive));
-        CHECK(isSmallInt(Expr{-fits}, -12345, Sign::negative));
+        CHECK(isSmallInt(Expr{fits}, 12345));
+        CHECK(isSmallInt(Expr{-fits}, -12345));
     }
 
     SUBCASE("Large zero to small zero")
     {
         const Int zero{0};
 
-        CHECK(isSmallInt(Expr{zero}, 0, Sign::neither));
+        CHECK(isSmallInt(Expr{zero}, 0));
     }
 
     SUBCASE("Large to small rational")
     {
         const Rational fits{17, 31};
 
-        CHECK(isSmallRational(Expr{fits}, 17, 31, Sign::positive));
+        CHECK(isSmallRational(Expr{fits}, 17, 31));
     }
 
     SUBCASE("Large rational")
@@ -132,12 +131,12 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            CHECK(isLargeRational(Expr{lr}, Sign::positive));
+            CHECK(isLargeRational(Expr{lr}));
         }
 
         SUBCASE("< 0")
         {
-            CHECK(isLargeRational(Expr{-lr}, Sign::negative));
+            CHECK(isLargeRational(Expr{-lr}));
         }
 
         SUBCASE("Num/denom saved as small int if possible")
@@ -167,17 +166,7 @@ TEST_CASE("Expr constructor")
 
         CHECK(e.size() == 1);
         CHECK(e[0].flags == Flag::none);
-        CHECK(e[0].sign == Sign::neither);
-
         CHECK(e[0].name == std::string_view{"abcdef_{gh}^i"});
-    }
-
-    SUBCASE("Symbol starting with + is positive")
-    {
-        const Expr symbol{"+a"};
-        auto e = view(symbol);
-
-        CHECK(e[0].sign == Sign::positive);
     }
 
     SUBCASE("Constant creation")
@@ -190,7 +179,6 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].header == Type::constant);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
-        CHECK(e[0].sign == Sign::negative);
         CHECK(allNullChars(e[0].name));
         CHECK(e[0].data.count == 2);
 
@@ -198,7 +186,6 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[2].header == Type::floatingPoint);
         CHECK(e[2].flags == Flag::numericallyEvaluable);
-        CHECK(e[2].sign == Sign::negative);
         CHECK(e[2].data.inexact == doctest::Approx(value));
     }
 
@@ -211,7 +198,6 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].header == Type::unaryFunction);
         CHECK(e[0].flags == Flag::none);
-        CHECK(e[0].sign == Sign::unknown);
         CHECK(allNullChars(e[0].name));
         CHECK(e[0].data.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
 
@@ -228,7 +214,6 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].header == Type::binaryFunction);
         CHECK(e[0].flags == Flag::none);
-        CHECK(e[0].sign == Sign::unknown);
         CHECK(allNullChars(e[0].name));
         CHECK(e[0].data.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
 
@@ -247,7 +232,6 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].header == Type::complexNumber);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
-        CHECK(e[0].sign == Sign::neither);
         CHECK(allNullChars(e[0].name));
         CHECK(e[0].data.count == 2);
     }
