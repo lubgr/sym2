@@ -45,17 +45,24 @@ namespace sym2 {
     struct Operand {
         Type header;
         Flag flags;
-        /* Use the rest to allow for longer variable names: */
-        char name[6];
 
-        union {
-            std::size_t count;
+        union Data2 {
+            char name[2];
+            std::int16_t largeIntSign;
+        } pre;
+
+        union Data4 {
+            char name[4];
+            std::uint32_t count;
+        } mid;
+
+        union Data8 {
             char name[8];
             SmallRational exact;
             double inexact;
             UnaryDoubleFctPtr unaryEval;
             BinaryDoubleFctPtr binaryEval;
-        } data;
+        } main;
     };
 
     using ExprView = std::span<const Operand>;
@@ -83,7 +90,6 @@ namespace sym2 {
 
       private:
         void appendSmallInt(std::int32_t n);
-        void appendFloatingPoint(double n);
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
         void appendSmallOrLargeInt(const Int& n);
         void appendLargeInt(const Int& n);

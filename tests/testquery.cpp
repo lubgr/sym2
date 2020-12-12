@@ -93,8 +93,8 @@ TEST_CASE("Type queries")
         for (ExprView e : {a, b, 42_ex, fp, sr})
             CHECK(nOps(e) == 0);
 
-        CHECK(nOps(pi) == 2);
-        CHECK(nOps(euler) == 2);
+        CHECK(nOps(pi) == 1);
+        CHECK(nOps(euler) == 1);
 
         CHECK(nOps(lr) == 2);
         CHECK(nOps(cx) == 2);

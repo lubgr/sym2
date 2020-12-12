@@ -15,19 +15,19 @@ bool numEvalAndSize1(ExprView e)
 
 bool isSmallInt(ExprView e, int num)
 {
-    return e[0].header == Type::smallInt && numEvalAndSize1(e) && e[0].data.exact.num == num
-      && e[0].data.exact.denom == 1;
+    return e[0].header == Type::smallInt && numEvalAndSize1(e) && e[0].main.exact.num == num
+      && e[0].main.exact.denom == 1;
 }
 
 bool isSmallRational(ExprView e, int num, int denom)
 {
-    return e[0].header == Type::smallRational && numEvalAndSize1(e) && e[0].data.exact.num == num
-      && e[0].data.exact.denom == denom;
+    return e[0].header == Type::smallRational && numEvalAndSize1(e) && e[0].main.exact.num == num
+      && e[0].main.exact.denom == denom;
 }
 
 bool isLargeInt(ExprView e)
 {
-    return e[0].header == Type::largeInt && e.size() == e[0].data.count + 1 && e[0].flags == Flag::numericallyEvaluable;
+    return e[0].header == Type::largeInt && e.size() == e[0].mid.count + 1 && e[0].flags == Flag::numericallyEvaluable;
 }
 
 bool isLargeRational(ExprView e)
@@ -35,16 +35,16 @@ bool isLargeRational(ExprView e)
     return e[0].header == Type::largeRational && e[0].flags == Flag::numericallyEvaluable;
 }
 
-bool isShortSymbol(Operand op, std::string_view expectedName)
-{
-    return op.header == Type::symbol && op.flags == Flag::none && op.name == expectedName
-      && std::find_if(op.data.name, std::end(op.data.name), [](char c) { return c != '\0'; }) == std::end(op.data.name);
-}
-
 template <std::size_t N>
 bool allNullChars(const char (&str)[N])
 {
     return std::find_if(str, std::cend(str), [](char c) { return c != '\0'; }) == std::cend(str);
+}
+
+bool isShortSymbol(Operand op, std::string_view expectedName)
+{
+    return op.header == Type::symbol && op.flags == Flag::none && op.pre.name == expectedName
+      && allNullChars(op.main.name);
 }
 
 TEST_CASE("Expr constructor")
@@ -166,7 +166,7 @@ TEST_CASE("Expr constructor")
 
         CHECK(e.size() == 1);
         CHECK(e[0].flags == Flag::none);
-        CHECK(e[0].name == std::string_view{"abcdef_{gh}^i"});
+        CHECK(e[0].pre.name == std::string_view{"abcdef_{gh}^i"});
     }
 
     SUBCASE("Constant creation")
@@ -175,18 +175,15 @@ TEST_CASE("Expr constructor")
         const Expr c{"test", value};
         auto e = view(c);
 
-        CHECK(e.size() == 3);
+        CHECK(e.size() == 2);
 
         CHECK(e[0].header == Type::constant);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
-        CHECK(allNullChars(e[0].name));
-        CHECK(e[0].data.count == 2);
+        CHECK(allNullChars(e[0].pre.name));
+        CHECK(e[0].mid.count == 1);
+        CHECK(e[0].main.inexact == doctest::Approx(value));
 
         CHECK(isShortSymbol(e[1], "test"));
-
-        CHECK(e[2].header == Type::floatingPoint);
-        CHECK(e[2].flags == Flag::numericallyEvaluable);
-        CHECK(e[2].data.inexact == doctest::Approx(value));
     }
 
     SUBCASE("Unary function creation")
@@ -198,8 +195,9 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].header == Type::unaryFunction);
         CHECK(e[0].flags == Flag::none);
-        CHECK(allNullChars(e[0].name));
-        CHECK(e[0].data.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
+        CHECK(allNullChars(e[0].pre.name));
+        CHECK(allNullChars(e[0].mid.name));
+        CHECK(e[0].main.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
 
         CHECK(isShortSymbol(e[1], "sin"));
         CHECK(isShortSymbol(e[2], "a"));
@@ -214,8 +212,9 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].header == Type::binaryFunction);
         CHECK(e[0].flags == Flag::none);
-        CHECK(allNullChars(e[0].name));
-        CHECK(e[0].data.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
+        CHECK(allNullChars(e[0].pre.name));
+        CHECK(allNullChars(e[0].mid.name));
+        CHECK(e[0].main.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
 
         CHECK(isShortSymbol(e[1], "atan2"));
         CHECK(isShortSymbol(e[2], "a"));
@@ -232,8 +231,9 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[0].header == Type::complexNumber);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
-        CHECK(allNullChars(e[0].name));
-        CHECK(e[0].data.count == 2);
+        CHECK(allNullChars(e[0].pre.name));
+        CHECK(e[0].mid.count == 2);
+        CHECK(allNullChars(e[0].main.name));
     }
 }
 

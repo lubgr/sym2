@@ -106,7 +106,7 @@ bool sym2::isNumericallyEvaluable(ExprView e)
     return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
 }
 
-std::size_t sym2::nOps(ExprView e)
+std::uint32_t sym2::nOps(ExprView e)
 {
     switch (type(e)) {
         case Type::smallInt:
@@ -115,6 +115,6 @@ std::size_t sym2::nOps(ExprView e)
         case Type::symbol:
             return 0;
         default:
-            return e[0].data.count;
+            return e[0].mid.count;
     }
 }
