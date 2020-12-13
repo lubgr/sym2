@@ -90,11 +90,8 @@ TEST_CASE("Type queries")
 
     SUBCASE("Number of operands")
     {
-        for (ExprView e : {a, b, 42_ex, fp, sr})
+        for (ExprView e : {a, b, 42_ex, fp, sr, pi, euler})
             CHECK(nOps(e) == 0);
-
-        CHECK(nOps(pi) == 1);
-        CHECK(nOps(euler) == 1);
 
         CHECK(nOps(lr) == 2);
         CHECK(nOps(cx) == 2);

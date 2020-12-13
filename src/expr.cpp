@@ -41,9 +41,10 @@ sym2::Flag& sym2::operator&=(Flag& lhs, Flag rhs)
     return lhs;
 }
 
-static constexpr sym2::Operand::Data2 preZero = {.name = {'\0'}};
-static constexpr sym2::Operand::Data4 midZero = {.name = {'\0'}};
+static constexpr sym2::Operand::Data6 preZero = {.name = {'\0'}};
 static constexpr sym2::Operand::Data8 mainZero = {.name = {'\0'}};
+static constexpr std::size_t smallNameLength = sizeof(sym2::Operand::Data6::name) - 1;
+static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Operand::Data8::name);
 
 sym2::Expr::Expr(int n)
 {
@@ -51,11 +52,8 @@ sym2::Expr::Expr(int n)
 }
 
 sym2::Expr::Expr(double n)
-    : buffer{Operand{.header = Type::floatingPoint,
-      .flags = Flag::numericallyEvaluable,
-      .pre = preZero,
-      .mid = midZero,
-      .main = {.inexact = n}}}
+    : buffer{Operand{
+      .header = Type::floatingPoint, .flags = Flag::numericallyEvaluable, .pre = preZero, .main = {.inexact = n}}}
 {}
 
 sym2::Expr::Expr(int num, int denom)
@@ -86,72 +84,42 @@ sym2::Expr::Expr(const Rational& n)
         return;
     }
 
-    buffer.push_back(Operand{.header = Type::largeRational,
-      .flags = Flag::numericallyEvaluable,
-      .pre = preZero,
-      .mid = {.count = 2},
-      .main = mainZero});
+    buffer.push_back(Operand{
+      .header = Type::largeRational, .flags = Flag::numericallyEvaluable, .pre = preZero, .main = {.count = 2}});
 
     appendSmallOrLargeInt(num);
     appendSmallOrLargeInt(denom);
 }
 
 sym2::Expr::Expr(std::string_view symbol)
+    : buffer{Operand{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .main = mainZero}}
 {
-    if (symbol.length() > 13 || symbol.empty())
-        throw std::invalid_argument("Symbol names must be non-empty and < 13 characters long");
-
-    Operand op{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = mainZero};
-
-    auto* dest = std::next(reinterpret_cast<char*>(&op), 2);
-
-    std::copy(symbol.cbegin(), symbol.cend(), dest);
-
-    buffer.push_back(op);
+    copyToFirstOrThrow(symbol, largeNameLength);
 }
 
 sym2::Expr::Expr(std::string_view constant, double value)
-    : Expr{constant}
+    : buffer{Operand{
+      .header = Type::constant, .flags = Flag::numericallyEvaluable, .pre = preZero, .main = {.inexact = value}}}
 {
-    buffer.push_back(buffer.front());
-
-    Operand& first = buffer.front();
-
-    first.header = Type::constant;
-    first.flags = Flag::numericallyEvaluable;
-    first.pre = preZero;
-    first.mid = {.count = 1};
-    first.main.inexact = value;
+    copyToFirstOrThrow(constant, smallNameLength);
 }
 
 sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval)
-    : Expr{function}
+    : buffer{Operand{
+      .header = Type::unaryFunction, .flags = Flag::none /* TODO */, .pre = preZero, .main = {.unaryEval = eval}}}
 {
-    buffer.push_back(buffer.front());
+    copyToFirstOrThrow(function, smallNameLength);
 
-    Operand& first = buffer.front();
-
-    first.header = Type::unaryFunction;
-    first.flags = Flag::none; // TODO
-    first.pre = preZero;
-    first.mid = midZero;
-    first.main.unaryEval = eval;
+    buffer.reserve(arg.size());
 
     std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
 sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, BinaryDoubleFctPtr eval)
-    : Expr{function}
+    : buffer{Operand{
+      .header = Type::binaryFunction, .flags = Flag::none /* TODO */, .pre = preZero, .main = {.binaryEval = eval}}}
 {
-    buffer.push_back(buffer.front());
-
-    Operand& first = buffer.front();
-
-    first.header = Type::binaryFunction;
-    first.flags = Flag::none; // TODO
-    first.pre = preZero;
-    first.mid = midZero;
-    first.main.binaryEval = eval;
+    copyToFirstOrThrow(function, smallNameLength);
 
     for (ExprView arg : {arg1, arg2})
         std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
@@ -162,13 +130,8 @@ sym2::Expr::Expr(ExprView e)
 {}
 
 sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
-    : buffer{Operand{.header = composite,
-      .flags = Flag::none,
-      .pre = preZero,
-      .mid = {.count = static_cast<std::uint32_t>(ops.size())},
-      .main = mainZero}}
+    : buffer{Operand{.header = composite, .flags = Flag::none, .pre = preZero, .main = {.count = ops.size()}}}
 {
-    assert(std::numeric_limits<std::uint32_t>::max() >= ops.size());
     assert(composite == Type::sum || composite == Type::product || composite == Type::power
       || composite == Type::complexNumber);
 
@@ -195,11 +158,8 @@ sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
 {
-    buffer.push_back(Operand{.header = Type::smallInt,
-      .flags = Flag::numericallyEvaluable,
-      .pre = preZero,
-      .mid = midZero,
-      .main = {.exact = {n, 1}}});
+    buffer.push_back(Operand{
+      .header = Type::smallInt, .flags = Flag::numericallyEvaluable, .pre = preZero, .main = {.exact = {n, 1}}});
 }
 
 void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
@@ -215,7 +175,6 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
         buffer.push_back(Operand{.header = Type::smallRational,
           .flags = Flag::numericallyEvaluable,
           .pre = preZero,
-          .mid = midZero,
           .main = {.exact = {num, denom}}});
 }
 
@@ -234,8 +193,7 @@ void sym2::Expr::appendLargeInt(const Int& n)
     buffer.push_back(Operand{.header = Type::largeInt,
       .flags = Flag::numericallyEvaluable,
       .pre = preZero,
-      .mid = midZero, /* Count is not known yet. */
-      .main = mainZero});
+      .main = mainZero /* Count is not known yet. */});
 
     /* Save the index instead of a reference to back(), which might be invalidated below. */
     const std::size_t frontIdx = buffer.size() - 1;
@@ -263,12 +221,24 @@ void sym2::Expr::appendLargeInt(const Int& n)
     assert(buffer.size() > frontIdx + 1);
     const auto length = buffer.size() - frontIdx - 1;
 
-    buffer[frontIdx].mid.count = length;
+    buffer[frontIdx].main.count = length;
 
     /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits happens with the
      * most significant bits first, leading zeros are dropped. This allows for an easier import, as the whole
      * Operand span can be used as the bit source: */
     std::rotate(aliased, aliased + length * opSize - (opSize - remainder), aliased + length * opSize);
+}
+
+void sym2::Expr::copyToFirstOrThrow(std::string_view name, std::uint8_t maxLength)
+{
+    assert(buffer.size() == 1);
+
+    auto* dest = std::next(reinterpret_cast<char*>(buffer.data()), 2);
+
+    if (name.length() > maxLength || name.empty())
+        throw std::invalid_argument("Names must be non-empty and < 13 characters long");
+
+    std::copy(name.cbegin(), name.cend(), dest);
 }
 
 sym2::Expr::operator sym2::ExprView() const
@@ -359,7 +329,5 @@ std::string_view sym2::get<std::string_view>(ExprView e)
 {
     assert(isSymbolOrConstant(e));
 
-    const auto nameEntry = isSymbol(e) ? e : first(e);
-
-    return std::string_view{static_cast<const char*>(nameEntry[0].pre.name)};
+    return std::string_view{static_cast<const char*>(e[0].pre.name)};
 }

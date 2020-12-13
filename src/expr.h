@@ -46,18 +46,14 @@ namespace sym2 {
         Type header;
         Flag flags;
 
-        union Data2 {
-            char name[2];
-            std::int16_t largeIntSign;
+        union Data6 {
+            char name[6];
+            std::int8_t largeIntSign;
         } pre;
-
-        union Data4 {
-            char name[4];
-            std::uint32_t count;
-        } mid;
 
         union Data8 {
             char name[8];
+            std::size_t count;
             SmallRational exact;
             double inexact;
             UnaryDoubleFctPtr unaryEval;
@@ -93,6 +89,7 @@ namespace sym2 {
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
         void appendSmallOrLargeInt(const Int& n);
         void appendLargeInt(const Int& n);
+        void copyToFirstOrThrow(std::string_view name, std::uint8_t maxLength);
 
         SmallVec<Operand, 10> buffer;
     };

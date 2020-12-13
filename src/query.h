@@ -39,5 +39,5 @@ namespace sym2 {
     bool isPositive(ExprView e);
     bool isNegative(ExprView e);
 
-    std::uint32_t nOps(ExprView e);
+    std::size_t nOps(ExprView e);
 }
