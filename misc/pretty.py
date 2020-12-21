@@ -26,7 +26,7 @@ def isLargeIntBlob(valobj):
     headerName = enumMemberString(valobj, 'header')
     name = valobj.GetChildMemberWithName('pre').GetChildMemberWithName('name')
     sign = valobj.GetChildMemberWithName('pre').GetChildMemberWithName('largeIntSign')
-    shouldHaveName = headerName in ['symbol', 'constant', 'function']
+    shouldHaveName = headerName in ['symbol', 'constant', 'unaryFunction', 'binaryFunction']
     err = lldb.SBError()
     signValue = sign.GetData().GetUnsignedInt8(err, 0)
 
@@ -48,6 +48,7 @@ def operandSummary(valobj, unused):
     data = valobj.GetChildMemberWithName('main')
     pre = valobj.GetChildMemberWithName('pre')
     err = lldb.SBError()
+    isComposite = False
     rep = ""
 
     if headerName in ['smallInt', 'smallRational']:
@@ -66,12 +67,21 @@ def operandSummary(valobj, unused):
         name = pre.GetChildMemberWithName('name').GetData().GetString(err, 0)
         inexact = data.GetChildMemberWithName('inexact')
         value = inexact.GetData().GetDouble(err, 0)
-        rep = '"%s: %f (constant)"' % (name, value)
+        rep = '"%s: %f"' % (name, value)
+    elif headerName in ['unaryFunction', 'binaryFunction']:
+        name = pre.GetChildMemberWithName('name').GetData().GetString(err, 0)
+        fctKey = headerName.replace('Function', 'Eval')
+        fct = data.GetChildMemberWithName(fctKey).GetSummary()
+        rep = '%s (%s: %s)' % (name, headerName, fct)
     else:
+        isComposite = True
         count = data.GetChildMemberWithName('count').GetValueAsUnsigned(0)
-        rep = '%s: %d' % (headerName, count)
+        rep = '%d' % count
 
-    return '%s (%s, %s)' % (rep, headerName, flagsName)
+    if isComposite:
+        return '%s, size: %s (flags: %s)' % (headerName, rep, flagsName)
+    else:
+        return rep
 
 def __lldb_init_module(debugger, internalDict):
     debugger.HandleCommand('type summary add -x "^sym2::ExprView$" -e -F pretty.exprViewSummary')
