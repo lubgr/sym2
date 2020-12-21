@@ -189,10 +189,15 @@ void sym2::Expr::appendSmallOrLargeInt(const Int& n)
 void sym2::Expr::appendLargeInt(const Int& n)
 {
     static constexpr auto opSize = sizeof(Operand);
+    static const auto preSignAndZeroRest = [](const Int& n) {
+        auto result = preZero;
+        result.largeIntSign = n < 0 ? std::int8_t{-1} : std::int8_t{1};
+        return result;
+    };
 
     buffer.push_back(Operand{.header = Type::largeInt,
       .flags = Flag::numericallyEvaluable,
-      .pre = preZero,
+      .pre = preSignAndZeroRest(n),
       .main = mainZero /* Count is not known yet. */});
 
     /* Save the index instead of a reference to back(), which might be invalidated below. */
@@ -307,7 +312,7 @@ sym2::Int sym2::get<sym2::Int>(ExprView e)
 
     import_bits(result, first, last);
 
-    return result;
+    return e[0].pre.largeIntSign * result;
 }
 
 template <>
