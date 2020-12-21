@@ -27,9 +27,7 @@
   [2] = 7/11 (smallRational, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
-  [0] = constant: 2 (constant, numericallyEvaluable)
-  [1] = "pi" (symbol, none)
-  [2] = 3.142374 (floatingPoint, numericallyEvaluable)
+  [0] = "pi: 3.142374 (constant)" (constant, numericallyEvaluable)
 }
 (sym2::ExprView) e = {
   [0] = "abc" (symbol, none)

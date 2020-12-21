@@ -24,11 +24,15 @@ def allZeroBytes(data, n):
 
 def isLargeIntBlob(valobj):
     headerName = enumMemberString(valobj, 'header')
-    name = valobj.GetChildMemberWithName('name')
-    shouldHaveName = headerName in ['constant', 'symbol', 'function']
+    name = valobj.GetChildMemberWithName('pre').GetChildMemberWithName('name')
+    sign = valobj.GetChildMemberWithName('pre').GetChildMemberWithName('largeIntSign')
+    shouldHaveName = headerName in ['symbol', 'constant', 'function']
     err = lldb.SBError()
+    signValue = sign.GetData().GetUnsignedInt8(err, 0)
 
     if allZeroBytes(name.GetData(), 6) and not shouldHaveName:
+        return False
+    elif headerName == 'largeInt' and signValue == 1 or signValue == -1:
         return False
     elif shouldHaveName:
         return False
@@ -40,9 +44,9 @@ def operandSummary(valobj, unused):
         return "(Large int blob)"
 
     headerName = enumMemberString(valobj, 'header')
-    signName = enumMemberString(valobj, 'sign')
     flagsName = enumMemberString(valobj, 'flags')
-    data = valobj.GetChildMemberWithName('data')
+    data = valobj.GetChildMemberWithName('main')
+    pre = valobj.GetChildMemberWithName('pre')
     err = lldb.SBError()
     rep = ""
 
@@ -52,17 +56,22 @@ def operandSummary(valobj, unused):
         denom = exact.GetChildMemberWithName('denom').GetValueAsUnsigned(0)
         rep = '%d' % num + ('' if denom == 1 else '/%d' % denom)
     elif headerName == 'floatingPoint':
-        inexact = data.GetChildMemberWithName('exact')
+        inexact = data.GetChildMemberWithName('inexact')
         value = inexact.GetData().GetDouble(err, 0)
         rep = '%f' % value
-    elif headerName in ['symbol', 'constant']:
-        name = [valobj.GetChildMemberWithName('name'), data.GetChildMemberWithName('name')]
+    elif headerName in ['symbol']:
+        name = [pre.GetChildMemberWithName('name'), data.GetChildMemberWithName('name')]
         rep = '"%s%s"' % (name[0].GetData().GetString(err, 0), name[1].GetData().GetString(err, 0))
+    elif headerName == 'constant':
+        name = pre.GetChildMemberWithName('name').GetData().GetString(err, 0)
+        inexact = data.GetChildMemberWithName('inexact')
+        value = inexact.GetData().GetDouble(err, 0)
+        rep = '"%s: %f (constant)"' % (name, value)
     else:
         count = data.GetChildMemberWithName('count').GetValueAsUnsigned(0)
         rep = '%s: %d' % (headerName, count)
 
-    return '%s (%s, %s, %s)' % (rep, headerName, signName, flagsName)
+    return '%s (%s, %s)' % (rep, headerName, flagsName)
 
 def __lldb_init_module(debugger, internalDict):
     debugger.HandleCommand('type summary add -x "^sym2::ExprView$" -e -F pretty.exprViewSummary')
