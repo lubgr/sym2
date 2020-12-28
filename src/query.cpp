@@ -1,6 +1,8 @@
 
 #include "query.h"
 #include <cassert>
+#include "get.h"
+#include "view.h"
 
 sym2::Type sym2::type(ExprView e)
 {
@@ -101,6 +103,31 @@ bool sym2::isConstant(ExprView e)
     return type(e) == Type::constant;
 }
 
+bool sym2::isSum(ExprView e)
+{
+    return type(e) == Type::sum;
+}
+
+bool sym2::isProduct(ExprView e)
+{
+    return type(e) == Type::product;
+}
+
+bool sym2::isPower(ExprView e)
+{
+    return type(e) == Type::power;
+}
+
+bool sym2::isFunction(ExprView e)
+{
+    return type(e) == Type::unaryFunction || type(e) == Type::binaryFunction;
+}
+
+bool sym2::isFunction(ExprView e, std::string_view name)
+{
+    return isFunction(e) && name == get<std::string_view>(e);
+}
+
 bool sym2::isNumericallyEvaluable(ExprView e)
 {
     return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
@@ -108,14 +135,44 @@ bool sym2::isNumericallyEvaluable(ExprView e)
 
 std::size_t sym2::nOps(ExprView e)
 {
-    switch (type(e)) {
+    return nOps(e[0]);
+}
+
+std::size_t sym2::nOps(Operand op)
+{
+    switch (op.header) {
         case Type::smallInt:
         case Type::smallRational:
         case Type::floatingPoint:
         case Type::symbol:
         case Type::constant:
             return 0;
+        case Type::unaryFunction:
+            return 1;
+        case Type::binaryFunction:
+            return 2;
         default:
-            return e[0].main.count;
+            return op.main.count;
     }
+}
+
+sym2::ExprView sym2::nth(ExprView e, std::uint32_t n)
+{
+    ConstSemanticOpIterator operand{e};
+
+    assert(n > 0);
+
+    std::advance(operand, n - 1);
+
+    return *operand;
+}
+
+sym2::ExprView sym2::first(ExprView e)
+{
+    return nth(e, 1);
+}
+
+sym2::ExprView sym2::second(ExprView e)
+{
+    return nth(e, 2);
 }

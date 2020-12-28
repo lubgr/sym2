@@ -3,8 +3,10 @@
 add_library(sym2
     canonical.cpp
     expr.cpp
+    get.cpp
     power.cpp
-    query.cpp)
+    query.cpp
+    view.cpp)
 
 target_link_libraries(sym2
     PUBLIC

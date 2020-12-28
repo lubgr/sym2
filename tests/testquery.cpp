@@ -100,3 +100,34 @@ TEST_CASE("Type queries")
         CHECK(nOps(pw) == 2);
     }
 }
+
+TEST_CASE("Nth operand queries")
+{
+    SUBCASE("Sum with product")
+    {
+        const Expr pr = product(10, "b", "c");
+        const Expr s = sum(42, "a", pr, "d");
+
+        CHECK(first(s) == 42_ex);
+        CHECK(second(s) == "a"_ex);
+        CHECK(nth(s, 3) == pr);
+        CHECK(nth(s, 4) == "d"_ex);
+    }
+
+    SUBCASE("Large Rational")
+    {
+        const Int denom{"1234528973498279834827384284"};
+        const Expr lr{Rational{1, denom}};
+
+        CHECK(first(lr) == 1_ex);
+        CHECK(second(lr) == Expr{denom});
+    }
+
+    SUBCASE("Complex number")
+    {
+        const Expr cx = cpx(2, 3);
+
+        CHECK(first(cx) == 2_ex);
+        CHECK(second(cx) == 3_ex);
+    }
+}

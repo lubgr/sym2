@@ -1,11 +1,12 @@
 
-#include "constants.h"
+#include <algorithm>
+#include <cmath>
+#include <string_view>
 #include "doctest/doctest.h"
 #include "expr.h"
 #include "testutils.h"
 
 using namespace sym2;
-using namespace std::string_literals;
 using namespace std::literals::string_view_literals;
 
 bool numEvalAndSize1(ExprView e)
@@ -13,24 +14,24 @@ bool numEvalAndSize1(ExprView e)
     return e.size() == 1 && e[0].flags == Flag::numericallyEvaluable;
 }
 
-bool isSmallInt(ExprView e, int num)
+bool isSmallIntEqualTo(ExprView e, int num)
 {
     return e[0].header == Type::smallInt && numEvalAndSize1(e) && e[0].main.exact.num == num
       && e[0].main.exact.denom == 1;
 }
 
-bool isSmallRational(ExprView e, int num, int denom)
+bool isSmallRationalEqualTo(ExprView e, int num, int denom)
 {
     return e[0].header == Type::smallRational && numEvalAndSize1(e) && e[0].main.exact.num == num
       && e[0].main.exact.denom == denom;
 }
 
-bool isLargeInt(ExprView e)
+bool hasLargeIntCharacteristics(ExprView e)
 {
     return e[0].header == Type::largeInt && e.size() == e[0].main.count + 1 && e[0].flags == Flag::numericallyEvaluable;
 }
 
-bool isLargeRational(ExprView e)
+bool hasLargeRationalCharacteristics(ExprView e)
 {
     return e[0].header == Type::largeRational && e[0].flags == Flag::numericallyEvaluable;
 }
@@ -51,24 +52,24 @@ TEST_CASE("Expr constructor")
 {
     SUBCASE("Zero")
     {
-        CHECK(isSmallInt(0_ex, 0));
+        CHECK(isSmallIntEqualTo(0_ex, 0));
     }
 
     SUBCASE("Small int")
     {
-        CHECK(isSmallInt(42_ex, 42));
-        CHECK(isSmallInt(Expr{-42}, -42));
+        CHECK(isSmallIntEqualTo(42_ex, 42));
+        CHECK(isSmallIntEqualTo(Expr{-42}, -42));
     }
 
     SUBCASE("Small rational")
     {
-        CHECK(isSmallRational(Expr{2, 3}, 2, 3));
-        CHECK(isSmallRational(Expr{-2, 3}, -2, 3));
+        CHECK(isSmallRationalEqualTo(Expr{2, 3}, 2, 3));
+        CHECK(isSmallRationalEqualTo(Expr{-2, 3}, -2, 3));
     }
 
     SUBCASE("Small rational normalization")
     {
-        CHECK(isSmallRational(Expr{9, 6}, 3, 2));
+        CHECK(isSmallRationalEqualTo(Expr{9, 6}, 3, 2));
     }
 
     SUBCASE("Small rational throws if denom == 0")
@@ -78,7 +79,7 @@ TEST_CASE("Expr constructor")
 
     SUBCASE("Small rational negative denom")
     {
-        CHECK(isSmallRational(Expr{2, -3}, -2, 3));
+        CHECK(isSmallRationalEqualTo(Expr{2, -3}, -2, 3));
     }
 
     SUBCASE("Small rational to small int")
@@ -93,12 +94,12 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            CHECK(isLargeInt(Expr{largeInt}));
+            CHECK(hasLargeIntCharacteristics(Expr{largeInt}));
         }
 
         SUBCASE("< 0")
         {
-            CHECK(isLargeInt(Expr{-largeInt}));
+            CHECK(hasLargeIntCharacteristics(Expr{-largeInt}));
         }
     }
 
@@ -106,22 +107,22 @@ TEST_CASE("Expr constructor")
     {
         const Int fits{"12345"};
 
-        CHECK(isSmallInt(Expr{fits}, 12345));
-        CHECK(isSmallInt(Expr{-fits}, -12345));
+        CHECK(isSmallIntEqualTo(Expr{fits}, 12345));
+        CHECK(isSmallIntEqualTo(Expr{-fits}, -12345));
     }
 
     SUBCASE("Large zero to small zero")
     {
         const Int zero{0};
 
-        CHECK(isSmallInt(Expr{zero}, 0));
+        CHECK(isSmallIntEqualTo(Expr{zero}, 0));
     }
 
     SUBCASE("Large to small rational")
     {
         const Rational fits{17, 31};
 
-        CHECK(isSmallRational(Expr{fits}, 17, 31));
+        CHECK(isSmallRationalEqualTo(Expr{fits}, 17, 31));
     }
 
     SUBCASE("Large rational")
@@ -131,12 +132,12 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            CHECK(isLargeRational(Expr{lr}));
+            CHECK(hasLargeRationalCharacteristics(Expr{lr}));
         }
 
         SUBCASE("< 0")
         {
-            CHECK(isLargeRational(Expr{-lr}));
+            CHECK(hasLargeRationalCharacteristics(Expr{-lr}));
         }
 
         SUBCASE("Num/denom saved as small int if possible")
@@ -226,70 +227,5 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].flags == Flag::numericallyEvaluable);
         CHECK(allNullChars(e[0].pre.name));
         CHECK(e[0].main.count == 2);
-    }
-}
-
-TEST_CASE("Scalar retrieval")
-{
-    const Expr si{42};
-    const Expr sr{7, 11};
-    const Int largeInt{"8233298749837489247029730960165010709217309487209740928934928"};
-    const Expr li{largeInt};
-
-    SUBCASE("Get small integer")
-    {
-        CHECK(get<int>(si) == 42);
-    }
-
-    SUBCASE("Get small rational from small integer")
-    {
-        CHECK(get<SmallRational>(si).num == 42);
-        CHECK(get<SmallRational>(si).denom == 1);
-    }
-
-    SUBCASE("Get small rational")
-    {
-        CHECK(get<SmallRational>(sr).num == 7);
-        CHECK(get<SmallRational>(sr).denom == 11);
-    }
-
-    SUBCASE("Get large integer from small integer")
-    {
-        CHECK(get<Int>(si) == Int{42});
-    }
-
-    SUBCASE("Get large positive integer")
-    {
-        CHECK(get<Int>(li) == largeInt);
-    }
-
-    SUBCASE("Get large negative integer")
-    {
-        const Expr nli{-largeInt};
-
-        CHECK(get<Int>(nli) == -largeInt);
-    }
-
-    SUBCASE("Get large rational from small int/rational")
-    {
-        CHECK(get<Rational>(42_ex) == Rational{42, 1});
-        CHECK(get<Rational>(sr) == Rational{7, 11});
-    }
-
-    SUBCASE("Get large rational")
-    {
-        const Rational largeRational{Int{3}, largeInt};
-
-        CHECK(get<Rational>(Expr{largeInt}) == Rational{largeInt, 1});
-        CHECK(get<Rational>(Expr{largeRational}) == largeRational);
-    }
-
-    SUBCASE("Get symbol name")
-    {
-        const auto a = "a"_ex;
-        const auto longer = "abc_{def}"_ex;
-
-        CHECK(get<std::string_view>(a) == "a"sv);
-        CHECK(get<std::string_view>(longer) == "abc_{def}"sv);
     }
 }
