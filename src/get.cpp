@@ -66,7 +66,7 @@ sym2::Rational sym2::get<sym2::Rational>(ExprView e)
 template <>
 std::string_view sym2::get<std::string_view>(ExprView e)
 {
-    assert(isSymbolOrConstant(e));
+    assert(isSymbolOrConstant(e) || isFunction(e));
 
     return std::string_view{static_cast<const char*>(e[0].pre.name)};
 }
