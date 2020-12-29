@@ -7,6 +7,32 @@ def exprViewSummary(valobj, unused):
 def exprSummary(valobj, unused):
     return "" #TODO
 
+class ExprViewSynthProvider:
+    def __init__(self, value, internalDict):
+        self.value = value
+
+    def num_children(self):
+        return self.size
+
+    def get_child_index(self, name):
+        return 0
+
+    def get_child_at_index(self, index):
+        try:
+            offset = index * self.dataSize
+            return self.data.CreateChildAtOffset('[' + str(index) + ']', offset, self.valueType)
+        except:
+            return None
+
+    def update(self):
+        first = self.value.GetChildMemberWithName('first').GetChildMemberWithName('op')
+        last = self.value.GetChildMemberWithName('sentinel').GetChildMemberWithName('op')
+
+        self.data = first
+        self.valueType = self.data.GetType().GetPointeeType()
+        self.dataSize = self.valueType.GetByteSize()
+        self.size = int((last.GetValueAsUnsigned() - first.GetValueAsUnsigned())/self.dataSize)
+
 def enumMemberString(valobj, memberName):
     value = valobj.GetChildMemberWithName(memberName)
     # It would be cleaner to retrieve the value as an integer and then index into GetType().GetEnumMembers(),
@@ -87,3 +113,4 @@ def __lldb_init_module(debugger, internalDict):
     debugger.HandleCommand('type summary add -x "^sym2::ExprView$" -e -F pretty.exprViewSummary')
     debugger.HandleCommand('type summary add -x "^sym2::Expr$" -e -F pretty.exprSummary')
     debugger.HandleCommand('type summary add -x "^sym2::Operand$" -F pretty.operandSummary')
+    debugger.HandleCommand('type synthetic add -x "^sym2::ExprView$" -l pretty.ExprViewSynthProvider')
