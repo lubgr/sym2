@@ -6,6 +6,7 @@ add_library(sym2
     get.cpp
     power.cpp
     query.cpp
+    trigonometric.cpp
     view.cpp)
 
 target_link_libraries(sym2
