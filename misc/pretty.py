@@ -79,8 +79,8 @@ def operandSummary(valobj, unused):
 
     if headerName in ['smallInt', 'smallRational']:
         exact = data.GetChildMemberWithName('exact')
-        num = exact.GetChildMemberWithName('num').GetValueAsUnsigned(0)
-        denom = exact.GetChildMemberWithName('denom').GetValueAsUnsigned(0)
+        num = exact.GetChildMemberWithName('num').GetValueAsSigned(0)
+        denom = exact.GetChildMemberWithName('denom').GetValueAsSigned(0)
         rep = '%d' % num + ('' if denom == 1 else '/%d' % denom)
     elif headerName == 'floatingPoint':
         inexact = data.GetChildMemberWithName('inexact')
