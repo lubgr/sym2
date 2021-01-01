@@ -8,7 +8,6 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
-#include "eval.h"
 #include "query.h"
 
 static_assert(std::is_trivial_v<sym2::Operand>);
