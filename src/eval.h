@@ -37,7 +37,7 @@ namespace sym2 {
                   std::complex<double>{}, std::plus<>{}, recurComplex);
             case Type::product:
                 return std::transform_reduce(ConstSemanticOpIterator{e}, ConstSemanticOpIterator{},
-                  std::complex<double>{1.0}, std::multiplies<>{}, recurComplex);
+                  std::complex<double>{1.0, 1.0}, std::multiplies<>{}, recurComplex);
             case Type::power:
                 return std::pow(recurComplex(first(e)), recurComplex(second(e)));
             case Type::unaryFunction:
