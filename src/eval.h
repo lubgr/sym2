@@ -39,7 +39,7 @@ namespace sym2 {
                 return std::transform_reduce(ConstSemanticOpIterator{e}, ConstSemanticOpIterator{},
                   std::complex<double>{1.0}, std::multiplies<>{}, recurComplex);
             case Type::power:
-                return {std::pow(recurComplex(first(e)), recurComplex(second(e)))};
+                return std::pow(recurComplex(first(e)), recurComplex(second(e)));
             case Type::unaryFunction:
                 return {get<UnaryDoubleFctPtr>(e)(recur(first(e)))};
             case Type::binaryFunction:
