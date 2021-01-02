@@ -104,7 +104,7 @@ namespace sym2 {
 
         friend bool operator==(ConstSemanticOpIterator lhs, ConstSemanticOpIterator rhs) noexcept
         {
-            return lhs.op == rhs.op;
+            return lhs.op == rhs.op && lhs.n == rhs.n;
         }
 
       private:
