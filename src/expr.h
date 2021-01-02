@@ -4,7 +4,7 @@
 #include <initializer_list>
 #include <span>
 #include <string_view>
-#include "operand.h"
+#include "blob.h"
 #include "rational.h"
 #include "smallvec.h"
 #include "view.h"
@@ -35,7 +35,7 @@ namespace sym2 {
         void appendLargeInt(const Int& n);
         void copyNameOrThrow(std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex = 0);
 
-        SmallVec<Operand, 10> buffer;
+        SmallVec<Blob, 10> buffer;
     };
 
     Expr operator"" _ex(const char* str, std::size_t);

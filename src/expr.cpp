@@ -10,7 +10,7 @@
 #include <type_traits>
 #include "query.h"
 
-static_assert(std::is_trivial_v<sym2::Operand>);
+static_assert(std::is_trivial_v<sym2::Blob>);
 
 sym2::Flag sym2::operator|(Flag lhs, Flag rhs)
 {
@@ -40,12 +40,11 @@ sym2::Flag& sym2::operator&=(Flag& lhs, Flag rhs)
     return lhs;
 }
 
-static constexpr sym2::Operand::Data2 preZero = {.name = {'\0'}};
-static constexpr sym2::Operand::Data4 midZero = {.name = {'\0'}};
-static constexpr sym2::Operand::Data8 mainZero = {.name = {'\0'}};
-static constexpr std::size_t smallNameLength =
-  sizeof(sym2::Operand::Data2::name) + sizeof(sym2::Operand::Data4::name) - 1;
-static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Operand::Data8::name);
+static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
+static constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
+static constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
+static constexpr std::size_t smallNameLength = sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
+static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Blob::Data8::name);
 
 namespace sym2 {
     namespace {
@@ -53,7 +52,7 @@ namespace sym2 {
             /* RAII class to make sure we don't forget to update the number of child blobs at the end of a ctor body.
              * Shall guard against early returns. Exceptions aren't an issue (then the object has no lifetime anyhow).
              * Instances should be declared at the beginning of a ctor, non-statically. */
-            SmallVecBase<Operand>& buffer;
+            SmallVecBase<Blob>& buffer;
             const std::size_t index;
 
             ~ChildBlobNumberGuard()
@@ -72,7 +71,7 @@ sym2::Expr::Expr(int n)
 }
 
 sym2::Expr::Expr(double n)
-    : buffer{Operand{.header = Type::floatingPoint,
+    : buffer{Blob{.header = Type::floatingPoint,
       .flags = Flag::numericallyEvaluable,
       .pre = preZero,
       .mid = midZero,
@@ -109,7 +108,7 @@ sym2::Expr::Expr(const Rational& n)
 
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
-    buffer.push_back(Operand{.header = Type::largeRational,
+    buffer.push_back(Blob{.header = Type::largeRational,
       .flags = Flag::numericallyEvaluable,
       .pre = preZero,
       .mid = {.nLogicalOperands = 2},
@@ -120,13 +119,13 @@ sym2::Expr::Expr(const Rational& n)
 }
 
 sym2::Expr::Expr(std::string_view symbol)
-    : buffer{Operand{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = mainZero}}
+    : buffer{Blob{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = mainZero}}
 {
     copyNameOrThrow(symbol, largeNameLength);
 }
 
 sym2::Expr::Expr(std::string_view constant, double value)
-    : buffer{Operand{.header = Type::constant,
+    : buffer{Blob{.header = Type::constant,
       .flags = Flag::numericallyEvaluable,
       .pre = preZero,
       .mid = midZero,
@@ -136,7 +135,7 @@ sym2::Expr::Expr(std::string_view constant, double value)
 }
 
 sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval)
-    : buffer{Operand{.header = Type::function,
+    : buffer{Blob{.header = Type::function,
       .flags = Flag::none /* TODO */,
       .pre = preZero,
       .mid = {.nLogicalOperands = 1},
@@ -144,7 +143,7 @@ sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
-    buffer.push_back(Operand{
+    buffer.push_back(Blob{
       .header = Type::functionId, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = {.unaryEval = eval}});
 
     copyNameOrThrow(function, smallNameLength, 1);
@@ -155,7 +154,7 @@ sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval
 }
 
 sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, BinaryDoubleFctPtr eval)
-    : buffer{Operand{.header = Type::function,
+    : buffer{Blob{.header = Type::function,
       .flags = Flag::none /* TODO */,
       .pre = preZero,
       .mid = {.nLogicalOperands = 2},
@@ -163,7 +162,7 @@ sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, Binary
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
-    buffer.push_back(Operand{
+    buffer.push_back(Blob{
       .header = Type::functionId, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = {.binaryEval = eval}});
 
     copyNameOrThrow(function, smallNameLength, 1);
@@ -179,7 +178,7 @@ sym2::Expr::Expr(ExprView e)
 {}
 
 sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
-    : buffer{Operand{.header = composite,
+    : buffer{Blob{.header = composite,
       .flags = Flag::none,
       .pre = preZero,
       .mid = {.nLogicalOperands = static_cast<std::uint32_t>(ops.size())},
@@ -214,7 +213,7 @@ sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
 {
-    buffer.push_back(Operand{.header = Type::smallInt,
+    buffer.push_back(Blob{.header = Type::smallInt,
       .flags = Flag::numericallyEvaluable,
       .pre = preZero,
       .mid = midZero,
@@ -231,7 +230,7 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
     if (denom == 1)
         appendSmallInt(num);
     else
-        buffer.push_back(Operand{.header = Type::smallRational,
+        buffer.push_back(Blob{.header = Type::smallRational,
           .flags = Flag::numericallyEvaluable,
           .pre = preZero,
           .mid = midZero,
@@ -248,9 +247,9 @@ void sym2::Expr::appendSmallOrLargeInt(const Int& n)
 
 void sym2::Expr::appendLargeInt(const Int& n)
 {
-    static constexpr auto opSize = sizeof(Operand);
+    static constexpr auto opSize = sizeof(Blob);
 
-    buffer.push_back(Operand{.header = Type::largeInt,
+    buffer.push_back(Blob{.header = Type::largeInt,
       .flags = Flag::numericallyEvaluable,
       .pre = preZero,
       .mid = {.largeIntSign = n < 0 ? -1 : 1},
@@ -285,7 +284,7 @@ void sym2::Expr::appendLargeInt(const Int& n)
 
     /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits happens with the
      * most significant bits first, leading zeros are dropped. This allows for an easier import, as the whole
-     * Operand span can be used as the bit source: */
+     * Blob span can be used as the bit source: */
     std::rotate(aliased, aliased + length * opSize - (opSize - remainder), aliased + length * opSize);
 }
 

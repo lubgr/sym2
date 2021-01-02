@@ -43,10 +43,10 @@ bool allNullChars(const char (&str)[N])
     return std::find_if(str, std::cend(str), [](char c) { return c != '\0'; }) == std::cend(str);
 }
 
-bool isShortSymbol(Operand op, std::string_view expectedName)
+bool isShortSymbol(Blob what, std::string_view expectedName)
 {
-    return op.header == Type::symbol && op.flags == Flag::none && op.pre.name == expectedName
-      && allNullChars(op.main.name);
+    return what.header == Type::symbol && what.flags == Flag::none && what.pre.name == expectedName
+      && allNullChars(what.main.name);
 }
 
 TEST_CASE("Expr constructor")

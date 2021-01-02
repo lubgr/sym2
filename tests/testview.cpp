@@ -16,7 +16,7 @@ TEST_CASE("Semantic traversal")
     const auto p2 = product("c", "d", "e", "f");
     const auto fct = sym2::atan2("a"_ex, "b"_ex);
     const auto s = sum(li, p1, p2, fct);
-    auto op = ConstSemanticOpIterator{s};
+    auto op = OperandIterator{s};
 
     SUBCASE("Nth child on increment")
     {
@@ -24,7 +24,7 @@ TEST_CASE("Semantic traversal")
         CHECK(*++op == view(p1));
         CHECK(*++op == view(p2));
         CHECK(*++op == view(fct));
-        CHECK(++op == ConstSemanticOpIterator{});
+        CHECK(++op == OperandIterator{});
     }
 }
 
@@ -48,11 +48,11 @@ TEST_CASE("Basic ExprView behavior")
 
     SUBCASE("Copy and compare")
     {
-        std::vector<Operand> dest;
+        std::vector<Blob> dest;
 
         boost::copy(sv, std::back_inserter(dest));
 
-        boost::equal(sv, dest,
-          [](const Operand& lhs, const Operand& rhs) { return std::memcmp(&lhs, &rhs, sizeof(Operand)) == 0; });
+        boost::equal(
+          sv, dest, [](const Blob& lhs, const Blob& rhs) { return std::memcmp(&lhs, &rhs, sizeof(Blob)) == 0; });
     }
 }

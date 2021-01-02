@@ -42,7 +42,7 @@ sym2::Int sym2::get<sym2::Int>(ExprView e)
     Int result;
 
     const auto* first = reinterpret_cast<const unsigned char*>(std::next(e.data()));
-    const auto* last = std::next(first, nChildBlobs(e) * sizeof(Operand));
+    const auto* last = std::next(first, nChildBlobs(e) * sizeof(Blob));
 
     import_bits(result, first, last);
 
@@ -68,7 +68,7 @@ std::string_view sym2::get<std::string_view>(ExprView e)
 {
     assert(isSymbolOrConstant(e) || isFunction(e));
 
-    const Operand& blobWithName = isSymbolOrConstant(e) ? e[0] : e[1];
+    const Blob& blobWithName = isSymbolOrConstant(e) ? e[0] : e[1];
 
     return std::string_view{static_cast<const char*>(blobWithName.pre.name)};
 }

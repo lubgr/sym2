@@ -133,14 +133,14 @@ TEST_CASE("Type queries")
     SUBCASE("Number of operands")
     {
         for (ExprView e : {a, b, 42_ex, fp, sr, pi, euler, lr})
-            CHECK(nOps(e) == 0);
+            CHECK(nLogicalOperands(e) == 0);
 
-        CHECK(nOps(cx) == 2);
-        CHECK(nOps(s) == 3);
-        CHECK(nOps(pr) == 3);
-        CHECK(nOps(pw) == 2);
-        CHECK(nOps(sinA) == 1);
-        CHECK(nOps(atan2Ab) == 2);
+        CHECK(nLogicalOperands(cx) == 2);
+        CHECK(nLogicalOperands(s) == 3);
+        CHECK(nLogicalOperands(pr) == 3);
+        CHECK(nLogicalOperands(pw) == 2);
+        CHECK(nLogicalOperands(sinA) == 1);
+        CHECK(nLogicalOperands(atan2Ab) == 2);
     }
 
     SUBCASE("Number of child blobs")

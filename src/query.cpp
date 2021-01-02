@@ -132,14 +132,14 @@ bool sym2::isNumericallyEvaluable(ExprView e)
     return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
 }
 
-std::size_t sym2::nOps(ExprView e)
+std::size_t sym2::nLogicalOperands(ExprView e)
 {
-    return nOps(e[0]);
+    return nLogicalOperands(e[0]);
 }
 
-std::size_t sym2::nOps(Operand op)
+std::size_t sym2::nLogicalOperands(Blob b)
 {
-    switch (op.header) {
+    switch (b.header) {
         case Type::smallInt:
         case Type::smallRational:
         case Type::floatingPoint:
@@ -149,7 +149,7 @@ std::size_t sym2::nOps(Operand op)
         case Type::constant:
             return 0;
         default:
-            return op.mid.nLogicalOperands;
+            return b.mid.nLogicalOperands;
     }
 }
 
@@ -158,9 +158,9 @@ std::size_t sym2::nChildBlobs(ExprView e)
     return nChildBlobs(e[0]);
 }
 
-std::size_t sym2::nChildBlobs(Operand op)
+std::size_t sym2::nChildBlobs(Blob b)
 {
-    switch (op.header) {
+    switch (b.header) {
         case Type::smallInt:
         case Type::smallRational:
         case Type::floatingPoint:
@@ -168,13 +168,13 @@ std::size_t sym2::nChildBlobs(Operand op)
         case Type::constant:
             return 0;
         default:
-            return op.main.nChildBlobs;
+            return b.main.nChildBlobs;
     }
 }
 
 sym2::ExprView sym2::nth(ExprView e, std::uint32_t n)
 {
-    ConstSemanticOpIterator operand{e};
+    OperandIterator operand{e};
 
     assert(n > 0);
 

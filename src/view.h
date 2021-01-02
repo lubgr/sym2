@@ -4,52 +4,52 @@
 #include <boost/stl_interfaces/view_interface.hpp>
 #include <cassert>
 #include <cstdint>
-#include "operand.h"
+#include "blob.h"
 #include "query.h"
 
 namespace sym2 {
-    class ConstOpIterator : public boost::stl_interfaces::iterator_interface<ConstOpIterator,
-                              std::random_access_iterator_tag, const Operand> {
+    class ConstBlobIterator : public boost::stl_interfaces::iterator_interface<ConstBlobIterator,
+                                std::random_access_iterator_tag, const Blob> {
         /* Simple iterator based on the example in the STL interfaces library. While this could be a template, it won't
          * be reused as anything else, so we prefer simplicity and nicer error messages. The only notable detail of this
          * iterator is that it can be used for mutable access - everything ist const. */
       public:
-        ConstOpIterator() = default;
-        explicit ConstOpIterator(const Operand* op) noexcept
-            : op{op}
+        ConstBlobIterator() = default;
+        explicit ConstBlobIterator(const Blob* b) noexcept
+            : b{b}
         {}
 
-        const Operand& operator*() const noexcept
+        const Blob& operator*() const noexcept
         {
-            return *op;
+            return *b;
         }
 
-        ConstOpIterator& operator+=(std::ptrdiff_t n) noexcept
+        ConstBlobIterator& operator+=(std::ptrdiff_t n) noexcept
         {
-            op += n;
+            b += n;
             return *this;
         }
 
-        auto operator-(ConstOpIterator other) const noexcept
+        auto operator-(ConstBlobIterator other) const noexcept
         {
-            return op - other.op;
+            return b - other.b;
         }
 
       private:
-        const Operand* op = nullptr;
+        const Blob* b = nullptr;
     };
 
     class ExprView
         : public boost::stl_interfaces::view_interface<ExprView, boost::stl_interfaces::element_layout::contiguous> {
       public:
         ExprView() = default;
-        ExprView(const Operand* first, std::size_t n) noexcept
+        ExprView(const Blob* first, std::size_t n) noexcept
             : first{first}
             , sentinel{first + n}
         {}
 
         /* Necessary at least for Boost range compatibility: */
-        using const_iterator = ConstOpIterator;
+        using const_iterator = ConstBlobIterator;
 
         auto begin() const noexcept
         {
@@ -62,25 +62,25 @@ namespace sym2 {
         }
 
       private:
-        ConstOpIterator first{};
-        ConstOpIterator sentinel{};
+        ConstBlobIterator first{};
+        ConstBlobIterator sentinel{};
     };
 
     bool operator==(ExprView lhs, ExprView rhs);
     bool operator!=(ExprView lhs, ExprView rhs);
 
-    class ConstSemanticOpIterator : public boost::stl_interfaces::proxy_iterator_interface<ConstSemanticOpIterator,
-                                      std::forward_iterator_tag, ExprView> {
-        /* Proxy iterator that traverses only through root operands, i.e., those Operand instances that define the
-         * header of the sub-expression they belong to. As an example. consider the sum 2*(b + c) + d*e. When iterating
-         * over the operands of that sum with a ConstSemanticOpIterator, it traverses through 2*(b + c)  and d*e. As the
-         * step size is varies and must be constructed from individual root Operand instances, this can only be a
-         * forward iterator (as we don't want to store additional state apart from a pointer. */
+    class OperandIterator
+        : public boost::stl_interfaces::proxy_iterator_interface<OperandIterator, std::forward_iterator_tag, ExprView> {
+        /* Proxy iterator that traverses only through root operands, i.e., those Blob instances that define the header
+         * of the sub-expression they belong to. As an example. consider the sum 2*(b + c) + d*e. When iterating over
+         * the operands of that sum with a OperandIterator, it traverses through 2*(b + c)  and d*e. As the step size is
+         * varies and must be constructed from individual root Blob instances, this can only be a forward iterator (as
+         * we don't want to store additional state apart from a pointer. */
       public:
-        ConstSemanticOpIterator() = default;
-        explicit ConstSemanticOpIterator(ExprView e) noexcept
+        OperandIterator() = default;
+        explicit OperandIterator(ExprView e) noexcept
             : op{type(e) == Type::function ? &e[2] : &e[1]}
-            , n{nOps(e)}
+            , n{nLogicalOperands(e)}
         {
             assert(e.size() >= 1);
         }
@@ -90,7 +90,7 @@ namespace sym2 {
             return {op, currentSize()};
         }
 
-        ConstSemanticOpIterator& operator++() noexcept
+        OperandIterator& operator++() noexcept
         {
             assert(op != nullptr);
 
@@ -102,7 +102,7 @@ namespace sym2 {
             return *this;
         }
 
-        friend bool operator==(ConstSemanticOpIterator lhs, ConstSemanticOpIterator rhs) noexcept
+        friend bool operator==(OperandIterator lhs, OperandIterator rhs) noexcept
         {
             return lhs.op == rhs.op && lhs.n == rhs.n;
         }
@@ -113,7 +113,7 @@ namespace sym2 {
             return nChildBlobs(*op) + 1;
         }
 
-        const Operand* op = nullptr;
+        const Blob* op = nullptr;
         std::size_t n = 0;
     };
 }
