@@ -30,16 +30,16 @@ double sym2::get<double>(ExprView e)
 }
 
 template <>
-sym2::Int sym2::get<sym2::Int>(ExprView e)
+sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView e)
 {
     assert(isInteger(e));
 
     if (isSmallInt(e))
-        return Int{get<std::int32_t>(e)};
+        return LargeInt{get<std::int32_t>(e)};
 
     assert(isLargeInt(e));
 
-    Int result;
+    LargeInt result;
 
     const auto* first = reinterpret_cast<const unsigned char*>(std::next(e.data()));
     const auto* last = std::next(first, nChildBlobs(e) * sizeof(Blob));
@@ -50,17 +50,17 @@ sym2::Int sym2::get<sym2::Int>(ExprView e)
 }
 
 template <>
-sym2::Rational sym2::get<sym2::Rational>(ExprView e)
+sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView e)
 {
     assert(isRational(e) || isInteger(e));
 
     if (isInteger(e))
-        return Rational{get<Int>(e)};
+        return LargeRational{get<LargeInt>(e)};
     else if (isSmallRational(e)) {
         const auto value = get<SmallRational>(e);
-        return Rational{value.num, value.denom};
+        return LargeRational{value.num, value.denom};
     } else
-        return Rational{get<Int>(first(e)), get<Int>(second(e))};
+        return LargeRational{get<LargeInt>(first(e)), get<LargeInt>(second(e))};
 }
 
 template <>

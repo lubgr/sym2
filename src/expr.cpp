@@ -91,12 +91,12 @@ sym2::Expr::Expr(int num, int denom)
     appendSmallRationalOrInt(num, denom);
 }
 
-sym2::Expr::Expr(const Int& n)
+sym2::Expr::Expr(const LargeInt& n)
 {
     appendSmallOrLargeInt(n);
 }
 
-sym2::Expr::Expr(const Rational& n)
+sym2::Expr::Expr(const LargeRational& n)
 {
     const auto num = numerator(n);
     const auto denom = denominator(n);
@@ -237,7 +237,7 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
           .main = {.exact = {num, denom}}});
 }
 
-void sym2::Expr::appendSmallOrLargeInt(const Int& n)
+void sym2::Expr::appendSmallOrLargeInt(const LargeInt& n)
 {
     if (fitsInto<std::int32_t>(n))
         appendSmallInt(static_cast<std::int32_t>(n));
@@ -245,7 +245,7 @@ void sym2::Expr::appendSmallOrLargeInt(const Int& n)
         appendLargeInt(n);
 }
 
-void sym2::Expr::appendLargeInt(const Int& n)
+void sym2::Expr::appendLargeInt(const LargeInt& n)
 {
     static constexpr auto opSize = sizeof(Blob);
 

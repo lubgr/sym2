@@ -5,7 +5,7 @@
 #include <span>
 #include <string_view>
 #include "blob.h"
-#include "rational.h"
+#include "largerational.h"
 #include "smallvec.h"
 #include "view.h"
 
@@ -15,8 +15,8 @@ namespace sym2 {
         Expr(int n);
         Expr(double n);
         Expr(int num, int denom);
-        explicit Expr(const Int& n);
-        explicit Expr(const Rational& n);
+        explicit Expr(const LargeInt& n);
+        explicit Expr(const LargeRational& n);
         explicit Expr(std::string_view symbol);
         /* Construct a constant: */
         Expr(std::string_view constant, double value);
@@ -31,8 +31,8 @@ namespace sym2 {
       private:
         void appendSmallInt(std::int32_t n);
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
-        void appendSmallOrLargeInt(const Int& n);
-        void appendLargeInt(const Int& n);
+        void appendSmallOrLargeInt(const LargeInt& n);
+        void appendLargeInt(const LargeInt& n);
         void copyNameOrThrow(std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex = 0);
 
         SmallVec<Blob, 10> buffer;

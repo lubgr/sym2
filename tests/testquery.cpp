@@ -12,9 +12,9 @@ TEST_CASE("Type queries")
 {
     const Expr fp{3.14};
     const Expr sr{7, 11};
-    const Int largeInt{"2323498273984729837498234029380492839489234902384"};
+    const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
     const Expr li{largeInt};
-    const Expr lr{Rational{Int{"1234528973498279834827384284"}, largeInt}};
+    const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}};
     const Expr cx = cpx(2, 3);
     const Expr s = sum(42, "a", "b");
     const Expr pr = product(42, "a", "b");
@@ -167,8 +167,8 @@ TEST_CASE("Nth operand queries")
 
     SUBCASE("Large Rational")
     {
-        const Int denom{"1234528973498279834827384284"};
-        const Expr lr{Rational{1, denom}};
+        const LargeInt denom{"1234528973498279834827384284"};
+        const Expr lr{LargeRational{1, denom}};
 
         CHECK(first(lr) == 1_ex);
         CHECK(second(lr) == Expr{denom});

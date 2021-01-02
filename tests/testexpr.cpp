@@ -96,7 +96,7 @@ TEST_CASE("Expr constructor")
 
     SUBCASE("Large int")
     {
-        const Int largeInt{"2323498273984729837498234029380492839489234902384"};
+        const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
 
         SUBCASE("> 0")
         {
@@ -111,7 +111,7 @@ TEST_CASE("Expr constructor")
 
     SUBCASE("Large int to small int")
     {
-        const Int fits{"12345"};
+        const LargeInt fits{"12345"};
 
         CHECK(isSmallIntEqualTo(Expr{fits}, 12345));
         CHECK(isSmallIntEqualTo(Expr{-fits}, -12345));
@@ -119,22 +119,22 @@ TEST_CASE("Expr constructor")
 
     SUBCASE("Large zero to small zero")
     {
-        const Int zero{0};
+        const LargeInt zero{0};
 
         CHECK(isSmallIntEqualTo(Expr{zero}, 0));
     }
 
     SUBCASE("Large to small rational")
     {
-        const Rational fits{17, 31};
+        const LargeRational fits{17, 31};
 
         CHECK(isSmallRationalEqualTo(Expr{fits}, 17, 31));
     }
 
     SUBCASE("Large rational")
     {
-        const Int large{"283749237498273489274382709084938593857982374982729873"};
-        const Rational lr{Int{1}, large};
+        const LargeInt large{"283749237498273489274382709084938593857982374982729873"};
+        const LargeRational lr{LargeInt{1}, large};
 
         SUBCASE("> 0")
         {

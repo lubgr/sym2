@@ -1,8 +1,8 @@
 #pragma once
 
-#include "int.h"
+#include "largeint.h"
 
 namespace sym2 {
-    using Rational = boost::multiprecision::number<
+    using LargeRational = boost::multiprecision::number<
       boost::multiprecision::rational_adaptor<boost::multiprecision::cpp_int_backend<integerBitBufferSize>>>;
 }

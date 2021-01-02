@@ -10,7 +10,7 @@ using namespace sym2;
 
 TEST_CASE("Semantic traversal")
 {
-    const Int largeInt{"2323498273984729837498234029380492839489234902384"};
+    const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
     const Expr li{largeInt};
     const auto p1 = product(2, sum("a", "b"));
     const auto p2 = product("c", "d", "e", "f");

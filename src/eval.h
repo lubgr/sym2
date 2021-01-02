@@ -50,7 +50,7 @@ namespace sym2 {
             case Type::largeRational:
                 return recur(first(e)) / recur(second(e));
             case Type::largeInt:
-                return static_cast<double>(get<Int>(e));
+                return static_cast<double>(get<LargeInt>(e));
             case Type::complexNumber:
                 return recur(first(e));
             case Type::sum:
