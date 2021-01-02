@@ -15,6 +15,27 @@ namespace sym2 {
     std::complex<double> evalComplex(ExprView e, LookupFct symbols)
     {
         const auto recurComplex = [&symbols](ExprView e) { return evalComplex(e, symbols); };
+        const auto recurReal = [&symbols](ExprView e) { return eval(e, symbols); };
+
+        switch (type(e)) {
+            case Type::complexNumber:
+                return {recurReal(first(e)), recurReal(second(e))};
+            case Type::sum:
+                return std::transform_reduce(ConstSemanticOpIterator{e}, ConstSemanticOpIterator{},
+                  std::complex<double>{}, std::plus<>{}, recurComplex);
+            case Type::product:
+                return std::transform_reduce(ConstSemanticOpIterator{e}, ConstSemanticOpIterator{},
+                  std::complex<double>{1.0, 0.0}, std::multiplies<>{}, recurComplex);
+            case Type::power:
+                return std::pow(recurComplex(first(e)), recurComplex(second(e)));
+            default:
+                return {recurReal(e)};
+        }
+    }
+
+    template <class LookupFct>
+    double eval(ExprView e, LookupFct symbols)
+    {
         const auto recur = [&symbols](ExprView e) { return eval(e, symbols); };
 
         switch (type(e)) {
@@ -31,29 +52,22 @@ namespace sym2 {
             case Type::largeInt:
                 return static_cast<double>(get<Int>(e));
             case Type::complexNumber:
-                return {recur(first(e)), recur(second(e))};
+                return recur(first(e));
             case Type::sum:
-                return std::transform_reduce(ConstSemanticOpIterator{e}, ConstSemanticOpIterator{},
-                  std::complex<double>{}, std::plus<>{}, recurComplex);
+                return std::transform_reduce(
+                  ConstSemanticOpIterator{e}, ConstSemanticOpIterator{}, 0.0, std::plus<>{}, recur);
             case Type::product:
-                return std::transform_reduce(ConstSemanticOpIterator{e}, ConstSemanticOpIterator{},
-                  std::complex<double>{1.0, 1.0}, std::multiplies<>{}, recurComplex);
+                return std::transform_reduce(
+                  ConstSemanticOpIterator{e}, ConstSemanticOpIterator{}, 1.0, std::multiplies<>{}, recur);
             case Type::power:
-                return std::pow(recurComplex(first(e)), recurComplex(second(e)));
+                return std::pow(recur(first(e)), recur(second(e)));
             case Type::function:
                 assert(nOps(e) == 1 || nOps(e) == 2);
-                return nOps(e) == 1 ?
-                  std::complex<double>{get<UnaryDoubleFctPtr>(e)(recur(first(e)))} :
-                  std::complex<double>{get<BinaryDoubleFctPtr>(e)(recur(first(e)), recur(second(e)))};
+                return nOps(e) == 1 ? get<UnaryDoubleFctPtr>(e)(recur(first(e))) :
+                                      get<BinaryDoubleFctPtr>(e)(recur(first(e)), recur(second(e)));
             default:
                 assert(false);
-                return {0.0, 0.0};
+                return 0.0;
         }
-    }
-
-    template <class LookupFct>
-    double eval(ExprView e, LookupFct symbols)
-    {
-        return evalComplex(e, symbols).real();
     }
 }
