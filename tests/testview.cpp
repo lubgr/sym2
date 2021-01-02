@@ -3,6 +3,7 @@
 #include "canonical.h"
 #include "doctest/doctest.h"
 #include "testutils.h"
+#include "trigonometric.h"
 #include "view.h"
 
 using namespace sym2;
@@ -10,15 +11,20 @@ using namespace sym2;
 TEST_CASE("Semantic traversal")
 {
     const Int largeInt{"2323498273984729837498234029380492839489234902384"};
-    const auto s = sum(largeInt, product(2, sum("a", "b")), product("c", "d"));
+    const Expr li{largeInt};
+    const auto p1 = product(2, sum("a", "b"));
+    const auto p2 = product("c", "d", "e", "f");
+    const auto fct = sym2::atan2("a"_ex, "b"_ex);
+    const auto s = sum(li, p1, p2, fct);
     auto op = ConstSemanticOpIterator{s};
 
-    SUBCASE("Point to first operand after construction")
+    SUBCASE("Nth child on increment")
     {
-        const Expr li{largeInt};
-        const auto expected = view(li);
-
-        CHECK(expected == *op);
+        CHECK(*op == view(li));
+        CHECK(*++op == view(p1));
+        CHECK(*++op == view(p2));
+        CHECK(*++op == view(fct));
+        CHECK(++op == ConstSemanticOpIterator{});
     }
 }
 
