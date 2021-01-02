@@ -40,7 +40,7 @@ namespace sym2 {
 
         switch (type(e)) {
             case Type::symbol:
-                return symbols(e[0].pre.name);
+                return symbols(get<std::string_view>(e));
             case Type::floatingPoint:
             case Type::constant:
                 return e[0].main.inexact;
