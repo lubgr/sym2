@@ -65,7 +65,7 @@ namespace sym2 {
     }
 }
 
-sym2::Expr::Expr(int n)
+sym2::Expr::Expr(std::int32_t n)
 {
     appendSmallInt(n);
 }
@@ -78,7 +78,7 @@ sym2::Expr::Expr(double n)
       .main = {.inexact = n}}}
 {}
 
-sym2::Expr::Expr(int num, int denom)
+sym2::Expr::Expr(std::int32_t num, std::int32_t denom)
 {
     if (denom == 0)
         throw std::domain_error("Zero denominator of small exact rational");

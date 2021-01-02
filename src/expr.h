@@ -12,9 +12,9 @@
 namespace sym2 {
     class Expr {
       public:
-        Expr(int n);
+        Expr(std::int32_t n);
         Expr(double n);
-        Expr(int num, int denom);
+        Expr(std::int32_t num, std::int32_t denom);
         explicit Expr(const LargeInt& n);
         explicit Expr(const LargeRational& n);
         explicit Expr(std::string_view symbol);
