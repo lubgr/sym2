@@ -42,11 +42,11 @@ sym2::Int sym2::get<sym2::Int>(ExprView e)
     Int result;
 
     const auto* first = reinterpret_cast<const unsigned char*>(std::next(e.data()));
-    const auto* last = std::next(first, nOps(e) * sizeof(Operand));
+    const auto* last = std::next(first, nChildBlobs(e) * sizeof(Operand));
 
     import_bits(result, first, last);
 
-    return e[0].pre.largeIntSign * result;
+    return e[0].mid.largeIntSign * result;
 }
 
 template <>
@@ -68,7 +68,9 @@ std::string_view sym2::get<std::string_view>(ExprView e)
 {
     assert(isSymbolOrConstant(e) || isFunction(e));
 
-    return std::string_view{static_cast<const char*>(e[0].pre.name)};
+    const Operand& blobWithName = isSymbolOrConstant(e) ? e[0] : e[1];
+
+    return std::string_view{static_cast<const char*>(blobWithName.pre.name)};
 }
 
 template <>
@@ -76,7 +78,7 @@ sym2::UnaryDoubleFctPtr sym2::get<sym2::UnaryDoubleFctPtr>(ExprView e)
 {
     assert(isFunction(e));
 
-    return e[0].main.unaryEval;
+    return e[1].main.unaryEval;
 }
 
 template <>
@@ -84,5 +86,5 @@ sym2::BinaryDoubleFctPtr sym2::get<sym2::BinaryDoubleFctPtr>(ExprView e)
 {
     assert(isFunction(e));
 
-    return e[0].main.binaryEval;
+    return e[1].main.binaryEval;
 }

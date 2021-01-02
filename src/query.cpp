@@ -20,8 +20,7 @@ bool sym2::isScalar(ExprView e)
         case Type::sum:
         case Type::product:
         case Type::power:
-        case Type::unaryFunction:
-        case Type::binaryFunction:
+        case Type::function:
             return false;
         default:
             return true;
@@ -120,7 +119,7 @@ bool sym2::isPower(ExprView e)
 
 bool sym2::isFunction(ExprView e)
 {
-    return type(e) == Type::unaryFunction || type(e) == Type::binaryFunction;
+    return type(e) == Type::function;
 }
 
 bool sym2::isFunction(ExprView e, std::string_view name)
@@ -144,15 +143,32 @@ std::size_t sym2::nOps(Operand op)
         case Type::smallInt:
         case Type::smallRational:
         case Type::floatingPoint:
+        case Type::largeInt:
+        case Type::largeRational:
         case Type::symbol:
         case Type::constant:
             return 0;
-        case Type::unaryFunction:
-            return 1;
-        case Type::binaryFunction:
-            return 2;
         default:
-            return op.main.count;
+            return op.mid.nLogicalOperands;
+    }
+}
+
+std::size_t sym2::nChildBlobs(ExprView e)
+{
+    return nChildBlobs(e[0]);
+}
+
+std::size_t sym2::nChildBlobs(Operand op)
+{
+    switch (op.header) {
+        case Type::smallInt:
+        case Type::smallRational:
+        case Type::floatingPoint:
+        case Type::symbol:
+        case Type::constant:
+            return 0;
+        default:
+            return op.main.nChildBlobs;
     }
 }
 

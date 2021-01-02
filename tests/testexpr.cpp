@@ -28,7 +28,7 @@ bool isSmallRationalEqualTo(ExprView e, int num, int denom)
 
 bool hasLargeIntCharacteristics(ExprView e)
 {
-    return e[0].header == Type::largeInt && static_cast<std::size_t>(e.size()) == e[0].main.count + 1
+    return e[0].header == Type::largeInt && static_cast<std::size_t>(e.size()) == e[0].main.nChildBlobs + 1
       && e[0].flags == Flag::numericallyEvaluable;
 }
 
@@ -60,6 +60,11 @@ TEST_CASE("Expr constructor")
     {
         CHECK(isSmallIntEqualTo(42_ex, 42));
         CHECK(isSmallIntEqualTo(Expr{-42}, -42));
+    }
+
+    SUBCASE("Minus one")
+    {
+        CHECK(isSmallIntEqualTo(Expr{-1}, -1));
     }
 
     SUBCASE("Small rational")
@@ -190,14 +195,18 @@ TEST_CASE("Expr constructor")
         const Expr sinA{"sin", "a"_ex, std::sin};
         auto e = view(sinA);
 
-        CHECK(e.size() == 2);
+        CHECK(e.size() == 3);
 
-        CHECK(e[0].header == Type::unaryFunction);
+        CHECK(e[0].header == Type::function);
         CHECK(e[0].flags == Flag::none);
-        CHECK(e[0].pre.name == "sin"sv);
-        CHECK(e[0].main.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
+        CHECK(allNullChars(e[0].pre.name));
+        CHECK(e[0].mid.nLogicalOperands == 1);
+        CHECK(e[0].main.nChildBlobs == 2);
 
-        CHECK(isShortSymbol(e[1], "a"));
+        CHECK(e[1].pre.name == "sin"sv);
+        CHECK(e[1].main.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
+
+        CHECK(isShortSymbol(e[2], "a"));
     }
 
     SUBCASE("Binary function creation")
@@ -205,15 +214,19 @@ TEST_CASE("Expr constructor")
         const Expr atan2ab{"atan2", "a"_ex, "b"_ex, std::atan2};
         auto e = view(atan2ab);
 
-        CHECK(e.size() == 3);
+        CHECK(e.size() == 4);
 
-        CHECK(e[0].header == Type::binaryFunction);
+        CHECK(e[0].header == Type::function);
         CHECK(e[0].flags == Flag::none);
-        CHECK(e[0].pre.name == "atan2"sv);
-        CHECK(e[0].main.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
+        CHECK(allNullChars(e[0].pre.name));
+        CHECK(e[0].mid.nLogicalOperands == 2);
+        CHECK(e[0].main.nChildBlobs == 3);
 
-        CHECK(isShortSymbol(e[1], "a"));
-        CHECK(isShortSymbol(e[2], "b"));
+        CHECK(e[1].pre.name == "atan2"sv);
+        CHECK(e[1].main.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
+
+        CHECK(isShortSymbol(e[2], "a"));
+        CHECK(isShortSymbol(e[3], "b"));
     }
 
     SUBCASE("Complex number creation")
@@ -227,6 +240,7 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].header == Type::complexNumber);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
         CHECK(allNullChars(e[0].pre.name));
-        CHECK(e[0].main.count == 2);
+        CHECK(e[0].mid.nLogicalOperands == 2);
+        CHECK(e[0].main.nChildBlobs == 2);
     }
 }

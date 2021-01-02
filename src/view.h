@@ -79,11 +79,10 @@ namespace sym2 {
       public:
         ConstSemanticOpIterator() = default;
         explicit ConstSemanticOpIterator(ExprView e) noexcept
-            : op{&e[1]}
+            : op{type(e) == Type::function ? &e[2] : &e[1]}
             , n{nOps(e)}
         {
             assert(e.size() >= 1);
-            assert(nOps(e) > 0);
         }
 
         ExprView operator*() const noexcept
@@ -111,7 +110,7 @@ namespace sym2 {
       private:
         std::size_t currentSize() const noexcept
         {
-            return nOps(*op) + 1;
+            return nChildBlobs(*op) + 1;
         }
 
         const Operand* op = nullptr;

@@ -17,8 +17,8 @@ namespace sym2 {
         sum,
         product,
         power,
-        unaryFunction,
-        binaryFunction
+        function,
+        functionId
     };
 
     enum class Flag : std::uint8_t { none, numericallyEvaluable };
@@ -40,14 +40,19 @@ namespace sym2 {
         Type header;
         Flag flags;
 
-        union Data6 {
-            char name[6];
-            std::int8_t largeIntSign;
+        union Data2 {
+            char name[2];
         } pre;
+
+        union Data4 {
+            char name[4];
+            std::int32_t largeIntSign; /* Could be smaller, but same size is less error prone. */
+            std::uint32_t nLogicalOperands;
+        } mid;
 
         union Data8 {
             char name[8];
-            std::size_t count;
+            std::size_t nChildBlobs;
             SmallRational exact;
             double inexact;
             UnaryDoubleFctPtr unaryEval;

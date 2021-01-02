@@ -43,6 +43,8 @@ namespace sym2 {
 
     std::size_t nOps(ExprView e);
     std::size_t nOps(Operand op);
+    std::size_t nChildBlobs(ExprView e);
+    std::size_t nChildBlobs(Operand op);
 
     /* Access to the sub-parts of types with > 1 Operand, like composites, large integers etc. Parameter n must be
      * positive. UB if there is no corresponding subpart, e.g. nth(smallIntExpr, 100). Note that this is not random

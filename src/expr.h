@@ -33,7 +33,7 @@ namespace sym2 {
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
         void appendSmallOrLargeInt(const Int& n);
         void appendLargeInt(const Int& n);
-        void copyToFirstOrThrow(std::string_view name, std::uint8_t maxLength);
+        void copyNameOrThrow(std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex = 0);
 
         SmallVec<Operand, 10> buffer;
     };

@@ -40,10 +40,11 @@ namespace sym2 {
                   std::complex<double>{1.0, 1.0}, std::multiplies<>{}, recurComplex);
             case Type::power:
                 return std::pow(recurComplex(first(e)), recurComplex(second(e)));
-            case Type::unaryFunction:
-                return {get<UnaryDoubleFctPtr>(e)(recur(first(e)))};
-            case Type::binaryFunction:
-                return {get<BinaryDoubleFctPtr>(e)(recur(first(e)), recur(second(e)))};
+            case Type::function:
+                assert(nOps(e) == 1 || nOps(e) == 2);
+                return nOps(e) == 1 ?
+                  std::complex<double>{get<UnaryDoubleFctPtr>(e)(recur(first(e)))} :
+                  std::complex<double>{get<BinaryDoubleFctPtr>(e)(recur(first(e)), recur(second(e)))};
             default:
                 assert(false);
                 return {0.0, 0.0};

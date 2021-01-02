@@ -4,6 +4,7 @@ add_library(sym2
     canonical.cpp
     expr.cpp
     get.cpp
+    operand.cpp
     power.cpp
     query.cpp
     trigonometric.cpp

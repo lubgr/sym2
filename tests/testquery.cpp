@@ -132,16 +132,23 @@ TEST_CASE("Type queries")
 
     SUBCASE("Number of operands")
     {
-        for (ExprView e : {a, b, 42_ex, fp, sr, pi, euler})
+        for (ExprView e : {a, b, 42_ex, fp, sr, pi, euler, lr})
             CHECK(nOps(e) == 0);
 
-        CHECK(nOps(lr) == 2);
         CHECK(nOps(cx) == 2);
         CHECK(nOps(s) == 3);
         CHECK(nOps(pr) == 3);
         CHECK(nOps(pw) == 2);
         CHECK(nOps(sinA) == 1);
         CHECK(nOps(atan2Ab) == 2);
+    }
+
+    SUBCASE("Number of child blobs")
+    {
+        const auto composite = sum(sinA, product(pw, s), pr, cx, lr, atan2Ab);
+
+        for (ExprView e : {a, b, 42_ex, fp, sr, pi, euler, li, lr, cx})
+            CHECK(nChildBlobs(e) == e.size() - 1);
     }
 }
 
