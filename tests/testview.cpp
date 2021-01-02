@@ -33,14 +33,6 @@ TEST_CASE("Basic ExprView behavior")
     const auto s = sum("a", "b");
     const auto sv = view(s);
 
-    SUBCASE("Empty")
-    {
-        ExprView empty;
-
-        CHECK(empty.size() == 0);
-        CHECK(empty.empty());
-    }
-
     SUBCASE("Size")
     {
         CHECK(sv.size() == 3);

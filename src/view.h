@@ -42,12 +42,6 @@ namespace sym2 {
     class ExprView
         : public boost::stl_interfaces::view_interface<ExprView, boost::stl_interfaces::element_layout::contiguous> {
       public:
-        ExprView() = default;
-        ExprView(const Blob* first, std::size_t n) noexcept
-            : first{first}
-            , sentinel{first + n}
-        {}
-
         /* Necessary at least for Boost range compatibility: */
         using const_iterator = ConstBlobIterator;
 
@@ -62,6 +56,15 @@ namespace sym2 {
         }
 
       private:
+        friend class Expr;
+        friend class OperandIterator;
+
+        ExprView() = default;
+        ExprView(const Blob* first, std::size_t n) noexcept
+            : first{first}
+            , sentinel{first + n}
+        {}
+
         ConstBlobIterator first{};
         ConstBlobIterator sentinel{};
     };
