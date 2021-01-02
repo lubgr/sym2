@@ -138,12 +138,20 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            CHECK(hasLargeRationalCharacteristics(Expr{lr}));
+            const Expr e{lr};
+
+            CHECK(hasLargeRationalCharacteristics(e));
+            CHECK(isSmallIntEqualTo(first(e), 1));
+            CHECK(hasLargeIntCharacteristics(second(e)));
         }
 
         SUBCASE("< 0")
         {
-            CHECK(hasLargeRationalCharacteristics(Expr{-lr}));
+            const Expr e{-lr};
+
+            CHECK(hasLargeRationalCharacteristics(e));
+            CHECK(isSmallIntEqualTo(first(e), -1));
+            CHECK(hasLargeIntCharacteristics(second(e)));
         }
 
         SUBCASE("Num/denom saved as small int if possible")
