@@ -23,7 +23,7 @@ double sym2::get<double>(ExprView e)
 {
     assert(isNumericallyEvaluable(e));
 
-    return eval(e, [](auto&&...) {
+    return evalReal(e, [](auto&&...) {
         assert(false);
         return 0.0;
     });

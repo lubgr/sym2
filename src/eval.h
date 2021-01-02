@@ -9,13 +9,13 @@
 
 namespace sym2 {
     template <class LookupFct>
-    double eval(ExprView e, LookupFct symbols);
+    double evalReal(ExprView e, LookupFct symbols);
 
     template <class LookupFct>
     std::complex<double> evalComplex(ExprView e, LookupFct symbols)
     {
         const auto recurComplex = [&symbols](ExprView e) { return evalComplex(e, symbols); };
-        const auto recurReal = [&symbols](ExprView e) { return eval(e, symbols); };
+        const auto recurReal = [&symbols](ExprView e) { return evalReal(e, symbols); };
 
         switch (type(e)) {
             case Type::complexNumber:
@@ -34,9 +34,9 @@ namespace sym2 {
     }
 
     template <class LookupFct>
-    double eval(ExprView e, LookupFct symbols)
+    double evalReal(ExprView e, LookupFct symbols)
     {
-        const auto recur = [&symbols](ExprView e) { return eval(e, symbols); };
+        const auto recur = [&symbols](ExprView e) { return evalReal(e, symbols); };
 
         switch (type(e)) {
             case Type::symbol:

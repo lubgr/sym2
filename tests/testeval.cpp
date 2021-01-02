@@ -31,7 +31,7 @@ TEST_CASE("Numeric evaluation of numerics/constant")
 {
     SUBCASE("Constant")
     {
-        CHECK(eval(pi, lookupThrow) == doctest::Approx(M_PI));
+        CHECK(evalReal(pi, lookupThrow) == doctest::Approx(M_PI));
     }
 
     SUBCASE("Complex")
@@ -39,7 +39,7 @@ TEST_CASE("Numeric evaluation of numerics/constant")
         const Expr cplx{Type::complexNumber, {2_ex, 3_ex}};
 
         CHECK(evalComplex(cplx, lookupThrow) == std::complex<double>{2, 3});
-        CHECK(eval(cplx, lookupThrow) == doctest::Approx(2.0));
+        CHECK(evalReal(cplx, lookupThrow) == doctest::Approx(2.0));
     }
 }
 
@@ -140,7 +140,7 @@ TEST_CASE("Numeric evaluation with complex/real distinction")
     {
         std::feclearexcept(FE_ALL_EXCEPT);
 
-        const double probablyNan = eval(what, lookupThrow);
+        const double probablyNan = evalReal(what, lookupThrow);
 
         CHECK(std::fetestexcept(FE_INVALID));
 
