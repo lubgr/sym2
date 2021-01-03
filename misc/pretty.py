@@ -25,8 +25,8 @@ class ExprViewSynthProvider:
             return None
 
     def update(self):
-        first = self.value.GetChildMemberWithName('first').GetChildMemberWithName('op')
-        last = self.value.GetChildMemberWithName('sentinel').GetChildMemberWithName('op')
+        first = self.value.GetChildMemberWithName('first').GetChildMemberWithName('b')
+        last = self.value.GetChildMemberWithName('sentinel').GetChildMemberWithName('b')
 
         self.data = first
         self.valueType = self.data.GetType().GetPointeeType()
@@ -48,31 +48,50 @@ def allZeroBytes(data, n):
 
     return True
 
-def isLargeIntBlob(valobj):
-    headerName = enumMemberString(valobj, 'header')
-    name = valobj.GetChildMemberWithName('pre').GetChildMemberWithName('name')
-    sign = valobj.GetChildMemberWithName('pre').GetChildMemberWithName('largeIntSign')
-    shouldHaveName = headerName in ['symbol', 'constant', 'unaryFunction', 'binaryFunction']
-    err = lldb.SBError()
-    signValue = sign.GetData().GetUnsignedInt8(err, 0)
+def isLargeIntBlob(valobj, headerName, nOps, nChildBlobs):
+    # Nothing more than a heuristic that seems to work for expressions with not too many operands. It's not bullet
+    # proof, and if it fails, and a Blob might be pretty-printed as a meaningless operand or (worse), an operand is
+    # displayed as large integer limb data.
+    pre = valobj.GetChildMemberWithName('pre')
+    mid = valobj.GetChildMemberWithName('mid')
+    data = valobj.GetChildMemberWithName('main')
+    name1 = pre.GetChildMemberWithName('name')
+    name2 = mid.GetChildMemberWithName('name')
+    sign = mid.GetChildMemberWithName('largeIntSign').GetValueAsUnsigned(0)
+    shouldHaveName = headerName in ['symbol', 'constant', 'functionId']
 
-    if allZeroBytes(name.GetData(), 6) and not shouldHaveName:
+    if allZeroBytes(name1.GetData(), 2) and allZeroBytes(name2.GetData(), 4) and not shouldHaveName:
         return False
-    elif headerName == 'largeInt' and signValue == 1 or signValue == -1:
+    elif headerName in ['largeRational', 'power', 'complexNumber'] and nOps == 2:
+        return False
+    elif headerName == 'function' and nOps in [1, 2]:
+        return False
+    elif headerName in ['sum', 'product'] and nOps < 150 and nChildBlobs < 250:
+        return False
+    elif headerName == 'largeInt' and sign == 1 or sign == -1:
         return False
     elif shouldHaveName:
         return False
 
     return True
 
-def operandSummary(valobj, unused):
-    if isLargeIntBlob(valobj):
-        return "(Large int blob)"
+def nameFrom(unionsWithName):
+    # It's apparently sufficient to just read out the first char parts as the string is
+    # interpreted as zero-terminated:
+    return unionsWithName[0].GetChildMemberWithName('name').GetSummary()
 
+def blobSummary(valobj, unused):
     headerName = enumMemberString(valobj, 'header')
     flagsName = enumMemberString(valobj, 'flags')
-    data = valobj.GetChildMemberWithName('main')
     pre = valobj.GetChildMemberWithName('pre')
+    mid = valobj.GetChildMemberWithName('mid')
+    data = valobj.GetChildMemberWithName('main')
+    nOps = mid.GetChildMemberWithName('nLogicalOperands').GetValueAsUnsigned(0)
+    nChildBlobs = data.GetChildMemberWithName('nChildBlobs').GetValueAsUnsigned(0)
+
+    if isLargeIntBlob(valobj, headerName, nOps, nChildBlobs):
+        return "(Large int blob)"
+
     err = lldb.SBError()
     isComposite = False
     rep = ""
@@ -87,22 +106,22 @@ def operandSummary(valobj, unused):
         value = inexact.GetData().GetDouble(err, 0)
         rep = '%f' % value
     elif headerName in ['symbol']:
-        name = [pre.GetChildMemberWithName('name'), data.GetChildMemberWithName('name')]
-        rep = '"%s%s"' % (name[0].GetData().GetString(err, 0), name[1].GetData().GetString(err, 0))
+        rep = '%s' % nameFrom([pre, mid, data])
     elif headerName == 'constant':
-        name = pre.GetChildMemberWithName('name').GetData().GetString(err, 0)
+        name = nameFrom([pre, mid])
         inexact = data.GetChildMemberWithName('inexact')
         value = inexact.GetData().GetDouble(err, 0)
-        rep = '"%s: %f"' % (name, value)
-    elif headerName in ['unaryFunction', 'binaryFunction']:
-        name = pre.GetChildMemberWithName('name').GetData().GetString(err, 0)
-        fctKey = headerName.replace('Function', 'Eval')
+        rep = '%s: %f' % (name, value)
+    elif headerName == 'functionId':
+        name = nameFrom([pre, mid])
+        fctKey = 'unaryEval' if nOps == 1 else 'binaryEval'
         fct = data.GetChildMemberWithName(fctKey).GetSummary()
-        rep = '%s (%s: %s)' % (name, headerName, fct)
+        rep = '%s %s' % (name, fct)
+    elif headerName == 'largeInt':
+        rep = 'Large int, blobs: %s' % nChildBlobs
     else:
         isComposite = True
-        count = data.GetChildMemberWithName('count').GetValueAsUnsigned(0)
-        rep = '%d' % count
+        rep = '%d/%d' % (nOps, nChildBlobs)
 
     if isComposite:
         return '%s, size: %s (flags: %s)' % (headerName, rep, flagsName)
@@ -112,5 +131,5 @@ def operandSummary(valobj, unused):
 def __lldb_init_module(debugger, internalDict):
     debugger.HandleCommand('type summary add -x "^sym2::ExprView$" -e -F pretty.exprViewSummary')
     debugger.HandleCommand('type summary add -x "^sym2::Expr$" -e -F pretty.exprSummary')
-    debugger.HandleCommand('type summary add -x "^sym2::Operand$" -F pretty.operandSummary')
+    debugger.HandleCommand('type summary add -x "^sym2::Blob$" -F pretty.blobSummary')
     debugger.HandleCommand('type synthetic add -x "^sym2::ExprView$" -l pretty.ExprViewSynthProvider')
