@@ -22,7 +22,6 @@ target_include_directories(unit-tests
 target_link_libraries(unit-tests
     PRIVATE
     sym2
-    SYSTEM
     doctest::doctest)
 
 add_test(NAME sym2.unittests COMMAND unit-tests)
