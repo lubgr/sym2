@@ -319,3 +319,8 @@ sym2::Expr sym2::operator"" _ex(unsigned long long n)
 
     return Expr{static_cast<int>(n)};
 }
+
+sym2::Expr sym2::operator"" _ex(long double n)
+{
+    return Expr{static_cast<double>(n)};
+}

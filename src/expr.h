@@ -40,4 +40,6 @@ namespace sym2 {
 
     Expr operator"" _ex(const char* str, std::size_t);
     Expr operator"" _ex(unsigned long long n);
+    Expr operator"" _ex(unsigned long long n);
+    Expr operator"" _ex(long double);
 }

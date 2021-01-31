@@ -15,8 +15,8 @@ call add(g:UltiSnipsSnippetDirectories, getcwd() . '/misc')
 set path=bin,src/**,tests
 
 fun s:addUDLSyntax()
-    syn match udl "_ex\>"
-    hi link udl cppType
+    syn match udl "[".]\?\<[eEa-zA-Z\.'0-9+-]\+\"\?_ex\>"
+    hi link udl cppStatement
 endfun
 
 augroup ft_cpp
