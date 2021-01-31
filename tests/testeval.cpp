@@ -20,10 +20,12 @@ namespace {
     double evalCheckImagZero(ExprView e, LookupFct lookup = lookupThrow)
     {
         const std::complex<double> result = evalComplex(e, lookup);
+        const double realOnly = evalReal(e, lookup);
 
         CHECK(result.imag() == doctest::Approx(0.0));
+        CHECK(result.real() == doctest::Approx(realOnly));
 
-        return result.real();
+        return realOnly;
     }
 }
 
@@ -77,6 +79,14 @@ TEST_CASE("Numeric evaluation of composites without lookup")
     {
         const double expected = -2.0 * std::sqrt(3.0) * std::pow(4.0, 1.0 / 3.0) * M_PI;
         const Expr what = product(-2, sqrtThree, power(4, Expr{1, 3}), pi);
+
+        CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
+    }
+
+    SUBCASE("atan2(42, 43)")
+    {
+        const double expected = std::atan2(42.0, 43.0);
+        const Expr what = sym2::atan2(42_ex, 43_ex);
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
     }
