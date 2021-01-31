@@ -1,5 +1,4 @@
 
-#include "abc.h"
 #include "canonical.h"
 #include "constants.h"
 #include "doctest/doctest.h"
@@ -39,7 +38,7 @@ TEST_CASE("Type queries")
 
     SUBCASE("Scalar")
     {
-        for (ExprView e : {42_ex, cx, d, a, b, euler, pi})
+        for (ExprView e : {42_ex, cx, "d"_ex, "a"_ex, "b"_ex, euler, pi})
             CHECK(isScalar(e));
 
         for (ExprView e : {pw, pr, s, sinA, atan2Ab})
@@ -51,7 +50,7 @@ TEST_CASE("Type queries")
         for (ExprView number : {42_ex, fp, sr, li, lr, cx})
             CHECK(isNumber(number));
 
-        for (ExprView e : {pi, euler, a, b, s, pr, pw, sinA, atan2Ab})
+        for (ExprView e : {pi, euler, "a"_ex, s, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(isNumber(e));
     }
 
@@ -60,7 +59,7 @@ TEST_CASE("Type queries")
         for (ExprView number : {42_ex, Expr{li}})
             CHECK(isInteger(number));
 
-        for (ExprView e : {pi, euler, a, b, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
+        for (ExprView e : {pi, euler, "a"_ex, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
             CHECK_FALSE(isInteger(e));
     }
 
@@ -69,13 +68,13 @@ TEST_CASE("Type queries")
         CHECK(isConstant(pi));
         CHECK(isConstant(euler));
 
-        for (ExprView e : {42_ex, fp, sr, lr, cx, a, b, s, pr, pw, sinA, atan2Ab})
+        for (ExprView e : {42_ex, fp, sr, lr, cx, "a"_ex, s, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(isConstant(e));
     }
 
     SUBCASE("Symbol")
     {
-        for (ExprView e : {a, b, c})
+        for (ExprView e : {"a"_ex, "b"_ex, "c"_ex})
             CHECK(isSymbol(e));
 
         for (ExprView e : {42_ex, fp, sr, lr, cx, pi, euler, s, pr, pw, sinA, atan2Ab})
@@ -84,7 +83,7 @@ TEST_CASE("Type queries")
 
     SUBCASE("Symbol or constant")
     {
-        for (ExprView e : {a, b, c, pi, euler})
+        for (ExprView e : {"a"_ex, pi, euler})
             CHECK(isSymbolOrConstant(e));
 
         for (ExprView e : {42_ex, fp, sr, lr, cx, s, pr, pw, sinA, atan2Ab})
@@ -95,7 +94,7 @@ TEST_CASE("Type queries")
     {
         CHECK(isSum(s));
 
-        for (ExprView e : {42_ex, a, b, c, pi, fp, sr, lr, cx, pr, pw, sinA, atan2Ab})
+        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(isSum(e));
     }
 
@@ -103,7 +102,7 @@ TEST_CASE("Type queries")
     {
         CHECK(isProduct(pr));
 
-        for (ExprView e : {42_ex, a, b, c, pi, fp, sr, lr, cx, s, pw, sinA, atan2Ab})
+        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pw, sinA, atan2Ab})
             CHECK_FALSE(isProduct(e));
     }
 
@@ -111,7 +110,7 @@ TEST_CASE("Type queries")
     {
         CHECK(isPower(pw));
 
-        for (ExprView e : {42_ex, a, b, c, pi, fp, sr, lr, cx, s, pr, sinA, atan2Ab})
+        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr, sinA, atan2Ab})
             CHECK_FALSE(isPower(e));
     }
 
@@ -124,7 +123,7 @@ TEST_CASE("Type queries")
 
         CHECK_FALSE(isFunction(sinA, "cos"));
 
-        for (ExprView e : {42_ex, a, b, c, pi, fp, sr, lr, cx, s, pr}) {
+        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr}) {
             CHECK_FALSE(isFunction(e));
             CHECK_FALSE(isFunction(e, "sin"));
         }
@@ -132,7 +131,7 @@ TEST_CASE("Type queries")
 
     SUBCASE("Number of operands")
     {
-        for (ExprView e : {a, b, 42_ex, fp, sr, pi, euler, lr})
+        for (ExprView e : {"a"_ex, 42_ex, fp, sr, pi, euler, lr})
             CHECK(nLogicalOperands(e) == 0);
 
         CHECK(nLogicalOperands(cx) == 2);
@@ -147,7 +146,7 @@ TEST_CASE("Type queries")
     {
         const auto composite = sum(sinA, product(pw, s), pr, cx, lr, atan2Ab);
 
-        for (ExprView e : {a, b, 42_ex, fp, sr, pi, euler, li, lr, cx})
+        for (ExprView e : {"a"_ex, 42_ex, fp, sr, pi, euler, li, lr, cx})
             CHECK(nChildBlobs(e) == e.size() - 1);
     }
 }
