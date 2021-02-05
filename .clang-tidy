@@ -1,4 +1,24 @@
 ---
 WarningsAsErrors: ''
 FormatStyle: none
-Checks: '-*,clang-*,bugprone-*,misc-*,modernize-*,-modernize-use-nodiscard,-modernize-use-trailing-return-type,google-explicit-constructor,readability-*,performance-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-readability-braces-around-statements,-readability-named-parameter,-readability-identifier-naming,-readability-else-after-return'
+Checks: >
+  -*,
+  clang-*,
+  bugprone-*,
+  misc-*,
+  modernize-*,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  google-explicit-constructor,
+  readability-*,
+  performance-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -readability-braces-around-statements,
+  -readability-named-parameter,
+  -readability-identifier-naming,
+  -readability-else-after-return,
+  -cppcoreguidelines-pro-type-union-access,
