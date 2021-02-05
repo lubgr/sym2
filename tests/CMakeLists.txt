@@ -12,7 +12,8 @@ add_executable(unit-tests
 
 target_include_directories(unit-tests
     PRIVATE
-    ${sym2_SOURCE_DIR}/src)
+    ${PROJECT_SOURCE_DIR}/include/sym2
+    ${PROJECT_SOURCE_DIR}/src)
 
 target_include_directories(unit-tests
     SYSTEM
@@ -31,7 +32,8 @@ add_executable(pretty
 
 target_include_directories(pretty
     PRIVATE
-    ${sym2_SOURCE_DIR}/src)
+    ${PROJECT_SOURCE_DIR}/include/sym2
+    ${PROJECT_SOURCE_DIR}/src)
 
 target_include_directories(pretty
     SYSTEM

@@ -12,7 +12,7 @@ autocmd BufRead,BufReadPost README.md set spell spelllang=en_us
 
 call add(g:UltiSnipsSnippetDirectories, getcwd() . '/misc')
 
-set path=bin,src/**,tests
+set path=bin,src/**,include/**,tests
 
 fun s:addUDLSyntax()
     syn match udl "[".]\?\<[eEa-zA-Z\.'0-9+-]\+\"\?_ex\>"
