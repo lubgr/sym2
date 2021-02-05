@@ -20,3 +20,9 @@ sym2::Expr sym2::autoPower(std::span<ExprView, 2> ops)
 {
     return power(ops);
 }
+
+sym2::Expr sym2::autoCpx(std::span<ExprView, 2> ops)
+{
+    // TODO
+    return Expr{Type::complexNumber, ops};
+}

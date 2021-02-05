@@ -47,8 +47,8 @@ TEST_CASE("Numeric evaluation of numerics/constant")
 
 TEST_CASE("Numeric evaluation of composites without lookup")
 {
-    const Expr sqrtTwo = power(2, Expr{1, 2});
-    const Expr sqrtThree = power(3, Expr{1, 2});
+    const Expr sqrtTwo = power(2_ex, Expr{1, 2});
+    const Expr sqrtThree = power(3_ex, Expr{1, 2});
 
     SUBCASE("Sqrt(2) + e")
     {
@@ -60,7 +60,7 @@ TEST_CASE("Numeric evaluation of composites without lookup")
 
     SUBCASE("2*sqrt(3)")
     {
-        const Expr what = product(2, sqrtThree);
+        const Expr what = product(2_ex, sqrtThree);
         const double expected = 2.0 * std::sqrt(3.0);
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
@@ -69,8 +69,8 @@ TEST_CASE("Numeric evaluation of composites without lookup")
     SUBCASE("1 + Pi + sqrt(2) + sqrt(3)*4^(1/17)")
     {
         const double expected = 1.0 + M_PI + std::sqrt(2.0) + std::sqrt(3.0) * std::pow(4.0, 1.0 / 17.0);
-        const Expr p = product(sqrtThree, power(4, Expr{1, 17}));
-        const Expr what = sum(1, pi, sqrtTwo, p);
+        const Expr p = product(sqrtThree, power(4_ex, Expr{1, 17}));
+        const Expr what = sum(1_ex, pi, sqrtTwo, p);
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
     }
@@ -78,7 +78,7 @@ TEST_CASE("Numeric evaluation of composites without lookup")
     SUBCASE("-2*sqrt(3)*4^(1/3)*Pi")
     {
         const double expected = -2.0 * std::sqrt(3.0) * std::pow(4.0, 1.0 / 3.0) * M_PI;
-        const Expr what = product(-2, sqrtThree, power(4, Expr{1, 3}), pi);
+        const Expr what = product(Expr{-2}, sqrtThree, power(4_ex, Expr{1, 3}), pi);
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
     }
@@ -126,7 +126,8 @@ TEST_CASE("Numeric evaluation with lookup")
         const auto fp = [](std::string_view symbol) { return table.at(symbol); };
         const double expected =
           fp("a") + 2.0 * fp("b") * std::pow(fp("c"), fp("d")) - std::sqrt(3.0) * std::tan(fp("e"));
-        const auto what = sum("a", product(2, "b", power("c", "d")), product(-1, power(3, Expr{1, 2}), tan("e"_ex)));
+        const auto what = sum("a"_ex, product(2_ex, "b"_ex, power("c"_ex, "d"_ex)),
+          product(Expr{-1}, power(3_ex, Expr{1, 2}), tan("e"_ex)));
 
         CHECK(evalCheckImagZero(what, fp) == doctest::Approx(expected));
     }
@@ -136,7 +137,7 @@ TEST_CASE("Numeric evaluation with complex/real distinction")
 {
     const double base = -42.0;
     const double exp = 9.87654;
-    const auto what = power(base, exp);
+    const auto what = power(Expr{base}, Expr{exp});
 
     SUBCASE("Complex exponentiation is solvable")
     {

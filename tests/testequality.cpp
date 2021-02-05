@@ -6,9 +6,9 @@
 
 using namespace sym2;
 
-const Expr s = sum(42, "a", "b");
-const Expr pr = product(42, "a", "b");
-const Expr pw = power(42, "a");
+const Expr s = sum(42_ex, "a"_ex, "b"_ex);
+const Expr pr = product(42_ex, "a"_ex, "b"_ex);
+const Expr pw = power(42_ex, "a"_ex);
 
 TEST_CASE("Identity equality")
 {
