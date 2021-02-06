@@ -13,4 +13,5 @@ TEST_CASE("Size of data")
     CHECK(sizeof(Blob::Data8) == 8);
     CHECK(sizeof(ExprView) == 16);
     CHECK(sizeof(Expr) == 184);
+    CHECK(alignof(Expr) == 8);
 }

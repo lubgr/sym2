@@ -1,12 +1,15 @@
 
 add_library(sym2
+    blob.cpp
     canonical.cpp
     expr.cpp
+    functions.cpp
     get.cpp
-    blob.cpp
+    logarithm.cpp
     power.cpp
     query.cpp
     trigonometric.cpp
+    var.cpp
     view.cpp)
 
 target_link_libraries(sym2
