@@ -2,6 +2,7 @@
 add_executable(unit-tests
     testassumptions.cpp
     testequality.cpp
+    testfunctionview.cpp
     testget.cpp
     testeval.cpp
     testexpr.cpp
