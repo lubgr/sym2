@@ -314,10 +314,10 @@ sym2::Expr sym2::operator"" _ex(const char* str, std::size_t)
 
 sym2::Expr sym2::operator"" _ex(unsigned long long n)
 {
-    if (n > std::numeric_limits<int>::max())
-        throw std::domain_error("Integral Expr literals must fit into an int");
+    if (n > std::numeric_limits<std::int32_t>::max())
+        throw std::domain_error("Integral Expr literals must fit into an 32bit int");
 
-    return Expr{static_cast<int>(n)};
+    return Expr{static_cast<std::int32_t>(n)};
 }
 
 sym2::Expr sym2::operator"" _ex(long double n)
