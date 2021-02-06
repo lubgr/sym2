@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <unordered_map>
-#include "canonical.h"
+#include "autosimpl.h"
 #include "constants.h"
 #include "doctest/doctest.h"
 #include "eval.h"

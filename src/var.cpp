@@ -1,7 +1,7 @@
 
 #include <limits>
 #include <stdexcept>
-#include "canonical.h"
+#include "autosimpl.h"
 #include "expr.h"
 #include "sym2.h"
 

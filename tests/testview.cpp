@@ -1,6 +1,6 @@
 
 #include <boost/range/algorithm.hpp>
-#include "canonical.h"
+#include "autosimpl.h"
 #include "doctest/doctest.h"
 #include "testutils.h"
 #include "trigonometric.h"

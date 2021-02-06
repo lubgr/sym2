@@ -1,5 +1,5 @@
 
-#include "canonical.h"
+#include "autosimpl.h"
 #include "logarithm.h"
 #include "sym2.h"
 #include "trigonometric.h"

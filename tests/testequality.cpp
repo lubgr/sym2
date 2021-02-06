@@ -1,5 +1,5 @@
 
-#include "canonical.h"
+#include "autosimpl.h"
 #include "constants.h"
 #include "doctest/doctest.h"
 #include "expr.h"

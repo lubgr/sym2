@@ -1,7 +1,7 @@
 
 add_library(sym2
+    autosimpl.cpp
     blob.cpp
-    canonical.cpp
     expr.cpp
     functions.cpp
     get.cpp
