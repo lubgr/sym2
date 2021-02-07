@@ -7,8 +7,8 @@
 namespace sym2 {
     Expr autoSum(std::span<ExprView> ops);
     Expr autoProduct(std::span<ExprView> ops);
-    Expr autoPower(std::span<ExprView, 2> ops);
-    Expr autoCpx(std::span<ExprView, 2> ops);
+    Expr autoPower(ExprView b, ExprView exp);
+    Expr autoCpx(ExprView real, ExprView imag);
 
     namespace detail {
         template <class... T, class Simplifier>
@@ -40,23 +40,20 @@ namespace sym2 {
         return product(minusOne, args...);
     }
 
-    template <class... T>
-    Expr power(const T&... args)
+    inline Expr power(ExprView base, ExprView exp)
     {
-        return detail::construct(autoPower, args...);
+        return autoPower(base, exp);
     }
 
-    template <class T>
-    Expr oneOver(const T& arg)
+    inline Expr oneOver(ExprView arg)
     {
         static const Expr minusOne{-1};
 
         return power(arg, minusOne);
     }
 
-    template <class... T>
-    Expr cpx(const T&... args)
+    inline Expr cpx(ExprView real, ExprView imag)
     {
-        return detail::construct(autoCpx, args...);
+        return autoCpx(real, imag);
     }
 }
