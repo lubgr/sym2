@@ -190,7 +190,8 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
     assert(composite == Type::sum || composite == Type::product || composite == Type::power
       || composite == Type::complexNumber);
 
-    if (composite == Type::complexNumber && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), isRealNumber)))
+    if (composite == Type::complexNumber
+      && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), isRealDomainNumber)))
         throw std::invalid_argument("Complex numbers must be created with two non-complex arguments");
 
     /* Likely to be more, but we also don't premature allocation if it might just fit in-place: */

@@ -13,7 +13,7 @@ namespace sym2 {
     bool isScalar(ExprView e);
 
     bool isNumber(ExprView e);
-    bool isRealNumber(ExprView e);
+    bool isRealDomainNumber(ExprView e);
     bool isInteger(ExprView e);
     bool isSmallInt(ExprView e);
     bool isLargeInt(ExprView e);

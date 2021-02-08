@@ -1,6 +1,7 @@
 
 #include "query.h"
 #include <cassert>
+#include "expr.h"
 #include "get.h"
 #include "view.h"
 
@@ -42,7 +43,7 @@ bool sym2::isNumber(ExprView e)
     }
 }
 
-bool sym2::isRealNumber(ExprView e)
+bool sym2::isRealDomainNumber(ExprView e)
 {
     return isNumber(e) && !isComplexNumber(e);
 }
