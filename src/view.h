@@ -105,6 +105,10 @@ namespace sym2 {
             return *this;
         }
 
+        /* Necessary because the above operator++ hides the one in the base class, as mentioned in the docs. */
+        using boost::stl_interfaces::proxy_iterator_interface<OperandIterator, std::forward_iterator_tag,
+          ExprView>::operator++;
+
         friend bool operator==(OperandIterator lhs, OperandIterator rhs) noexcept
         {
             return lhs.op == rhs.op && lhs.n == rhs.n;
