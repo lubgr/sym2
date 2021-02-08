@@ -1,11 +1,13 @@
 
 #include "get.h"
+#include <cassert>
 #include "eval.h"
+#include "typetags.h"
 
 template <>
 std::int32_t sym2::get<std::int32_t>(ExprView e)
 {
-    assert(isSmallInt(e));
+    assert((is<Small, Int>(e)));
 
     return e[0].main.exact.num;
 }
@@ -13,7 +15,7 @@ std::int32_t sym2::get<std::int32_t>(ExprView e)
 template <>
 sym2::SmallRational sym2::get<sym2::SmallRational>(ExprView e)
 {
-    assert(isSmallRational(e) || isSmallInt(e));
+    assert((is<Small>(e) && is<Rational>(e)));
 
     return e[0].main.exact;
 }
@@ -21,7 +23,7 @@ sym2::SmallRational sym2::get<sym2::SmallRational>(ExprView e)
 template <>
 double sym2::get<double>(ExprView e)
 {
-    assert(isNumericallyEvaluable(e));
+    assert((is<NumericallyEvaluable>(e)));
 
     return evalReal(e, [](auto&&...) {
         assert(false);
@@ -32,12 +34,12 @@ double sym2::get<double>(ExprView e)
 template <>
 sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView e)
 {
-    assert(isInteger(e));
+    assert((is<Int>(e)));
 
-    if (isSmallInt(e))
+    if (is<Small, Int>(e))
         return LargeInt{get<std::int32_t>(e)};
 
-    assert(isLargeInt(e));
+    assert((is<Large, Int>(e)));
 
     LargeInt result;
 
@@ -52,11 +54,11 @@ sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView e)
 template <>
 sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView e)
 {
-    assert(isRational(e) || isInteger(e));
+    assert((is<Rational>(e)));
 
-    if (isInteger(e))
+    if (is<Int>(e))
         return LargeRational{get<LargeInt>(e)};
-    else if (isSmallRational(e)) {
+    else if (is<Small, Rational>(e)) {
         const auto value = get<SmallRational>(e);
         return LargeRational{value.num, value.denom};
     } else
@@ -66,9 +68,9 @@ sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView e)
 template <>
 std::string_view sym2::get<std::string_view>(ExprView e)
 {
-    assert(isSymbolOrConstant(e) || isFunction(e));
+    assert((isOneOf<Symbol, Constant, Function>(e)));
 
-    const Blob& blobWithName = isSymbolOrConstant(e) ? e[0] : e[1];
+    const Blob& blobWithName = isOneOf<Symbol, Constant>(e) ? e[0] : e[1];
 
     return std::string_view{static_cast<const char*>(blobWithName.pre.name)};
 }
@@ -76,7 +78,7 @@ std::string_view sym2::get<std::string_view>(ExprView e)
 template <>
 sym2::UnaryDoubleFctPtr sym2::get<sym2::UnaryDoubleFctPtr>(ExprView e)
 {
-    assert(isFunction(e));
+    assert((is<Function>(e)));
 
     return e[1].main.unaryEval;
 }
@@ -84,7 +86,7 @@ sym2::UnaryDoubleFctPtr sym2::get<sym2::UnaryDoubleFctPtr>(ExprView e)
 template <>
 sym2::BinaryDoubleFctPtr sym2::get<sym2::BinaryDoubleFctPtr>(ExprView e)
 {
-    assert(isFunction(e));
+    assert((is<Function>(e)));
 
     return e[1].main.binaryEval;
 }

@@ -1,3 +1,4 @@
+
 #include "autosimpl.h"
 #include "constants.h"
 #include "doctest/doctest.h"
@@ -6,7 +7,7 @@
 
 using namespace sym2;
 
-TEST_CASE("Type queries")
+TEST_CASE("Counters")
 {
     const Expr fp{3.14};
     const Expr sr{7, 11};
@@ -19,114 +20,6 @@ TEST_CASE("Type queries")
     const Expr pw = power(42_ex, "a"_ex);
     const Expr sinA = sin("a"_ex);
     const Expr atan2Ab = atan2("a"_ex, "b"_ex);
-
-    SUBCASE("Numeric subtypes")
-    {
-        CHECK(isLargeInt(li));
-        CHECK(isLargeRational(lr));
-
-        CHECK(isSmallInt(42_ex));
-        CHECK(isSmallRational(sr));
-        CHECK(isDouble(fp));
-
-        for (ExprView n : {fp, sr, li, lr})
-            CHECK(isRealNumber(n));
-
-        CHECK(isComplexNumber(cx));
-    }
-
-    SUBCASE("Scalar")
-    {
-        for (ExprView e : {42_ex, cx, "d"_ex, "a"_ex, "b"_ex, euler, pi})
-            CHECK(isScalar(e));
-
-        for (ExprView e : {pw, pr, s, sinA, atan2Ab})
-            CHECK_FALSE(isScalar(e));
-    }
-
-    SUBCASE("Number")
-    {
-        for (ExprView number : {42_ex, fp, sr, li, lr, cx})
-            CHECK(isNumber(number));
-
-        for (ExprView e : {pi, euler, "a"_ex, s, pr, pw, sinA, atan2Ab})
-            CHECK_FALSE(isNumber(e));
-    }
-
-    SUBCASE("Integer")
-    {
-        for (ExprView number : {42_ex, Expr{li}})
-            CHECK(isInteger(number));
-
-        for (ExprView e : {pi, euler, "a"_ex, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
-            CHECK_FALSE(isInteger(e));
-    }
-
-    SUBCASE("Constant")
-    {
-        CHECK(isConstant(pi));
-        CHECK(isConstant(euler));
-
-        for (ExprView e : {42_ex, fp, sr, lr, cx, "a"_ex, s, pr, pw, sinA, atan2Ab})
-            CHECK_FALSE(isConstant(e));
-    }
-
-    SUBCASE("Symbol")
-    {
-        for (ExprView e : {"a"_ex, "b"_ex, "c"_ex})
-            CHECK(isSymbol(e));
-
-        for (ExprView e : {42_ex, fp, sr, lr, cx, pi, euler, s, pr, pw, sinA, atan2Ab})
-            CHECK_FALSE(isSymbol(e));
-    }
-
-    SUBCASE("Symbol or constant")
-    {
-        for (ExprView e : {"a"_ex, pi, euler})
-            CHECK(isSymbolOrConstant(e));
-
-        for (ExprView e : {42_ex, fp, sr, lr, cx, s, pr, pw, sinA, atan2Ab})
-            CHECK_FALSE(isSymbolOrConstant(e));
-    }
-
-    SUBCASE("Sum")
-    {
-        CHECK(isSum(s));
-
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, pr, pw, sinA, atan2Ab})
-            CHECK_FALSE(isSum(e));
-    }
-
-    SUBCASE("Product")
-    {
-        CHECK(isProduct(pr));
-
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pw, sinA, atan2Ab})
-            CHECK_FALSE(isProduct(e));
-    }
-
-    SUBCASE("Power")
-    {
-        CHECK(isPower(pw));
-
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr, sinA, atan2Ab})
-            CHECK_FALSE(isPower(e));
-    }
-
-    SUBCASE("Function")
-    {
-        CHECK(isFunction(sinA));
-        CHECK(isFunction(atan2Ab));
-        CHECK(isFunction(sinA, "sin"));
-        CHECK(isFunction(atan2Ab, "atan2"));
-
-        CHECK_FALSE(isFunction(sinA, "cos"));
-
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr}) {
-            CHECK_FALSE(isFunction(e));
-            CHECK_FALSE(isFunction(e, "sin"));
-        }
-    }
 
     SUBCASE("Number of operands")
     {

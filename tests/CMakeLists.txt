@@ -7,6 +7,7 @@ add_executable(unit-tests
     testeval.cpp
     testexpr.cpp
     testquery.cpp
+    testtypetags.cpp
     testview.cpp
     main.cpp)
 

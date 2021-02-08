@@ -3,6 +3,7 @@
 #include <cassert>
 #include "expr.h"
 #include "get.h"
+#include "typetags.h"
 #include "view.h"
 
 sym2::Type sym2::type(ExprView e)
@@ -15,122 +16,22 @@ sym2::Flag sym2::flags(ExprView e)
     return e[0].flags;
 }
 
-bool sym2::isScalar(ExprView e)
+sym2::ExprView sym2::base(ExprView e)
 {
-    switch (type(e)) {
-        case Type::sum:
-        case Type::product:
-        case Type::power:
-        case Type::function:
-            return false;
-        default:
-            return true;
-    }
+    if (is<Power>(e))
+        return first(e);
+
+    return e;
 }
 
-bool sym2::isNumber(ExprView e)
+sym2::ExprView sym2::exponent(ExprView e)
 {
-    switch (type(e)) {
-        case Type::smallInt:
-        case Type::smallRational:
-        case Type::floatingPoint:
-        case Type::largeInt:
-        case Type::largeRational:
-        case Type::complexNumber:
-            return true;
-        default:
-            return false;
-    }
-}
+    static const auto one = 1_ex;
 
-bool sym2::isRealDomainNumber(ExprView e)
-{
-    return isNumber(e) && !isComplexNumber(e);
-}
+    if (is<Power>(e))
+        return second(e);
 
-bool sym2::isInteger(ExprView e)
-{
-    return isSmallInt(e) || isLargeInt(e);
-}
-
-bool sym2::isSmallInt(ExprView e)
-{
-    return type(e) == Type::smallInt;
-}
-
-bool sym2::isLargeInt(ExprView e)
-{
-    return type(e) == Type::largeInt;
-}
-
-bool sym2::isRational(ExprView e)
-{
-    return isSmallRational(e) || isLargeRational(e);
-}
-
-bool sym2::isSmallRational(ExprView e)
-{
-    return type(e) == Type::smallRational;
-}
-
-bool sym2::isLargeRational(ExprView e)
-{
-    return type(e) == Type::largeRational;
-}
-
-bool sym2::isDouble(ExprView e)
-{
-    return type(e) == Type::floatingPoint;
-}
-
-bool sym2::isComplexNumber(ExprView e)
-{
-    return type(e) == Type::complexNumber;
-}
-
-bool sym2::isSymbolOrConstant(ExprView e)
-{
-    return isSymbol(e) || isConstant(e);
-}
-
-bool sym2::isSymbol(ExprView e)
-{
-    return type(e) == Type::symbol;
-}
-
-bool sym2::isConstant(ExprView e)
-{
-    return type(e) == Type::constant;
-}
-
-bool sym2::isSum(ExprView e)
-{
-    return type(e) == Type::sum;
-}
-
-bool sym2::isProduct(ExprView e)
-{
-    return type(e) == Type::product;
-}
-
-bool sym2::isPower(ExprView e)
-{
-    return type(e) == Type::power;
-}
-
-bool sym2::isFunction(ExprView e)
-{
-    return type(e) == Type::function;
-}
-
-bool sym2::isFunction(ExprView e, std::string_view name)
-{
-    return isFunction(e) && name == get<std::string_view>(e);
-}
-
-bool sym2::isNumericallyEvaluable(ExprView e)
-{
-    return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
+    return one;
 }
 
 std::size_t sym2::nLogicalOperands(ExprView e)
