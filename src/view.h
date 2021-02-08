@@ -123,4 +123,30 @@ namespace sym2 {
         const Blob* op = nullptr;
         std::size_t n = 0;
     };
+
+    class OperandsView : public boost::stl_interfaces::view_interface<OperandsView> {
+      public:
+        OperandsView() = default;
+        explicit OperandsView(ExprView e) noexcept
+            : first{e}
+            , sentinel{}
+        {}
+
+        /* Necessary at least for Boost range compatibility: */
+        using const_iterator = OperandIterator;
+
+        auto begin() const noexcept
+        {
+            return first;
+        }
+
+        auto end() const noexcept
+        {
+            return sentinel;
+        }
+
+      private:
+        OperandIterator first{};
+        OperandIterator sentinel{};
+    };
 }

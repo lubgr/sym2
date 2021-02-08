@@ -26,6 +26,16 @@ TEST_CASE("Semantic traversal")
         CHECK(*++op == view(fct));
         CHECK(++op == OperandIterator{});
     }
+
+    SUBCASE("OperandsView")
+    {
+        const std::vector<ExprView> expected{li, p1, p2, fct};
+        std::vector<ExprView> actual;
+
+        boost::copy(OperandsView{s}, std::back_inserter(actual));
+
+        CHECK_RANGES_EQ(actual, expected);
+    }
 }
 
 TEST_CASE("Basic ExprView behavior")
