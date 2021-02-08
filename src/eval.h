@@ -4,6 +4,7 @@
 #include <complex>
 #include <numeric>
 #include "get.h"
+#include "operands.h"
 #include "query.h"
 #include "view.h"
 

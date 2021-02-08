@@ -4,6 +4,7 @@
 #include <string_view>
 #include "doctest/doctest.h"
 #include "expr.h"
+#include "query.h"
 #include "testutils.h"
 
 using namespace sym2;

@@ -1,5 +1,6 @@
 
 #include "typetags.h"
+#include "query.h"
 
 template <>
 bool sym2::is<sym2::Real>(ExprView e)

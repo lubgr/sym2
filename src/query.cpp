@@ -3,6 +3,7 @@
 #include <cassert>
 #include "expr.h"
 #include "get.h"
+#include "operands.h"
 #include "typetags.h"
 #include "view.h"
 

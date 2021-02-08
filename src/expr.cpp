@@ -173,10 +173,6 @@ sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, Binary
         std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
-sym2::Expr::Expr(ExprView e)
-    : buffer{e.begin(), e.end()}
-{}
-
 sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
     : buffer{Blob{.header = composite,
       .flags = Flag::none,

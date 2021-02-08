@@ -3,10 +3,9 @@
 #include <cstdint>
 #include <string_view>
 #include "blob.h"
+#include "view.h"
 
 namespace sym2 {
-    class ExprView;
-
     Type type(ExprView e);
     Flag flags(ExprView e);
 
