@@ -6,7 +6,9 @@ add_library(sym2
     functions.cpp
     get.cpp
     logarithm.cpp
+    numeric.cpp
     power.cpp
+    product.cpp
     query.cpp
     trigonometric.cpp
     var.cpp

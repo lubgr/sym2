@@ -1,12 +1,12 @@
 #pragma once
 
-#include <array>
-#include <span>
+#include <algorithm>
 #include "expr.h"
+#include "smallvec.h"
 
 namespace sym2 {
-    Expr autoSum(std::span<ExprView> ops);
-    Expr autoProduct(std::span<ExprView> ops);
+    Expr autoSum(SmallVecBase<ExprView>&& ops);
+    Expr autoProduct(SmallVecBase<ExprView>&& ops);
     Expr autoPower(ExprView b, ExprView exp);
     Expr autoCpx(ExprView real, ExprView imag);
 
@@ -14,9 +14,11 @@ namespace sym2 {
         template <class... T, class Simplifier>
         Expr construct(Simplifier f, const T&... args)
         {
-            std::array<ExprView, sizeof...(T)> views{args...};
+            /* The buffer might be increased within the simplification process. */
+            constexpr std::size_t minBufferSize = 5;
+            constexpr auto bufferSize = std::max<std::size_t>(minBufferSize, 2 * sizeof...(T));
 
-            return std::invoke(f, views);
+            return std::invoke(f, SmallVec<ExprView, bufferSize>{args...});
         }
     }
 
