@@ -4,28 +4,30 @@
 #include "query.h"
 #include "typetags.h"
 
-sym2::Expr sym2::autoPowerImpl(ExprView b, ExprView exp, const BinaryOps& cb)
+sym2::Expr sym2::autoPowerImpl(ExprView base, ExprView exp, const BinaryOps& cb)
 {
-    if (b == 0_ex || b == 1_ex)
-        return Expr{b};
+    if (base == 0_ex || base == 1_ex)
+        return Expr{base};
     else if (exp == 0_ex)
         return 1_ex;
     else if (exp == 1_ex)
-        return Expr{b};
-    else if (is<Real, Number>(b) && is<Small, Int>(exp))
-        return autoPowerImpl(tag<Real, Number>(b), get<std::int32_t>(exp), cb);
-    else if (is<Power>(b) && is<Int>(exp))
-        return cb.power(base(b), cb.product(exp, exponent(b)));
+        return Expr{base};
+    else if (is<Real, Number>(base) && is<Small, Int>(exp))
+        return autoPowerImpl(tag<Real, Number>(base), get<std::int32_t>(exp), cb);
+    else if (is<Power>(base) && is<Int>(exp)) {
+        const auto [_, origExp] = asPower(base);
+        return cb.power(base, cb.product(exp, origExp));
+    }
 
-    return Expr{Type::power, {b, exp}};
+    return Expr{Type::power, {base, exp}};
 }
 
-sym2::Expr sym2::autoPowerImpl(Tagged<Real, Number> b, std::int32_t exp, const BinaryOps& cb)
+sym2::Expr sym2::autoPowerImpl(Tagged<Real, Number> base, std::int32_t exp, const BinaryOps& cb)
 {
     assert(exp != 0);
 
     const auto positiveExp = static_cast<std::uint32_t>(exp);
-    const auto forPositiveExp = powerRealBase(b, positiveExp, cb.product);
+    const auto forPositiveExp = powerRealBase(base, positiveExp, cb.product);
 
     if (exp < 0)
         return cb.power(forPositiveExp, Expr{-1});
@@ -33,10 +35,10 @@ sym2::Expr sym2::autoPowerImpl(Tagged<Real, Number> b, std::int32_t exp, const B
     return forPositiveExp;
 }
 
-sym2::Expr sym2::powerRealBase(Tagged<Real, Number> b, std::uint32_t exp, BinaryFct multiply)
+sym2::Expr sym2::powerRealBase(Tagged<Real, Number> base, std::uint32_t exp, BinaryFct multiply)
 {
     /* Copied and adjusted from https://stackoverflow.com/questions/101439. */
-    Expr increasingBase{b};
+    Expr increasingBase{base};
     Expr result = 1;
 
     while (true) {

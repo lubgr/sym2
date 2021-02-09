@@ -17,22 +17,14 @@ sym2::Flag sym2::flags(ExprView e)
     return e[0].flags;
 }
 
-sym2::ExprView sym2::base(ExprView e)
-{
-    if (is<Power>(e))
-        return first(e);
-
-    return e;
-}
-
-sym2::ExprView sym2::exponent(ExprView e)
+sym2::BaseExp sym2::asPower(ExprView e)
 {
     static const auto one = 1_ex;
 
     if (is<Power>(e))
-        return second(e);
+        return {first(e), second(e)};
 
-    return one;
+    return {e, one};
 }
 
 std::size_t sym2::nLogicalOperands(ExprView e)

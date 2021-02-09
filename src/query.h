@@ -9,8 +9,12 @@ namespace sym2 {
     Type type(ExprView e);
     Flag flags(ExprView e);
 
-    ExprView base(ExprView e);
-    ExprView exponent(ExprView e);
+    struct BaseExp {
+        ExprView base;
+        ExprView exponent;
+    };
+
+    BaseExp asPower(ExprView e);
 
     std::size_t nLogicalOperands(ExprView e);
     std::size_t nLogicalOperands(Blob b);

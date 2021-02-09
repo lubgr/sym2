@@ -7,7 +7,7 @@
 namespace sym2 {
     Expr autoSum(SmallVecBase<ExprView>&& ops);
     Expr autoProduct(SmallVecBase<ExprView>&& ops);
-    Expr autoPower(ExprView b, ExprView exp);
+    Expr autoPower(ExprView base, ExprView exp);
     Expr autoCpx(ExprView real, ExprView imag);
 
     namespace detail {

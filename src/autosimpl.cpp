@@ -26,9 +26,9 @@ sym2::Expr sym2::autoProduct(SmallVecBase<ExprView>&& ops)
         return {Type::product, ops};
 }
 
-sym2::Expr sym2::autoPower(ExprView b, ExprView exp)
+sym2::Expr sym2::autoPower(ExprView base, ExprView exp)
 {
-    return autoPowerImpl(b, exp);
+    return autoPowerImpl(base, exp);
 }
 
 sym2::Expr sym2::autoCpx(ExprView real, ExprView imag)
