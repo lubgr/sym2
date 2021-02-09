@@ -8,7 +8,7 @@
 
 using namespace sym2;
 
-TEST_CASE("Type queries")
+TEST_CASE("Type queries for untagged types")
 {
     const Expr fp{3.14};
     const Expr sr{7, 11};
@@ -143,4 +143,17 @@ TEST_CASE("Type queries")
             CHECK_FALSE(is<Function>(e));
         }
     }
+}
+
+TEST_CASE("Type queries for tagged types")
+{
+    const Expr n = 42_ex;
+
+    CHECK(is<Number>(tag<Number, Positive, Real>(n)));
+    CHECK(is<Small>(tag<Number>(n)));
+    CHECK(is<Small, Real>(tag<Number>(n)));
+    CHECK(is<Small, Number, Real>(tag<Number>(n)));
+
+    /* The tags don't need to be meaningful for a successful check: */
+    CHECK(is<Number>(tag<Symbol, Function>(n)));
 }

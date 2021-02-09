@@ -3,9 +3,9 @@
 #include "query.h"
 
 template <>
-bool sym2::is<sym2::Real>(ExprView e)
+bool sym2::detail::isTag<sym2::Real>(ExprView e)
 {
-    // TODO This is incomplete, we need a tag for symbols to be marked real
+    // TODO This isTag incomplete, we need a tag for symbols to be marked real
     switch (type(e)) {
         case Type::smallInt:
         case Type::smallRational:
@@ -19,14 +19,14 @@ bool sym2::is<sym2::Real>(ExprView e)
 }
 
 template <>
-bool sym2::is<sym2::Complex>(ExprView e)
+bool sym2::detail::isTag<sym2::Complex>(ExprView e)
 {
-    // TODO This is incomplete, we need a tag for symbols to be marked complex
+    // TODO This isTag incomplete, we need a tag for symbols to be marked complex
     return type(e) == Type::complexNumber;
 }
 
 template <>
-bool sym2::is<sym2::Number>(ExprView e)
+bool sym2::detail::isTag<sym2::Number>(ExprView e)
 {
     switch (type(e)) {
         case Type::smallInt:
@@ -40,8 +40,9 @@ bool sym2::is<sym2::Number>(ExprView e)
             return false;
     }
 }
+
 template <>
-bool sym2::is<sym2::Int>(ExprView e)
+bool sym2::detail::isTag<sym2::Int>(ExprView e)
 {
     const Type t = type(e);
 
@@ -49,7 +50,7 @@ bool sym2::is<sym2::Int>(ExprView e)
 }
 
 template <>
-bool sym2::is<sym2::Rational>(ExprView e)
+bool sym2::detail::isTag<sym2::Rational>(ExprView e)
 {
     switch (type(e)) {
         case Type::smallInt:
@@ -63,13 +64,13 @@ bool sym2::is<sym2::Rational>(ExprView e)
 }
 
 template <>
-bool sym2::is<sym2::Double>(ExprView e)
+bool sym2::detail::isTag<sym2::Double>(ExprView e)
 {
     return type(e) == Type::floatingPoint;
 }
 
 template <>
-bool sym2::is<sym2::Small>(ExprView e)
+bool sym2::detail::isTag<sym2::Small>(ExprView e)
 {
     switch (type(e)) {
         case Type::smallInt:
@@ -84,13 +85,13 @@ bool sym2::is<sym2::Small>(ExprView e)
 }
 
 template <>
-bool sym2::is<sym2::Large>(ExprView e)
+bool sym2::detail::isTag<sym2::Large>(ExprView e)
 {
-    return !is<Small>(e);
+    return !isTag<Small>(e);
 }
 
 template <>
-bool sym2::is<sym2::Scalar>(ExprView e)
+bool sym2::detail::isTag<sym2::Scalar>(ExprView e)
 {
     switch (type(e)) {
         case Type::sum:
@@ -104,43 +105,43 @@ bool sym2::is<sym2::Scalar>(ExprView e)
 }
 
 template <>
-bool sym2::is<sym2::Symbol>(ExprView e)
+bool sym2::detail::isTag<sym2::Symbol>(ExprView e)
 {
     return type(e) == Type::symbol;
 }
 
 template <>
-bool sym2::is<sym2::Constant>(ExprView e)
+bool sym2::detail::isTag<sym2::Constant>(ExprView e)
 {
     return type(e) == Type::constant;
 }
 
 template <>
-bool sym2::is<sym2::Sum>(ExprView e)
+bool sym2::detail::isTag<sym2::Sum>(ExprView e)
 {
     return type(e) == Type::sum;
 }
 
 template <>
-bool sym2::is<sym2::Product>(ExprView e)
+bool sym2::detail::isTag<sym2::Product>(ExprView e)
 {
     return type(e) == Type::product;
 }
 
 template <>
-bool sym2::is<sym2::Power>(ExprView e)
+bool sym2::detail::isTag<sym2::Power>(ExprView e)
 {
     return type(e) == Type::power;
 }
 
 template <>
-bool sym2::is<sym2::Function>(ExprView e)
+bool sym2::detail::isTag<sym2::Function>(ExprView e)
 {
     return type(e) == Type::function;
 }
 
 template <>
-bool sym2::is<sym2::NumericallyEvaluable>(ExprView e)
+bool sym2::detail::isTag<sym2::NumericallyEvaluable>(ExprView e)
 {
     return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
 }
