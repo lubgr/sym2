@@ -4,6 +4,7 @@
 #include "doctest/doctest.h"
 #include "query.h"
 #include "trigonometric.h"
+#include "typetags.h"
 
 using namespace sym2;
 
@@ -71,5 +72,31 @@ TEST_CASE("Nth operand queries")
 
         CHECK(first(cx) == 2_ex);
         CHECK(second(cx) == 3_ex);
+    }
+}
+
+TEST_CASE("Deconstruct as power")
+{
+    const auto a = "a"_ex;
+    const auto b = "b"_ex;
+    const Expr pw = power(a, b);
+
+    SUBCASE("Power bursts into base and exponent")
+    {
+        SUBCASE("Untagged")
+        {
+            const auto [base, exp] = asPower(pw);
+
+            CHECK(base == a);
+            CHECK(exp == b);
+        }
+
+        SUBCASE("Tagged")
+        {
+            const auto [base, exp] = asPower(tag<Power>(pw));
+
+            CHECK(base == a);
+            CHECK(exp == b);
+        }
     }
 }

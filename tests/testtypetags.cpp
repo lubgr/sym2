@@ -8,6 +8,59 @@
 
 using namespace sym2;
 
+static_assert(detail::OrCombined<Tagged<Or, Number, Symbol>>::value);
+static_assert(detail::OrCombined<Tagged<Or, Number>>::value);
+static_assert(!detail::OrCombined<Tagged<Not, Number>>::value);
+static_assert(!detail::OrCombined<Tagged<Number>>::value);
+static_assert(!detail::OrCombined<Tagged<>>::value);
+
+static_assert(detail::NotCombined<Tagged<Not, Number, Symbol>>::value);
+static_assert(detail::NotCombined<Tagged<Not, Number>>::value);
+static_assert(!detail::NotCombined<Tagged<Or, Number>>::value);
+static_assert(!detail::NotCombined<Tagged<Number>>::value);
+static_assert(!detail::NotCombined<Tagged<>>::value);
+
+static_assert(detail::AndCombined<Tagged<Number>>::value);
+static_assert(detail::AndCombined<Tagged<Number, Real, Positive>>::value);
+static_assert(detail::AndCombined<Tagged<>>::value);
+static_assert(std::is_same_v<detail::mp_true, detail::AndCombined<Tagged<>>>);
+
+static_assert(!detail::AndCombined<TaggedNot<Number, Symbol>>::value);
+static_assert(!detail::AndCombined<TaggedOneOf<Number, Symbol>>::value);
+
+static_assert(std::is_same_v<Tagged<>, detail::Extract<Tagged<>>>);
+static_assert(std::is_same_v<Tagged<Number, Symbol>, detail::Extract<Tagged<Number, Symbol>>>);
+static_assert(std::is_same_v<Tagged<Number, Symbol>, detail::Extract<TaggedOneOf<Number, Symbol>>>);
+static_assert(std::is_same_v<Tagged<Symbol>, detail::Extract<TaggedNot<Symbol>>>);
+static_assert(std::is_same_v<Tagged<Symbol, Constant, Real>, detail::Extract<TaggedNot<Symbol, Constant, Real>>>);
+static_assert(std::is_same_v<Tagged<Symbol>, detail::Common<TaggedOneOf<Number, Symbol>, TaggedNot<Symbol, Constant>>>);
+
+template <class... Args>
+constexpr bool isImplicit = !detail::explicitFromTo<Args...>;
+template <class... Args>
+constexpr bool isExplicit = detail::explicitFromTo<Args...>;
+
+static_assert(isExplicit<Tagged<Symbol>, Tagged<Number>>);
+static_assert(isExplicit<Tagged<Number>, Tagged<Symbol>>);
+static_assert(isExplicit<Tagged<Number, Real, Positive>, Tagged<Number>>);
+
+static_assert(isExplicit<Tagged<Symbol>, Tagged<>>);
+static_assert(isExplicit<Tagged<Sum, Positive>, Tagged<>>);
+
+static_assert(isImplicit<Tagged<>, TaggedOneOf<Number, Symbol>>);
+static_assert(isImplicit<Tagged<>, Tagged<>>);
+static_assert(isImplicit<Tagged<>, Tagged<Real, Complex, Symbol>>);
+static_assert(isImplicit<Tagged<Number>, Tagged<Number>>);
+static_assert(isImplicit<Tagged<Number, Real, Positive>, Tagged<Number, Real, Positive>>);
+
+static_assert(isImplicit<Tagged<Number>, Tagged<Number, Real, Positive>>);
+static_assert(isImplicit<Tagged<Number, Real>, Tagged<Number, Real, Positive>>);
+static_assert(isImplicit<Tagged<Symbol, Complex>, Tagged<Symbol, Small, Complex>>);
+static_assert(isExplicit<Tagged<Symbol, Complex>, Tagged<Symbol, Small, Real>>);
+
+static_assert(isImplicit<TaggedOneOf<Number, Symbol, Function>, TaggedOneOf<Number, Function>>);
+static_assert(isExplicit<TaggedOneOf<Number, Symbol>, Tagged<Number, Symbol, Function>>);
+
 TEST_CASE("Type queries for untagged types")
 {
     const Expr fp{3.14};
