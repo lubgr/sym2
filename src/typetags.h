@@ -29,33 +29,6 @@ namespace sym2 {
     struct Positive;
     struct Negative;
 
-    namespace detail {
-        template <class... Tag>
-        struct TagList;
-
-        // clang-format off
-        using AllowedTags = TagList<
-            Real,
-            Complex,
-            Number,
-            Int,
-            Rational,
-            Double,
-            Small,
-            Large,
-            Scalar,
-            Symbol,
-            Constant,
-            Sum,
-            Product,
-            Power,
-            Function,
-            NumericallyEvaluable,
-            Positive,
-            Negative>;
-        // clang-format on
-    }
-
     template <class FirstTag, class... RestTag>
     bool is(ExprView e)
     {
