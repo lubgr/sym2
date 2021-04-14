@@ -8,6 +8,7 @@ add_library(sym2
     logarithm.cpp
     numeric.cpp
     power.cpp
+    predicates.cpp
     product.cpp
     query.cpp
     trigonometric.cpp
