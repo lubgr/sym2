@@ -22,7 +22,7 @@ sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps&
     return Expr{Type::power, {base, exp}};
 }
 
-sym2::Expr sym2::autoPowerImpl(Tagged<Real, Number> base, std::int32_t exp, const BinaryOps& cb)
+sym2::Expr sym2::autoPowerImpl(ExprView<Real, Number> base, std::int32_t exp, const BinaryOps& cb)
 {
     assert(exp != 0);
 
@@ -35,7 +35,7 @@ sym2::Expr sym2::autoPowerImpl(Tagged<Real, Number> base, std::int32_t exp, cons
     return forPositiveExp;
 }
 
-sym2::Expr sym2::powerRealBase(Tagged<Real, Number> base, std::uint32_t exp, BinaryFct multiply)
+sym2::Expr sym2::powerRealBase(ExprView<Real, Number> base, std::uint32_t exp, BinaryFct multiply)
 {
     /* Copied and adjusted from https://stackoverflow.com/questions/101439. */
     Expr increasingBase{base};

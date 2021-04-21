@@ -39,8 +39,8 @@ namespace sym2 {
     };
 
     template <class... Tag>
-    class Tagged : public boost::stl_interfaces::view_interface<Tagged<Tag...>,
-                     boost::stl_interfaces::element_layout::contiguous> {
+    class ExprView : public boost::stl_interfaces::view_interface<ExprView<Tag...>,
+                       boost::stl_interfaces::element_layout::contiguous> {
       public:
         /* Necessary at least for Boost range compatibility: */
         using const_iterator = ConstBlobIterator;
@@ -56,7 +56,7 @@ namespace sym2 {
         }
 
         template <class... Other>
-        explicit(false) Tagged(Tagged<Other...> other) noexcept
+        explicit(false) ExprView(ExprView<Other...> other) noexcept
             : first{other.first}
             , sentinel{other.sentinel}
         {}
@@ -65,10 +65,10 @@ namespace sym2 {
         friend class Expr;
         friend class OperandIterator;
         template <class... Other>
-        friend class Tagged;
+        friend class ExprView;
 
-        Tagged() = default;
-        Tagged(const Blob* first, std::size_t n) noexcept
+        ExprView() = default;
+        ExprView(const Blob* first, std::size_t n) noexcept
             : first{first}
             , sentinel{first + n}
         {}
@@ -76,9 +76,6 @@ namespace sym2 {
         ConstBlobIterator first{};
         ConstBlobIterator sentinel{};
     };
-
-    template <class... Tag>
-    using ExprView = Tagged<Tag...>;
 
     template <class... Tag>
     auto tag(ExprView<> e)

@@ -23,7 +23,7 @@ namespace sym2 {
         Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval);
         Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval);
         template <class... T>
-        explicit Expr(Tagged<T...> e)
+        explicit Expr(ExprView<T...> e)
             : buffer{e.begin(), e.end()}
         {}
         Expr(Type composite, std::span<const ExprView<>> ops);
