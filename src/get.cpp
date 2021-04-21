@@ -6,7 +6,7 @@
 #include "typetags.h"
 
 template <>
-std::int32_t sym2::get<std::int32_t>(ExprView e)
+std::int32_t sym2::get<std::int32_t>(ExprView<> e)
 {
     assert((is<Small, Int>(e)));
 
@@ -14,7 +14,7 @@ std::int32_t sym2::get<std::int32_t>(ExprView e)
 }
 
 template <>
-sym2::SmallRational sym2::get<sym2::SmallRational>(ExprView e)
+sym2::SmallRational sym2::get<sym2::SmallRational>(ExprView<> e)
 {
     assert((is<Small>(e) && is<Rational>(e)));
 
@@ -22,7 +22,7 @@ sym2::SmallRational sym2::get<sym2::SmallRational>(ExprView e)
 }
 
 template <>
-double sym2::get<double>(ExprView e)
+double sym2::get<double>(ExprView<> e)
 {
     assert((is<NumericallyEvaluable>(e)));
 
@@ -33,7 +33,7 @@ double sym2::get<double>(ExprView e)
 }
 
 template <>
-sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView e)
+sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView<> e)
 {
     assert((is<Int>(e)));
 
@@ -53,7 +53,7 @@ sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView e)
 }
 
 template <>
-sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView e)
+sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView<> e)
 {
     assert((is<Rational>(e)));
 
@@ -67,7 +67,7 @@ sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView e)
 }
 
 template <>
-std::string_view sym2::get<std::string_view>(ExprView e)
+std::string_view sym2::get<std::string_view>(ExprView<> e)
 {
     assert((isOneOf<Symbol, Constant, Function>(e)));
 
@@ -77,7 +77,7 @@ std::string_view sym2::get<std::string_view>(ExprView e)
 }
 
 template <>
-sym2::UnaryDoubleFctPtr sym2::get<sym2::UnaryDoubleFctPtr>(ExprView e)
+sym2::UnaryDoubleFctPtr sym2::get<sym2::UnaryDoubleFctPtr>(ExprView<> e)
 {
     assert((is<Function>(e)));
 
@@ -85,7 +85,7 @@ sym2::UnaryDoubleFctPtr sym2::get<sym2::UnaryDoubleFctPtr>(ExprView e)
 }
 
 template <>
-sym2::BinaryDoubleFctPtr sym2::get<sym2::BinaryDoubleFctPtr>(ExprView e)
+sym2::BinaryDoubleFctPtr sym2::get<sym2::BinaryDoubleFctPtr>(ExprView<> e)
 {
     assert((is<Function>(e)));
 

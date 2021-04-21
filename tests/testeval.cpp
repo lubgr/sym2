@@ -17,7 +17,7 @@ namespace {
     const auto lookupThrow = [](std::string_view) -> double { throw std::domain_error{""}; };
 
     template <class LookupFct = decltype(lookupThrow)>
-    double evalCheckImagZero(ExprView e, LookupFct lookup = lookupThrow)
+    double evalCheckImagZero(ExprView<> e, LookupFct lookup = lookupThrow)
     {
         const std::complex<double> result = evalComplex(e, lookup);
         const double realOnly = evalReal(e, lookup);

@@ -12,7 +12,7 @@ const Expr pw = power(42_ex, "a"_ex);
 
 TEST_CASE("Identity equality")
 {
-    for (ExprView e : {42_ex, "a"_ex, pi, s, pr, pw})
+    for (ExprView<> e : {42_ex, "a"_ex, pi, s, pr, pw})
         CHECK(e == e);
 }
 

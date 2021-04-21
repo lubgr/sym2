@@ -5,7 +5,7 @@
 
 using namespace sym2;
 
-auto check(ExprView e)
+auto check(ExprView<> e)
 {
     return e;
 }
@@ -28,7 +28,7 @@ int main(int, char**)
     const Expr f1 = sym2::sin("a"_ex);
     const Expr f2 = sym2::atan2("a"_ex, li);
 
-    for (ExprView v : {si, sr, li, lr, fp, cx, cst, ss, ls, sum, pro, pw, f1, f2})
+    for (ExprView<> v : {si, sr, li, lr, fp, cx, cst, ss, ls, sum, pro, pw, f1, f2})
         check(v);
 
     return 0;

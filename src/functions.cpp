@@ -18,7 +18,7 @@ sym2::Var sym2::pow(const Var& base, const Var& exp)
 
 namespace sym2 {
     namespace {
-        Var unary(Expr (*f)(ExprView), const Var& arg)
+        Var unary(Expr (*f)(ExprView<>), const Var& arg)
         {
             return Var::internal(f(arg.get()));
         }

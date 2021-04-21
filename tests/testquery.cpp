@@ -24,7 +24,7 @@ TEST_CASE("Counters")
 
     SUBCASE("Number of operands")
     {
-        for (ExprView e : {"a"_ex, 42_ex, fp, sr, pi, euler, lr})
+        for (ExprView<> e : {"a"_ex, 42_ex, fp, sr, pi, euler, lr})
             CHECK(nLogicalOperands(e) == 0);
 
         CHECK(nLogicalOperands(cx) == 2);
@@ -39,7 +39,7 @@ TEST_CASE("Counters")
     {
         const auto composite = sum(sinA, product(pw, s), pr, cx, lr, atan2Ab);
 
-        for (ExprView e : {"a"_ex, 42_ex, fp, sr, pi, euler, li, lr, cx})
+        for (ExprView<> e : {"a"_ex, 42_ex, fp, sr, pi, euler, li, lr, cx})
             CHECK(nChildBlobs(e) == e.size() - 1);
     }
 }

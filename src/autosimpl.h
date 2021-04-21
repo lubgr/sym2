@@ -5,10 +5,10 @@
 #include "smallvec.h"
 
 namespace sym2 {
-    Expr autoSum(SmallVecBase<ExprView>&& ops);
-    Expr autoProduct(SmallVecBase<ExprView>&& ops);
-    Expr autoPower(ExprView base, ExprView exp);
-    Expr autoCpx(ExprView real, ExprView imag);
+    Expr autoSum(SmallVecBase<ExprView<>>&& ops);
+    Expr autoProduct(SmallVecBase<ExprView<>>&& ops);
+    Expr autoPower(ExprView<> base, ExprView<> exp);
+    Expr autoCpx(ExprView<> real, ExprView<> imag);
 
     namespace detail {
         template <class... T, class Simplifier>
@@ -18,7 +18,7 @@ namespace sym2 {
             constexpr std::size_t minBufferSize = 5;
             constexpr auto bufferSize = std::max<std::size_t>(minBufferSize, 2 * sizeof...(T));
 
-            return std::invoke(f, SmallVec<ExprView, bufferSize>{args...});
+            return std::invoke(f, SmallVec<ExprView<>, bufferSize>{args...});
         }
     }
 
@@ -42,19 +42,19 @@ namespace sym2 {
         return product(minusOne, args...);
     }
 
-    inline Expr power(ExprView base, ExprView exp)
+    inline Expr power(ExprView<> base, ExprView<> exp)
     {
         return autoPower(base, exp);
     }
 
-    inline Expr oneOver(ExprView arg)
+    inline Expr oneOver(ExprView<> arg)
     {
         static const Expr minusOne{-1};
 
         return power(arg, minusOne);
     }
 
-    inline Expr cpx(ExprView real, ExprView imag)
+    inline Expr cpx(ExprView<> real, ExprView<> imag)
     {
         return autoCpx(real, imag);
     }

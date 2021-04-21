@@ -8,8 +8,8 @@
 #include "view.h"
 
 namespace sym2 {
-    class OperandIterator
-        : public boost::stl_interfaces::proxy_iterator_interface<OperandIterator, std::forward_iterator_tag, ExprView> {
+    class OperandIterator : public boost::stl_interfaces::proxy_iterator_interface<OperandIterator,
+                              std::forward_iterator_tag, ExprView<>> {
         /* Proxy iterator that traverses only through root operands, i.e., those Blob instances that define the header
          * of the sub-expression they belong to. As an example. consider the sum 2*(b + c) + d*e. When iterating over
          * the operands of that sum with a OperandIterator, it traverses through 2*(b + c)  and d*e. As the step size is
@@ -17,14 +17,14 @@ namespace sym2 {
          * we don't want to store additional state apart from a pointer. */
       public:
         OperandIterator() = default;
-        explicit OperandIterator(ExprView e) noexcept
+        explicit OperandIterator(ExprView<> e) noexcept
             : op{type(e) == Type::function ? &e[2] : &e[1]}
             , n{nLogicalOperands(e)}
         {
             assert(e.size() >= 1);
         }
 
-        ExprView operator*() const noexcept
+        ExprView<> operator*() const noexcept
         {
             return {op, currentSize()};
         }
@@ -43,7 +43,7 @@ namespace sym2 {
 
         /* Necessary because the above operator++ hides the one in the base class, as mentioned in the docs. */
         using boost::stl_interfaces::proxy_iterator_interface<OperandIterator, std::forward_iterator_tag,
-          ExprView>::operator++;
+          ExprView<>>::operator++;
 
         friend bool operator==(OperandIterator lhs, OperandIterator rhs) noexcept
         {
@@ -63,7 +63,7 @@ namespace sym2 {
     class OperandsView : public boost::stl_interfaces::view_interface<OperandsView> {
       public:
         OperandsView() = default;
-        explicit OperandsView(ExprView e) noexcept
+        explicit OperandsView(ExprView<> e) noexcept
             : first{e}
             , sentinel{}
         {}

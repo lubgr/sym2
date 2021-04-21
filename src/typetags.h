@@ -30,7 +30,7 @@ namespace sym2 {
     struct Negative;
 
     template <class FirstTag, class... RestTag>
-    bool is(ExprView e)
+    bool is(ExprView<> e)
     {
         if constexpr (sizeof...(RestTag) == 0)
             return is<FirstTag>(e);
@@ -39,7 +39,7 @@ namespace sym2 {
     }
 
     template <class FirstTag, class... RestTag>
-    bool isOneOf(ExprView e)
+    bool isOneOf(ExprView<> e)
     {
         if constexpr (sizeof...(RestTag) == 0)
             return is<FirstTag>(e);
@@ -48,40 +48,40 @@ namespace sym2 {
     }
 
     template <>
-    bool is<Real>(ExprView e);
+    bool is<Real>(ExprView<> e);
     template <>
-    bool is<Complex>(ExprView e);
+    bool is<Complex>(ExprView<> e);
     template <>
-    bool is<Number>(ExprView e);
+    bool is<Number>(ExprView<> e);
     template <>
-    bool is<Int>(ExprView e);
+    bool is<Int>(ExprView<> e);
     template <>
-    bool is<Rational>(ExprView e);
+    bool is<Rational>(ExprView<> e);
     template <>
-    bool is<Double>(ExprView e);
+    bool is<Double>(ExprView<> e);
     template <>
-    bool is<Small>(ExprView e);
+    bool is<Small>(ExprView<> e);
     template <>
-    bool is<Large>(ExprView e);
+    bool is<Large>(ExprView<> e);
     template <>
-    bool is<Scalar>(ExprView e);
+    bool is<Scalar>(ExprView<> e);
     template <>
-    bool is<Symbol>(ExprView e);
+    bool is<Symbol>(ExprView<> e);
     template <>
-    bool is<Constant>(ExprView e);
+    bool is<Constant>(ExprView<> e);
     template <>
-    bool is<Sum>(ExprView e);
+    bool is<Sum>(ExprView<> e);
     template <>
-    bool is<Product>(ExprView e);
+    bool is<Product>(ExprView<> e);
     template <>
-    bool is<Power>(ExprView e);
+    bool is<Power>(ExprView<> e);
     template <>
-    bool is<Function>(ExprView e);
+    bool is<Function>(ExprView<> e);
     template <>
-    bool is<NumericallyEvaluable>(ExprView e);
+    bool is<NumericallyEvaluable>(ExprView<> e);
     template <>
-    bool is<Positive>(ExprView e);
+    bool is<Positive>(ExprView<> e);
     template <>
-    bool is<Negative>(ExprView e);
+    bool is<Negative>(ExprView<> e);
 
 }

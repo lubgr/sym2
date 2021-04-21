@@ -5,7 +5,7 @@
 #include "typetags.h"
 
 namespace sym2 {
-    Expr autoPowerImpl(ExprView base, ExprView exp, const BinaryOps& cb = {});
+    Expr autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps& cb = {});
 
     /* The exponent must not be zero: */
     Expr autoPowerImpl(Tagged<Real, Number> base, std::int32_t exp, const BinaryOps& cb);

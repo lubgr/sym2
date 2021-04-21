@@ -7,17 +7,17 @@
 #include "typetags.h"
 #include "view.h"
 
-sym2::Type sym2::type(ExprView e)
+sym2::Type sym2::type(ExprView<> e)
 {
     return e[0].header;
 }
 
-sym2::Flag sym2::flags(ExprView e)
+sym2::Flag sym2::flags(ExprView<> e)
 {
     return e[0].flags;
 }
 
-sym2::BaseExp sym2::asPower(ExprView e)
+sym2::BaseExp sym2::asPower(ExprView<> e)
 {
     static const auto one = 1_ex;
 
@@ -27,7 +27,7 @@ sym2::BaseExp sym2::asPower(ExprView e)
     return {e, one};
 }
 
-std::size_t sym2::nLogicalOperands(ExprView e)
+std::size_t sym2::nLogicalOperands(ExprView<> e)
 {
     return nLogicalOperands(e[0]);
 }
@@ -48,7 +48,7 @@ std::size_t sym2::nLogicalOperands(Blob b)
     }
 }
 
-std::size_t sym2::nChildBlobs(ExprView e)
+std::size_t sym2::nChildBlobs(ExprView<> e)
 {
     return nChildBlobs(e[0]);
 }
@@ -67,7 +67,7 @@ std::size_t sym2::nChildBlobs(Blob b)
     }
 }
 
-sym2::ExprView sym2::nth(ExprView e, std::uint32_t n)
+sym2::ExprView<> sym2::nth(ExprView<> e, std::uint32_t n)
 {
     OperandIterator operand{e};
 
@@ -78,12 +78,12 @@ sym2::ExprView sym2::nth(ExprView e, std::uint32_t n)
     return *operand;
 }
 
-sym2::ExprView sym2::first(ExprView e)
+sym2::ExprView<> sym2::first(ExprView<> e)
 {
     return nth(e, 1);
 }
 
-sym2::ExprView sym2::second(ExprView e)
+sym2::ExprView<> sym2::second(ExprView<> e)
 {
     return nth(e, 2);
 }

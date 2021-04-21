@@ -2,7 +2,7 @@
 #include "predicates.h"
 #include "query.h"
 
-bool sym2::isRealDomain(ExprView e)
+bool sym2::isRealDomain(ExprView<> e)
 {
     // TODO This is incomplete, we need a tag for symbols to be marked real
     switch (type(e)) {
@@ -17,13 +17,13 @@ bool sym2::isRealDomain(ExprView e)
     }
 }
 
-bool sym2::isComplexDomain(ExprView e)
+bool sym2::isComplexDomain(ExprView<> e)
 {
     // TODO This is incomplete, we need a tag for symbols to be marked complex
     return type(e) == Type::complexNumber;
 }
 
-bool sym2::isNumber(ExprView e)
+bool sym2::isNumber(ExprView<> e)
 {
     switch (type(e)) {
         case Type::smallInt:
@@ -38,14 +38,14 @@ bool sym2::isNumber(ExprView e)
     }
 }
 
-bool sym2::isInteger(ExprView e)
+bool sym2::isInteger(ExprView<> e)
 {
     const Type t = type(e);
 
     return t == Type::smallInt || t == Type::largeInt;
 }
 
-bool sym2::isRational(ExprView e)
+bool sym2::isRational(ExprView<> e)
 {
     switch (type(e)) {
         case Type::smallInt:
@@ -58,12 +58,12 @@ bool sym2::isRational(ExprView e)
     }
 }
 
-bool sym2::isFloatingPoint(ExprView e)
+bool sym2::isFloatingPoint(ExprView<> e)
 {
     return type(e) == Type::floatingPoint;
 }
 
-bool sym2::isSmall(ExprView e)
+bool sym2::isSmall(ExprView<> e)
 {
     switch (type(e)) {
         case Type::smallInt:
@@ -77,12 +77,12 @@ bool sym2::isSmall(ExprView e)
     }
 }
 
-bool sym2::isLarge(ExprView e)
+bool sym2::isLarge(ExprView<> e)
 {
     return !isSmall(e);
 }
 
-bool sym2::isScalar(ExprView e)
+bool sym2::isScalar(ExprView<> e)
 {
     switch (type(e)) {
         case Type::sum:
@@ -95,37 +95,37 @@ bool sym2::isScalar(ExprView e)
     }
 }
 
-bool sym2::isSymbol(ExprView e)
+bool sym2::isSymbol(ExprView<> e)
 {
     return type(e) == Type::symbol;
 }
 
-bool sym2::isConstant(ExprView e)
+bool sym2::isConstant(ExprView<> e)
 {
     return type(e) == Type::constant;
 }
 
-bool sym2::isSum(ExprView e)
+bool sym2::isSum(ExprView<> e)
 {
     return type(e) == Type::sum;
 }
 
-bool sym2::isProduct(ExprView e)
+bool sym2::isProduct(ExprView<> e)
 {
     return type(e) == Type::product;
 }
 
-bool sym2::isPower(ExprView e)
+bool sym2::isPower(ExprView<> e)
 {
     return type(e) == Type::power;
 }
 
-bool sym2::isFunction(ExprView e)
+bool sym2::isFunction(ExprView<> e)
 {
     return type(e) == Type::function;
 }
 
-bool sym2::isNumericallyEvaluable(ExprView e)
+bool sym2::isNumericallyEvaluable(ExprView<> e)
 {
     return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
 }

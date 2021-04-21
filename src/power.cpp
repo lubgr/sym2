@@ -4,7 +4,7 @@
 #include "query.h"
 #include "typetags.h"
 
-sym2::Expr sym2::autoPowerImpl(ExprView base, ExprView exp, const BinaryOps& cb)
+sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps& cb)
 {
     if (base == 0_ex || base == 1_ex)
         return Expr{base};

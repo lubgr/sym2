@@ -4,24 +4,24 @@
 #include "view.h"
 
 namespace sym2 {
-    bool isRealDomain(ExprView e);
-    bool isComplexDomain(ExprView e);
-    bool isNumber(ExprView e);
-    bool isInteger(ExprView e);
-    bool isRational(ExprView e);
-    bool isFloatingPoint(ExprView e);
-    bool isSmall(ExprView e);
-    bool isLarge(ExprView e);
-    bool isScalar(ExprView e);
-    bool isSymbol(ExprView e);
-    bool isConstant(ExprView e);
-    bool isSum(ExprView e);
-    bool isProduct(ExprView e);
-    bool isPower(ExprView e);
-    bool isFunction(ExprView e);
-    bool isNumericallyEvaluable(ExprView e);
-    bool isPositive(ExprView e);
-    bool isNegative(ExprView e);
+    bool isRealDomain(ExprView<> e);
+    bool isComplexDomain(ExprView<> e);
+    bool isNumber(ExprView<> e);
+    bool isInteger(ExprView<> e);
+    bool isRational(ExprView<> e);
+    bool isFloatingPoint(ExprView<> e);
+    bool isSmall(ExprView<> e);
+    bool isLarge(ExprView<> e);
+    bool isScalar(ExprView<> e);
+    bool isSymbol(ExprView<> e);
+    bool isConstant(ExprView<> e);
+    bool isSum(ExprView<> e);
+    bool isProduct(ExprView<> e);
+    bool isPower(ExprView<> e);
+    bool isFunction(ExprView<> e);
+    bool isNumericallyEvaluable(ExprView<> e);
+    bool isPositive(ExprView<> e);
+    bool isNegative(ExprView<> e);
 
     constexpr inline auto realDomain = predicate<isRealDomain>();
     constexpr inline auto complexDomain = predicate<isComplexDomain>();

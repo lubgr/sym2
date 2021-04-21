@@ -2,7 +2,7 @@
 #include "product.h"
 #include "query.h"
 
-sym2::ProductExprVec sym2::autoProductIntermediate(SmallVecBase<ExprView>& ops)
+sym2::ProductExprVec sym2::autoProductIntermediate(SmallVecBase<ExprView<>>& ops)
 {
     if (ops.size() == 2)
         return simplTwoFactors(ops.front(), ops.back());
@@ -10,7 +10,7 @@ sym2::ProductExprVec sym2::autoProductIntermediate(SmallVecBase<ExprView>& ops)
         return simplNFactors(ops);
 }
 
-sym2::ProductExprVec sym2::simplTwoFactors(ExprView lhs, ExprView rhs)
+sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
 {
     (void) lhs;
     (void) rhs;
@@ -18,7 +18,7 @@ sym2::ProductExprVec sym2::simplTwoFactors(ExprView lhs, ExprView rhs)
     return {};
 }
 
-sym2::ProductExprVec sym2::simplNFactors(SmallVecBase<ExprView>& ops)
+sym2::ProductExprVec sym2::simplNFactors(SmallVecBase<ExprView<>>& ops)
 {
     (void) ops;
 

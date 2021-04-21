@@ -10,30 +10,30 @@
 using namespace sym2;
 using namespace std::literals::string_view_literals;
 
-bool numEvalAndSize1(ExprView e)
+bool numEvalAndSize1(ExprView<> e)
 {
     return e.size() == 1 && e[0].flags == Flag::numericallyEvaluable;
 }
 
-bool isSmallIntEqualTo(ExprView e, int num)
+bool isSmallIntEqualTo(ExprView<> e, int num)
 {
     return e[0].header == Type::smallInt && numEvalAndSize1(e) && e[0].main.exact.num == num
       && e[0].main.exact.denom == 1;
 }
 
-bool isSmallRationalEqualTo(ExprView e, int num, int denom)
+bool isSmallRationalEqualTo(ExprView<> e, int num, int denom)
 {
     return e[0].header == Type::smallRational && numEvalAndSize1(e) && e[0].main.exact.num == num
       && e[0].main.exact.denom == denom;
 }
 
-bool hasLargeIntCharacteristics(ExprView e)
+bool hasLargeIntCharacteristics(ExprView<> e)
 {
     return e[0].header == Type::largeInt && static_cast<std::size_t>(e.size()) == e[0].main.nChildBlobs + 1
       && e[0].flags == Flag::numericallyEvaluable;
 }
 
-bool hasLargeRationalCharacteristics(ExprView e)
+bool hasLargeRationalCharacteristics(ExprView<> e)
 {
     return e[0].header == Type::largeRational && e[0].flags == Flag::numericallyEvaluable;
 }
@@ -242,7 +242,7 @@ TEST_CASE("Expr constructor")
     {
         const auto two = 2_ex;
         const Expr frac{3, 7};
-        const std::vector<ExprView> args{two, frac};
+        const std::vector<ExprView<>> args{two, frac};
         const Expr c{Type::complexNumber, args};
         auto e = view(c);
 

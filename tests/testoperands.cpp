@@ -29,8 +29,8 @@ TEST_CASE("Semantic traversal")
 
     SUBCASE("OperandsView")
     {
-        const std::vector<ExprView> expected{li, p1, p2, fct};
-        std::vector<ExprView> actual;
+        const std::vector<ExprView<>> expected{li, p1, p2, fct};
+        std::vector<ExprView<>> actual;
 
         boost::copy(OperandsView{s}, std::back_inserter(actual));
 

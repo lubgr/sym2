@@ -12,6 +12,7 @@
 #include <boost/hana/size.hpp>
 #include <boost/hana/unpack.hpp>
 #include <concepts>
+#include <functional>
 #include <type_traits>
 
 namespace sym2 {
@@ -22,7 +23,7 @@ namespace sym2 {
 
     template <PredicateExprType Kind, class... T>
     struct PredicateExpr {
-        static const PredicateExprType kind = Kind;
+        /* Must be a structural type, so std::tuple doesn't work: */
         const boost::hana::basic_tuple<T...> operands;
 
         template <auto fct, class... Arg>
@@ -92,6 +93,8 @@ namespace sym2 {
 
     template <auto fct, class... Arg>
     requires std::predicate<decltype(fct), Arg...> struct Predicate {
+        /* Leaf type for predicates in expressions. Its main purpose is to allow for extracting the
+         * function NTTP, which wouldn't be as easy with the full-blown PredicateExpr. */
         constexpr auto operator&&(const PredicateOperand auto& rhs) const
         {
             return construct<PredicateExprType::logicalAnd>(rhs);
@@ -212,7 +215,7 @@ namespace sym2 {
             return hana::unpack(range, std::forward<Fct>(f));
         }
 
-        template <auto to, auto from>
+        template <PredicateOperand auto to, PredicateOperand auto from>
         struct ImplicitlyConvertible {
             /* This is a brute-force SAT solver that evaluates whether the predicate expression `to`
              * is true for (a) every possible combination of predicates results in `from` that lead
@@ -257,6 +260,56 @@ namespace sym2 {
         };
     }
 
-    template <auto To, auto From>
-    constexpr inline bool implicitlyConvertible = detail::ImplicitlyConvertible<To, From>::value;
+    template <PredicateOperand auto to, PredicateOperand auto from>
+    constexpr inline bool implicitlyConvertible = detail::ImplicitlyConvertible<to, from>::value;
+
+    namespace detail {
+        template <auto fct, class... Arg, class... Actual>
+        auto invokeEval(const Predicate<fct, Arg...>&, Actual&&... arg)
+        {
+            return std::invoke(fct, std::forward<Actual>(arg)...);
+        }
+
+        template <PredicateExprType Kind, class... T, class... Arg>
+        auto invokeEval(const PredicateExpr<Kind, T...>& expr, Arg&&... arg)
+        {
+            if constexpr (Kind == PredicateExprType::leaf) {
+                return invokeEval(hana::at(expr.operands, hana::int_c<0>), std::forward<Arg>(arg)...);
+            } else if constexpr (Kind == PredicateExprType::logicalNot)
+                return !invokeEval(hana::at(expr.operands, hana::int_c<0>), std::forward<Arg>(arg)...);
+            else if constexpr (Kind == PredicateExprType::logicalAnd) {
+                return hana::unpack(expr.operands, [... arg = std::forward<Arg>(arg)](auto&&... op) {
+                    return (... && invokeEval(op, std::forward<Arg>(arg)...));
+                });
+            } else if constexpr (Kind == PredicateExprType::logicalOr) {
+                return hana::unpack(expr.operands, [... arg = std::forward<Arg>(arg)](auto&&... op) {
+                    return (... || invokeEval(op, std::forward<Arg>(arg)...));
+                });
+            }
+        }
+    }
+
+    template <PredicateOperand auto what, class... Arg>
+    auto is(Arg&&... arg)
+    {
+        return detail::invokeEval(what, std::forward<Arg>(arg)...);
+    }
+
+    template <PredicateOperand auto what, class First, class Second, class... Rest>
+    auto are(First&& arg1, Second&& arg2, Rest&&... rest)
+    /* Only works for predicate expressions with one single argument. With more arguments, it's
+     * unclear how to pass the function arguments. */
+    {
+        return detail::invokeEval(what, std::forward<First>(arg1))
+          && detail::invokeEval(what, std::forward<Second>(arg2))
+          && (... && detail::invokeEval(what, std::forward<Rest>(rest)));
+    }
+
+    template <PredicateOperand auto what, class First, class Second, class... Rest>
+    auto isOneOf(First&& arg1, Second&& arg2, Rest&&... rest)
+    {
+        return detail::invokeEval(what, std::forward<First>(arg1))
+          || detail::invokeEval(what, std::forward<Second>(arg2))
+          || (... || detail::invokeEval(what, std::forward<Rest>(rest)));
+    }
 }

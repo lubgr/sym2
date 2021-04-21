@@ -134,7 +134,7 @@ sym2::Expr::Expr(std::string_view constant, double value)
     copyNameOrThrow(constant, smallNameLength);
 }
 
-sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval)
+sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval)
     : buffer{Blob{.header = Type::function,
       .flags = Flag::none /* TODO */,
       .pre = preZero,
@@ -153,7 +153,7 @@ sym2::Expr::Expr(std::string_view function, ExprView arg, UnaryDoubleFctPtr eval
     std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
-sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, BinaryDoubleFctPtr eval)
+sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval)
     : buffer{Blob{.header = Type::function,
       .flags = Flag::none /* TODO */,
       .pre = preZero,
@@ -169,11 +169,11 @@ sym2::Expr::Expr(std::string_view function, ExprView arg1, ExprView arg2, Binary
 
     buffer.reserve(arg1.size() + arg2.size() + 2);
 
-    for (ExprView arg : {arg1, arg2})
+    for (ExprView<> arg : {arg1, arg2})
         std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
-sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
+sym2::Expr::Expr(Type composite, std::span<const ExprView<>> ops)
     : buffer{Blob{.header = composite,
       .flags = Flag::none,
       .pre = preZero,
@@ -194,7 +194,7 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
 
     bool numEval = true;
 
-    for (ExprView ev : ops) {
+    for (ExprView<> ev : ops) {
         numEval = numEval && is<NumericallyEvaluable>(ev);
         buffer.insert(buffer.end(), ev.begin(), ev.end());
     }
@@ -203,8 +203,8 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView> ops)
         buffer.front().flags = Flag::numericallyEvaluable;
 }
 
-sym2::Expr::Expr(Type composite, std::initializer_list<ExprView> ops)
-    : Expr{composite, std::span<const ExprView>{ops.begin(), ops.end()}}
+sym2::Expr::Expr(Type composite, std::initializer_list<ExprView<>> ops)
+    : Expr{composite, std::span<const ExprView<>>{ops.begin(), ops.end()}}
 {}
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
@@ -296,11 +296,11 @@ void sym2::Expr::copyNameOrThrow(std::string_view name, std::uint8_t maxLength, 
     std::copy(name.cbegin(), name.cend(), dest);
 }
 
-sym2::Expr::operator sym2::ExprView() const
+sym2::Expr::operator sym2::ExprView<>() const
 {
     assert(buffer.size() >= 1);
 
-    return ExprView{buffer.data(), buffer.size()};
+    return ExprView<>{buffer.data(), buffer.size()};
 }
 
 sym2::Expr sym2::operator"" _ex(const char* str, std::size_t)

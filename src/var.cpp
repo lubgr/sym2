@@ -145,7 +145,7 @@ const sym2::Expr& sym2::Var::get() const
 
 bool sym2::operator==(const Var& lhs, const Var& rhs)
 {
-    return ExprView{lhs.get()} == ExprView{rhs.get()};
+    return ExprView<>{lhs.get()} == ExprView<>{rhs.get()};
 }
 
 bool sym2::operator!=(const Var& lhs, const Var& rhs)

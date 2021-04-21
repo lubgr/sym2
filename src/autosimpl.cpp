@@ -5,13 +5,13 @@
 #include "product.h"
 #include "sum.h"
 
-sym2::Expr sym2::autoSum(SmallVecBase<ExprView>&& ops)
+sym2::Expr sym2::autoSum(SmallVecBase<ExprView<>>&& ops)
 {
     // TODO
     return {Type::sum, ops};
 }
 
-sym2::Expr sym2::autoProduct(SmallVecBase<ExprView>&& ops)
+sym2::Expr sym2::autoProduct(SmallVecBase<ExprView<>>&& ops)
 {
     // TODO
     return Expr{Type::product, ops};
@@ -26,12 +26,12 @@ sym2::Expr sym2::autoProduct(SmallVecBase<ExprView>&& ops)
         return {Type::product, ops};
 }
 
-sym2::Expr sym2::autoPower(ExprView base, ExprView exp)
+sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
 {
     return autoPowerImpl(base, exp);
 }
 
-sym2::Expr sym2::autoCpx(ExprView real, ExprView imag)
+sym2::Expr sym2::autoCpx(ExprView<> real, ExprView<> imag)
 {
     // TODO
     return Expr{Type::complexNumber, {real, imag}};

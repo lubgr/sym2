@@ -2,7 +2,7 @@
 #include "view.h"
 #include <cstring>
 
-bool sym2::operator==(ExprView lhs, ExprView rhs)
+bool sym2::operator==(ExprView<> lhs, ExprView<> rhs)
 {
     if (lhs.size() != rhs.size())
         return false;
@@ -10,7 +10,7 @@ bool sym2::operator==(ExprView lhs, ExprView rhs)
         return std::memcmp(&lhs.front(), &rhs.front(), lhs.size() * sizeof(Blob)) == 0;
 }
 
-bool sym2::operator!=(ExprView lhs, ExprView rhs)
+bool sym2::operator!=(ExprView<> lhs, ExprView<> rhs)
 {
     return !(lhs == rhs);
 }

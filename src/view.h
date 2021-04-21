@@ -77,15 +77,16 @@ namespace sym2 {
         ConstBlobIterator sentinel{};
     };
 
-    using ExprView = Tagged<>;
+    template <class... Tag>
+    using ExprView = Tagged<Tag...>;
 
     template <class... Tag>
-    auto tag(ExprView e)
+    auto tag(ExprView<> e)
     {
         return e;
     }
 
-    bool operator==(ExprView lhs, ExprView rhs);
-    bool operator!=(ExprView lhs, ExprView rhs);
+    bool operator==(ExprView<> lhs, ExprView<> rhs);
+    bool operator!=(ExprView<> lhs, ExprView<> rhs);
 
 }

@@ -90,7 +90,7 @@ TEST_CASE("Type queries for untagged types")
 
         CHECK(is<Double>(fp));
 
-        for (ExprView n : {fp, sr, li, lr})
+        for (ExprView<> n : {fp, sr, li, lr})
             CHECK(is<Real, Number>(n));
 
         CHECK(is<Complex, Number>(cx));
@@ -98,12 +98,12 @@ TEST_CASE("Type queries for untagged types")
 
     SUBCASE("Small/Large distinction")
     {
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr}) {
+        for (ExprView<> e : {42_ex, "a"_ex, pi, fp, sr}) {
             CHECK(is<Small>(e));
             CHECK(!is<Large>(e));
         }
 
-        for (ExprView e : {pr, lr, cx, s, pw, sinA, atan2Ab}) {
+        for (ExprView<> e : {pr, lr, cx, s, pw, sinA, atan2Ab}) {
             CHECK(is<Large>(e));
             CHECK(!is<Small>(e));
         }
@@ -111,28 +111,28 @@ TEST_CASE("Type queries for untagged types")
 
     SUBCASE("Scalar")
     {
-        for (ExprView e : {42_ex, cx, "d"_ex, "a"_ex, "b"_ex, euler, pi})
+        for (ExprView<> e : {42_ex, cx, "d"_ex, "a"_ex, "b"_ex, euler, pi})
             CHECK(is<Scalar>(e));
 
-        for (ExprView e : {pw, pr, s, sinA, atan2Ab})
+        for (ExprView<> e : {pw, pr, s, sinA, atan2Ab})
             CHECK_FALSE(is<Scalar>(e));
     }
 
     SUBCASE("Number")
     {
-        for (ExprView number : {42_ex, fp, sr, li, lr, cx})
+        for (ExprView<> number : {42_ex, fp, sr, li, lr, cx})
             CHECK(is<Number>(number));
 
-        for (ExprView e : {pi, euler, "a"_ex, s, pr, pw, sinA, atan2Ab})
+        for (ExprView<> e : {pi, euler, "a"_ex, s, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(is<Number>(e));
     }
 
     SUBCASE("Integer")
     {
-        for (ExprView number : {42_ex, Expr{li}})
+        for (ExprView<> number : {42_ex, Expr{li}})
             CHECK(is<Int>(number));
 
-        for (ExprView e : {pi, euler, "a"_ex, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
+        for (ExprView<> e : {pi, euler, "a"_ex, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
             CHECK_FALSE(is<Int>(e));
     }
 
@@ -141,25 +141,25 @@ TEST_CASE("Type queries for untagged types")
         CHECK(is<Constant>(pi));
         CHECK(is<Constant>(euler));
 
-        for (ExprView e : {42_ex, fp, sr, lr, cx, "a"_ex, s, pr, pw, sinA, atan2Ab})
+        for (ExprView<> e : {42_ex, fp, sr, lr, cx, "a"_ex, s, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(is<Constant>(e));
     }
 
     SUBCASE("Symbol")
     {
-        for (ExprView e : {"a"_ex, "b"_ex, "c"_ex})
+        for (ExprView<> e : {"a"_ex, "b"_ex, "c"_ex})
             CHECK(is<Symbol>(e));
 
-        for (ExprView e : {42_ex, fp, sr, lr, cx, pi, euler, s, pr, pw, sinA, atan2Ab})
+        for (ExprView<> e : {42_ex, fp, sr, lr, cx, pi, euler, s, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(is<Symbol>(e));
     }
 
     SUBCASE("Named types")
     {
-        for (ExprView e : {"a"_ex, pi, euler, atan2Ab, sinA})
+        for (ExprView<> e : {"a"_ex, pi, euler, atan2Ab, sinA})
             CHECK(isOneOf<Symbol, Function, Constant>(e));
 
-        for (ExprView e : {42_ex, fp, sr, lr, cx, s, pr, pw, sinA, atan2Ab})
+        for (ExprView<> e : {42_ex, fp, sr, lr, cx, s, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(isOneOf<Symbol, Constant>(e));
     }
 
@@ -167,7 +167,7 @@ TEST_CASE("Type queries for untagged types")
     {
         CHECK(is<Sum>(s));
 
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, pr, pw, sinA, atan2Ab})
+        for (ExprView<> e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(is<Sum>(e));
     }
 
@@ -175,7 +175,7 @@ TEST_CASE("Type queries for untagged types")
     {
         CHECK(is<Product>(pr));
 
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pw, sinA, atan2Ab})
+        for (ExprView<> e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pw, sinA, atan2Ab})
             CHECK_FALSE(is<Product>(e));
     }
 
@@ -183,7 +183,7 @@ TEST_CASE("Type queries for untagged types")
     {
         CHECK(is<Power>(pw));
 
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr, sinA, atan2Ab})
+        for (ExprView<> e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr, sinA, atan2Ab})
             CHECK_FALSE(is<Power>(e));
     }
 
@@ -192,7 +192,7 @@ TEST_CASE("Type queries for untagged types")
         CHECK(is<Function>(sinA));
         CHECK(is<Function>(atan2Ab));
 
-        for (ExprView e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr}) {
+        for (ExprView<> e : {42_ex, "a"_ex, pi, fp, sr, lr, cx, s, pr}) {
             CHECK_FALSE(is<Function>(e));
         }
     }
