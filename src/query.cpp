@@ -4,7 +4,7 @@
 #include "expr.h"
 #include "get.h"
 #include "operands.h"
-#include "typetags.h"
+#include "predicates.h"
 #include "view.h"
 
 sym2::Type sym2::type(ExprView<> e)
@@ -21,7 +21,7 @@ sym2::BaseExp sym2::asPower(ExprView<> e)
 {
     static const auto one = 1_ex;
 
-    if (is<Power>(e))
+    if (is<power>(e))
         return {first(e), second(e)};
 
     return {e, one};

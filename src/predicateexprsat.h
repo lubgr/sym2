@@ -19,7 +19,8 @@ namespace sym2 {
     enum class PredicateExprType { leaf, logicalNot, logicalAnd, logicalOr };
 
     template <auto fct, class... Arg>
-    requires std::predicate<decltype(fct), Arg...> struct Predicate;
+    requires std::predicate<decltype(fct), Arg...>
+    struct Predicate;
 
     template <PredicateExprType Kind, class... T>
     struct PredicateExpr {
@@ -92,7 +93,8 @@ namespace sym2 {
     concept PredicateOperand = detail::IsValidOperator<Operand>::value;
 
     template <auto fct, class... Arg>
-    requires std::predicate<decltype(fct), Arg...> struct Predicate {
+    requires std::predicate<decltype(fct), Arg...>
+    struct Predicate {
         /* Leaf type for predicates in expressions. Its main purpose is to allow for extracting the
          * function NTTP, which wouldn't be as easy with the full-blown PredicateExpr. */
         constexpr auto operator&&(const PredicateOperand auto& rhs) const
@@ -192,17 +194,16 @@ namespace sym2 {
         static constexpr bool eval(
           const FirstLeafValueMap& first, const SecondLeafValueMap& second, const PredicateExpr<Kind, T...>& expr)
         {
-            if (Kind == PredicateExprType::leaf) {
+            if (Kind == PredicateExprType::leaf)
                 return eval(first, second, hana::at(expr.operands, hana::int_c<0>));
-            } else if (Kind == PredicateExprType::logicalNot)
+            else if (Kind == PredicateExprType::logicalNot)
                 return !eval(first, second, hana::at(expr.operands, hana::int_c<0>));
-            else if (Kind == PredicateExprType::logicalAnd) {
+            else if (Kind == PredicateExprType::logicalAnd)
                 return hana::unpack(
                   expr.operands, [&first, &second](auto&&... op) { return (... && eval(first, second, op)); });
-            } else if (Kind == PredicateExprType::logicalOr) {
+            else if (Kind == PredicateExprType::logicalOr)
                 return hana::unpack(
                   expr.operands, [&first, &second](auto&&... op) { return (... || eval(first, second, op)); });
-            }
 
             return false;
         }
@@ -273,43 +274,59 @@ namespace sym2 {
         template <PredicateExprType Kind, class... T, class... Arg>
         auto invokeEval(const PredicateExpr<Kind, T...>& expr, Arg&&... arg)
         {
-            if constexpr (Kind == PredicateExprType::leaf) {
+            if constexpr (Kind == PredicateExprType::leaf)
                 return invokeEval(hana::at(expr.operands, hana::int_c<0>), std::forward<Arg>(arg)...);
-            } else if constexpr (Kind == PredicateExprType::logicalNot)
+            else if constexpr (Kind == PredicateExprType::logicalNot)
                 return !invokeEval(hana::at(expr.operands, hana::int_c<0>), std::forward<Arg>(arg)...);
-            else if constexpr (Kind == PredicateExprType::logicalAnd) {
-                return hana::unpack(expr.operands, [... arg = std::forward<Arg>(arg)](auto&&... op) {
-                    return (... && invokeEval(op, std::forward<Arg>(arg)...));
-                });
-            } else if constexpr (Kind == PredicateExprType::logicalOr) {
-                return hana::unpack(expr.operands, [... arg = std::forward<Arg>(arg)](auto&&... op) {
-                    return (... || invokeEval(op, std::forward<Arg>(arg)...));
-                });
-            }
+            else if constexpr (Kind == PredicateExprType::logicalAnd)
+                return hana::unpack(expr.operands,
+                  [&arg...](auto&&... op) { return (... && invokeEval(op, std::forward<Arg>(arg)...)); });
+            else if constexpr (Kind == PredicateExprType::logicalOr)
+                return hana::unpack(expr.operands,
+                  [&arg...](auto&&... op) { return (... || invokeEval(op, std::forward<Arg>(arg)...)); });
         }
+
+        template <PredicateOperand auto what>
+        struct IsInvoker {
+            /* This could be a function template, but it would be overly verbose to pass this as a higher order
+             * function, because all function parameters (...Arg) need to be specified. With the distinct type and an
+             * suitable variable template, this is easier to use and more concise. */
+            template <class... Arg>
+            bool operator()(Arg&&... arg) const
+            {
+                return invokeEval(what, std::forward<Arg>(arg)...);
+            }
+        };
+
+        template <PredicateOperand auto what>
+        struct AreAllInvoker {
+            /* Only works for predicate expressions with one single argument. With more arguments, it's
+             * unclear how to pass the function arguments. */
+            template <class... Arg>
+            bool operator()(Arg&&... arg) const
+            {
+                return (... && detail::invokeEval(what, std::forward<Arg>(arg)));
+            }
+        };
+
+        template <PredicateOperand auto what>
+        struct IsOneOfInvoker {
+            /* Only works for predicate expressions with one single argument. */
+            template <class... Arg>
+            bool operator()(Arg&&... arg) const
+            {
+                return (... || detail::invokeEval(what, std::forward<Arg>(arg)));
+            }
+        };
+
     }
 
-    template <PredicateOperand auto what, class... Arg>
-    auto is(Arg&&... arg)
-    {
-        return detail::invokeEval(what, std::forward<Arg>(arg)...);
-    }
+    template <PredicateOperand auto what>
+    constexpr inline detail::IsInvoker<what> is{};
 
-    template <PredicateOperand auto what, class First, class Second, class... Rest>
-    auto are(First&& arg1, Second&& arg2, Rest&&... rest)
-    /* Only works for predicate expressions with one single argument. With more arguments, it's
-     * unclear how to pass the function arguments. */
-    {
-        return detail::invokeEval(what, std::forward<First>(arg1))
-          && detail::invokeEval(what, std::forward<Second>(arg2))
-          && (... && detail::invokeEval(what, std::forward<Rest>(rest)));
-    }
+    template <PredicateOperand auto what>
+    constexpr inline detail::AreAllInvoker<what> areAll{};
 
-    template <PredicateOperand auto what, class First, class Second, class... Rest>
-    auto isOneOf(First&& arg1, Second&& arg2, Rest&&... rest)
-    {
-        return detail::invokeEval(what, std::forward<First>(arg1))
-          || detail::invokeEval(what, std::forward<Second>(arg2))
-          || (... || detail::invokeEval(what, std::forward<Rest>(rest)));
-    }
+    template <PredicateOperand auto what>
+    constexpr inline detail::IsOneOfInvoker<what> isOneOf{};
 }

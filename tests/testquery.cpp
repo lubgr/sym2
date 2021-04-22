@@ -2,9 +2,9 @@
 #include "autosimpl.h"
 #include "constants.h"
 #include "doctest/doctest.h"
+#include "predicates.h"
 #include "query.h"
 #include "trigonometric.h"
-#include "typetags.h"
 
 using namespace sym2;
 
@@ -15,10 +15,10 @@ TEST_CASE("Counters")
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
     const Expr li{largeInt};
     const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}};
-    const Expr cx = cpx(2_ex, 3_ex);
-    const Expr s = sum(42_ex, "a"_ex, "b"_ex);
-    const Expr pr = product(42_ex, "a"_ex, "b"_ex);
-    const Expr pw = power(42_ex, "a"_ex);
+    const Expr cx = autoComplex(2_ex, 3_ex);
+    const Expr s = autoSum(42_ex, "a"_ex, "b"_ex);
+    const Expr pr = autoProduct(42_ex, "a"_ex, "b"_ex);
+    const Expr pw = autoPower(42_ex, "a"_ex);
     const Expr sinA = sin("a"_ex);
     const Expr atan2Ab = atan2("a"_ex, "b"_ex);
 
@@ -37,7 +37,7 @@ TEST_CASE("Counters")
 
     SUBCASE("Number of child blobs")
     {
-        const auto composite = sum(sinA, product(pw, s), pr, cx, lr, atan2Ab);
+        const auto composite = autoSum(sinA, autoProduct(pw, s), pr, cx, lr, atan2Ab);
 
         for (ExprView<> e : {"a"_ex, 42_ex, fp, sr, pi, euler, li, lr, cx})
             CHECK(nChildBlobs(e) == e.size() - 1);
@@ -48,8 +48,8 @@ TEST_CASE("Nth operand queries")
 {
     SUBCASE("Sum with product")
     {
-        const Expr pr = product(10_ex, "b"_ex, "c"_ex);
-        const Expr s = sum(42_ex, "a"_ex, pr, "d"_ex);
+        const Expr pr = autoProduct(10_ex, "b"_ex, "c"_ex);
+        const Expr s = autoSum(42_ex, "a"_ex, pr, "d"_ex);
 
         CHECK(first(s) == 42_ex);
         CHECK(second(s) == "a"_ex);
@@ -68,7 +68,7 @@ TEST_CASE("Nth operand queries")
 
     SUBCASE("Complex number")
     {
-        const Expr cx = cpx(2_ex, 3_ex);
+        const Expr cx = autoComplex(2_ex, 3_ex);
 
         CHECK(first(cx) == 2_ex);
         CHECK(second(cx) == 3_ex);
@@ -79,7 +79,7 @@ TEST_CASE("Deconstruct as power")
 {
     const auto a = "a"_ex;
     const auto b = "b"_ex;
-    const Expr pw = power(a, b);
+    const Expr pw = autoPower(a, b);
 
     SUBCASE("Power bursts into base and exponent")
     {
@@ -93,7 +93,7 @@ TEST_CASE("Deconstruct as power")
 
         SUBCASE("Tagged")
         {
-            const auto [base, exp] = asPower(tag<Power>(pw));
+            const auto [base, exp] = asPower(tag<power>(pw));
 
             CHECK(base == a);
             CHECK(exp == b);

@@ -13,7 +13,7 @@ sym2::Var sym2::sqrt(const Var& base)
 
 sym2::Var sym2::pow(const Var& base, const Var& exp)
 {
-    return Var::internal(power(base.get(), exp.get()));
+    return Var::internal(autoPower(base.get(), exp.get()));
 }
 
 namespace sym2 {

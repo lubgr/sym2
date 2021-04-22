@@ -129,3 +129,15 @@ bool sym2::isNumericallyEvaluable(ExprView<> e)
 {
     return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
 }
+
+bool sym2::isPositive(ExprView<>)
+{
+    // TODO
+    return true;
+}
+
+bool sym2::isNegative(ExprView<>)
+{
+    // TODO
+    return false;
+}

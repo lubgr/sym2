@@ -2,7 +2,6 @@
 #include "power.h"
 #include "get.h"
 #include "query.h"
-#include "typetags.h"
 
 sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps& cb)
 {
@@ -12,9 +11,9 @@ sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps&
         return 1_ex;
     else if (exp == 1_ex)
         return Expr{base};
-    else if (is<Real, Number>(base) && is<Small, Int>(exp))
-        return autoPowerImpl(tag<Real, Number>(base), get<std::int32_t>(exp), cb);
-    else if (is<Power>(base) && is<Int>(exp)) {
+    else if (is < realDomain && number > (base) && is < integer && small > (exp))
+        return autoPowerImpl(tag < number && realDomain > (base), get<std::int32_t>(exp), cb);
+    else if (is<power>(base) && is<integer>(exp)) {
         const auto [_, origExp] = asPower(base);
         return cb.power(base, cb.product(exp, origExp));
     }
@@ -22,7 +21,7 @@ sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps&
     return Expr{Type::power, {base, exp}};
 }
 
-sym2::Expr sym2::autoPowerImpl(ExprView<Real, Number> base, std::int32_t exp, const BinaryOps& cb)
+sym2::Expr sym2::autoPowerImpl(ExprView<number && realDomain> base, std::int32_t exp, const BinaryOps& cb)
 {
     assert(exp != 0);
 
@@ -35,7 +34,7 @@ sym2::Expr sym2::autoPowerImpl(ExprView<Real, Number> base, std::int32_t exp, co
     return forPositiveExp;
 }
 
-sym2::Expr sym2::powerRealBase(ExprView<Real, Number> base, std::uint32_t exp, BinaryFct multiply)
+sym2::Expr sym2::powerRealBase(ExprView<number && realDomain> base, std::uint32_t exp, BinaryFct multiply)
 {
     /* Copied and adjusted from https://stackoverflow.com/questions/101439. */
     Expr increasingBase{base};

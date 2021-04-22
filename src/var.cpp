@@ -83,28 +83,28 @@ void sym2::Var::initialize(Args&&... ctorArgs)
 
 sym2::Var& sym2::Var::operator+=(const Var& rhs)
 {
-    get() = sum(get(), rhs.get());
+    get() = autoSum(get(), rhs.get());
 
     return *this;
 }
 
 sym2::Var& sym2::Var::operator-=(const Var& rhs)
 {
-    get() = sum(get(), minus(rhs.get()));
+    get() = autoSum(get(), autoMinus(rhs.get()));
 
     return *this;
 }
 
 sym2::Var& sym2::Var::operator*=(const Var& rhs)
 {
-    get() = product(get(), rhs.get());
+    get() = autoProduct(get(), rhs.get());
 
     return *this;
 }
 
 sym2::Var& sym2::Var::operator/=(const Var& rhs)
 {
-    get() = product(get(), oneOver(rhs.get()));
+    get() = autoProduct(get(), autoOneOver(rhs.get()));
 
     return *this;
 }

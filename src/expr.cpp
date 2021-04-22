@@ -8,7 +8,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
-#include "typetags.h"
+#include "predicates.h"
 
 static_assert(std::is_trivial_v<sym2::Blob>);
 
@@ -186,7 +186,8 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView<>> ops)
     assert(composite == Type::sum || composite == Type::product || composite == Type::power
       || composite == Type::complexNumber);
 
-    if (composite == Type::complexNumber && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), is<Real, Number>)))
+    if (composite == Type::complexNumber
+      && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), is < number && realDomain >)))
         throw std::invalid_argument("Complex numbers must be created with two non-complex arguments");
 
     /* Likely to be more, but we also don't premature allocation if it might just fit in-place: */
@@ -195,7 +196,7 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView<>> ops)
     bool numEval = true;
 
     for (ExprView<> ev : ops) {
-        numEval = numEval && is<NumericallyEvaluable>(ev);
+        numEval = numEval && is<numericallyEvaluable>(ev);
         buffer.insert(buffer.end(), ev.begin(), ev.end());
     }
 

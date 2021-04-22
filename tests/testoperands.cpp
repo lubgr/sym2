@@ -12,10 +12,10 @@ TEST_CASE("Semantic traversal")
 {
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
     const Expr li{largeInt};
-    const auto p1 = product(2_ex, sum("a"_ex, "b"_ex));
-    const auto p2 = product("c"_ex, "d"_ex, "e"_ex, "f"_ex);
+    const auto p1 = autoProduct(2_ex, autoSum("a"_ex, "b"_ex));
+    const auto p2 = autoProduct("c"_ex, "d"_ex, "e"_ex, "f"_ex);
     const auto fct = sym2::atan2("a"_ex, "b"_ex);
-    const auto s = sum(li, p1, p2, fct);
+    const auto s = autoSum(li, p1, p2, fct);
     auto op = OperandIterator{s};
 
     SUBCASE("Nth child on increment")

@@ -12,7 +12,6 @@ add_library(sym2
     product.cpp
     query.cpp
     trigonometric.cpp
-    typetags.cpp
     var.cpp
     view.cpp)
 
