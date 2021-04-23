@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <string_view>
-#include "blob.h"
 #include "view.h"
 
 namespace sym2 {
