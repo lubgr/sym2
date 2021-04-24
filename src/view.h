@@ -2,11 +2,11 @@
 
 #include <boost/stl_interfaces/iterator_interface.hpp>
 #include <boost/stl_interfaces/view_interface.hpp>
-#include <cassert>
 #include <cstdint>
 #include <type_traits>
 #include "blob.h"
 #include "predicateexprsat.h"
+#include "violationhandler.h"
 
 namespace sym2 {
     class ConstBlobIterator : public boost::stl_interfaces::iterator_interface<ConstBlobIterator,
@@ -40,23 +40,6 @@ namespace sym2 {
         const Blob* b = nullptr;
     };
 
-    constexpr inline enum class AnyFlag { instance } any{AnyFlag::instance};
-
-    template <class T>
-    concept PredicateTag = PredicateOperand<T> || std::is_same_v<T, AnyFlag>;
-
-    template <auto toTag, auto fromTag>
-    constexpr inline bool needsExplicitExprViewCtor = !implicitlyConvertible<toTag, fromTag>;
-
-    /* If there are no constraints in the target type, implicit conversions are fine: */
-    template <auto fromTag>
-    constexpr inline bool needsExplicitExprViewCtor<AnyFlag::instance, fromTag> = false;
-
-    /* ... otherwise, we certainly need to be explicit. While this would be caught by the general case, we need to
-     * filter out the any flag type in order to make the SAT machinery work. */
-    template <auto toTag>
-    constexpr inline bool needsExplicitExprViewCtor<toTag, AnyFlag::instance> = true;
-
     template <PredicateTag auto tag = any>
     class ExprView : public boost::stl_interfaces::view_interface<ExprView<tag>,
                        boost::stl_interfaces::element_layout::contiguous> {
@@ -75,11 +58,11 @@ namespace sym2 {
         }
 
         template <PredicateTag auto fromTag>
-        explicit(needsExplicitExprViewCtor<tag, fromTag>) ExprView(ExprView<fromTag> other) noexcept
+        explicit(needsExplicitCtor<tag, fromTag>) ExprView(ExprView<fromTag> other) noexcept
             : first{other.first}
             , sentinel{other.sentinel}
         {
-            enforceTag();
+            enforceTag(*this);
         }
 
       private:
@@ -90,20 +73,14 @@ namespace sym2 {
 
         ExprView()
         {
-            enforceTag();
+            enforceTag(*this);
         }
 
         ExprView(const Blob* first, std::size_t n) noexcept
             : first{first}
             , sentinel{first + n}
         {
-            enforceTag();
-        }
-
-        void enforceTag()
-        {
-            if constexpr (!std::is_same_v<decltype(tag), AnyFlag>)
-                assert(is<tag>(*this));
+            enforceTag(*this);
         }
 
         ConstBlobIterator first{};

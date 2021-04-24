@@ -261,8 +261,28 @@ namespace sym2 {
         };
     }
 
-    template <PredicateOperand auto to, PredicateOperand auto from>
-    constexpr inline bool implicitlyConvertible = detail::ImplicitlyConvertible<to, from>::value;
+    /* We will need this for templates with default non-type template parameters. The default value is likely to be
+     * completely unconstrained w.r.t. what the default predicate implies. While it was more natural to have a
+     * any-Predicate instances as the default, this cannot work because this any-Predicate can't be declared without the
+     * type in question being at least forward-declared. Hence, we need another, unrelated type/flag that acts as a
+     * replacement for the any-predicate. The machinery for determining explicitness of constructors doesn't account for
+     * this type, so we have to filter it out beforehand. */
+    constexpr inline enum class AnyFlag { instance } any{AnyFlag::instance};
+
+    template <class T>
+    concept PredicateTag = PredicateOperand<T> || std::is_same_v<T, AnyFlag>;
+
+    template <auto toTag, auto fromTag>
+    constexpr inline bool needsExplicitCtor = !detail::ImplicitlyConvertible<toTag, fromTag>::value;
+
+    /* If there are no constraints in the target type, implicit conversions are fine: */
+    template <auto fromTag>
+    constexpr inline bool needsExplicitCtor<AnyFlag::instance, fromTag> = false;
+
+    /* ... otherwise, we certainly need to be explicit. While this would be caught by the general case, we need to
+     * filter out the any flag type for the SAT logic. */
+    template <auto toTag>
+    constexpr inline bool needsExplicitCtor<toTag, AnyFlag::instance> = true;
 
     namespace detail {
         template <auto fct, class... Arg, class... Actual>
