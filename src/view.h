@@ -71,11 +71,6 @@ namespace sym2 {
         template <PredicateTag auto fromTag>
         friend class ExprView;
 
-        ExprView()
-        {
-            enforceTag(*this);
-        }
-
         ExprView(const Blob* first, std::size_t n) noexcept
             : first{first}
             , sentinel{first + n}
@@ -83,8 +78,8 @@ namespace sym2 {
             enforceTag(*this);
         }
 
-        ConstBlobIterator first{};
-        ConstBlobIterator sentinel{};
+        ConstBlobIterator first;
+        ConstBlobIterator sentinel;
     };
 
     template <PredicateOperand auto newTag>
