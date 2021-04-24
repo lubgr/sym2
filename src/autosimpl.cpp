@@ -22,8 +22,12 @@ sym2::Expr sym2::autoProductOf(SmallVecBase<ExprView<>>&& ops)
         return 1_ex;
     else if (res.size() == 1)
         return res.front();
+    // else if (needsExpansion(res))
+    //     return expandAsProduct(res);
     else
         return {Type::product, ops};
+    // TODO needs a ctor for Expr, not ExprView
+    // return Expr{Type::product, res};
 }
 
 sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
