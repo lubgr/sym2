@@ -5,35 +5,8 @@
 #include "predicates.h"
 #include "query.h"
 #include "trigonometric.h"
-#include "typetags.h"
 
 using namespace sym2;
-
-template <PredicateTag auto to, PredicateTag auto from>
-constexpr bool isImplicit = std::is_convertible_v<ExprView<from>, ExprView<to>>;
-template <PredicateTag auto to, PredicateTag auto from>
-constexpr bool isExplicit = !isImplicit<to, from>;
-
-static_assert(isExplicit<symbol, number>);
-static_assert(isExplicit<number, symbol>);
-static_assert(isExplicit < number && realDomain && positive, number >);
-
-static_assert(isExplicit<symbol, any>);
-static_assert(isExplicit < sum && positive, any >);
-
-static_assert(isImplicit < any, number || symbol >);
-static_assert(isImplicit<any, any>);
-static_assert(isImplicit < any, realDomain&& complexDomain&& symbol >);
-static_assert(isImplicit<number, number>);
-static_assert(isImplicit < number && realDomain && positive, number&& realDomain&& positive >);
-
-static_assert(isImplicit < number, number&& realDomain&& positive >);
-static_assert(isImplicit < number && realDomain, number&& realDomain&& positive >);
-static_assert(isImplicit < symbol && complexDomain, symbol&& small&& complexDomain >);
-static_assert(isExplicit < symbol && complexDomain, symbol&& small&& realDomain >);
-
-static_assert(isImplicit < number || symbol || function, number || function >);
-static_assert(isImplicit < number || symbol, number&& symbol && !function >);
 
 TEST_CASE("Type queries for untagged types")
 {
@@ -86,10 +59,10 @@ TEST_CASE("Type queries for untagged types")
     SUBCASE("Scalar")
     {
         for (ExprView<> e : {42_ex, cx, "d"_ex, "a"_ex, "b"_ex, euler, pi})
-            CHECK(is<Scalar>(e));
+            CHECK(is<scalar>(e));
 
         for (ExprView<> e : {pw, pr, s, sinA, atan2Ab})
-            CHECK_FALSE(is<Scalar>(e));
+            CHECK_FALSE(is<scalar>(e));
     }
 
     SUBCASE("Number")
