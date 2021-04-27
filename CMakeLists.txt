@@ -1,6 +1,6 @@
 
 cmake_minimum_required(VERSION 3.17)
-project(sym2 VERSION 0.0.0 DESCRIPTION "Tiny symbolic library" LANGUAGES CXX)
+project(sym2 VERSION 0.0.0 DESCRIPTION "Tiny symbolic library" LANGUAGES C CXX)
 
 option(BUILD_TESTING "Compile unit tests" ON)
 option(WITH_COVERAGE "Enable test coverage flags/generation" OFF)
@@ -21,6 +21,8 @@ add_subdirectory(src)
 if(${BUILD_TESTING} AND (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR}))
     enable_testing()
     add_subdirectory(lib/doctest)
+    include(cmake/s7.cmake)
+    include(cmake/linenoise.cmake)
     add_subdirectory(tests)
 
     if(${WITH_COVERAGE})

@@ -8,3 +8,4 @@ lib
 .nvimrc
 compile_commands.json
 .ccls-cache
+.s7history

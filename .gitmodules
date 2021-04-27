@@ -7,3 +7,9 @@
 [submodule "lib/lldb-formatters"]
 	path = lib/lldb-formatters
 	url = https://git.sr.ht/~lubgr/lldb-formatters
+[submodule "lib/linenoise"]
+	path = lib/linenoise
+	url = https://github.com/antirez/linenoise.git
+[submodule "lib/s7"]
+	path = lib/s7
+	url = https://cm-gitlab.stanford.edu/bil/s7.git
