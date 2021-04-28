@@ -1,9 +1,10 @@
 
 #include "power.h"
+#include "autosimpl.h"
 #include "get.h"
 #include "query.h"
 
-sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps& cb)
+sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp)
 {
     if (base == 0_ex || base == 1_ex)
         return Expr{base};
@@ -12,29 +13,29 @@ sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp, const BinaryOps&
     else if (exp == 1_ex)
         return Expr{base};
     else if (is < realDomain && number > (base) && is < integer && small > (exp))
-        return autoPowerImpl(tag < number && realDomain > (base), get<std::int32_t>(exp), cb);
+        return autoPowerImpl(tag < number && realDomain > (base), get<std::int32_t>(exp));
     else if (is<power>(base) && is<integer>(exp)) {
         const auto [_, origExp] = asPower(base);
-        return cb.power(base, cb.product(exp, origExp));
+        return autoPowerImpl(base, autoProduct(exp, origExp));
     }
 
     return Expr{Type::power, {base, exp}};
 }
 
-sym2::Expr sym2::autoPowerImpl(ExprView<number && realDomain> base, std::int32_t exp, const BinaryOps& cb)
+sym2::Expr sym2::autoPowerImpl(ExprView<number && realDomain> base, std::int32_t exp)
 {
     assert(exp != 0);
 
     const auto positiveExp = static_cast<std::uint32_t>(exp);
-    const auto forPositiveExp = powerRealBase(base, positiveExp, cb.product);
+    const auto forPositiveExp = powerRealBase(base, positiveExp);
 
     if (exp < 0)
-        return cb.power(forPositiveExp, Expr{-1});
+        return autoPowerImpl(forPositiveExp, Expr{-1});
 
     return forPositiveExp;
 }
 
-sym2::Expr sym2::powerRealBase(ExprView<number && realDomain> base, std::uint32_t exp, BinaryFct multiply)
+sym2::Expr sym2::powerRealBase(ExprView<number && realDomain> base, std::uint32_t exp)
 {
     /* Copied and adjusted from https://stackoverflow.com/questions/101439. */
     Expr increasingBase{base};
@@ -42,14 +43,14 @@ sym2::Expr sym2::powerRealBase(ExprView<number && realDomain> base, std::uint32_
 
     while (true) {
         if (exp & 1)
-            result = multiply(result, increasingBase);
+            result = autoProduct(result, increasingBase);
 
         exp >>= 1;
 
         if (!exp)
             break;
 
-        increasingBase = multiply(increasingBase, increasingBase);
+        increasingBase = autoProduct(increasingBase, increasingBase);
     }
 
     return result;
