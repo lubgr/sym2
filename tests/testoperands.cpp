@@ -46,6 +46,15 @@ TEST_CASE("Semantic traversal")
         CHECK_RANGES_EQ(actual, expected);
     }
 
+    SUBCASE("OperandsView size")
+    {
+        CHECK(OperandsView{s}.size() == 4);
+        CHECK(OperandsView{p1}.size() == 2);
+
+        CHECK(OperandsView::single(li).size() == 1);
+        CHECK(OperandsView::single(s).size() == 1);
+    }
+
     SUBCASE("Single, artificial OperandsView")
     {
         const std::vector<ExprView<>> expected{s};
@@ -54,5 +63,26 @@ TEST_CASE("Semantic traversal")
         boost::copy(OperandsView::single(s), std::back_inserter(actual));
 
         CHECK_RANGES_EQ(actual, expected);
+    }
+
+    SUBCASE("OperandsView subview")
+    {
+        const OperandsView orig{s};
+        std::vector<ExprView<>> actual;
+
+        boost::copy(orig.subview(1), std::back_inserter(actual));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{p1, p2, fct}));
+
+        actual.clear();
+        boost::copy(orig.subview(2, 1), std::back_inserter(actual));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{p2}));
+
+        actual.clear();
+        boost::copy(orig.subview(0, 4), std::back_inserter(actual));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{li, p1, p2, fct}));
+
+        actual.clear();
+        boost::copy(orig.subview(3), std::back_inserter(actual));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{fct}));
     }
 }

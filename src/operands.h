@@ -65,6 +65,8 @@ namespace sym2 {
         }
 
       private:
+        friend class OperandsView;
+
         std::size_t currentSize() const noexcept
         {
             return nChildBlobs(*op) + 1;
@@ -101,6 +103,26 @@ namespace sym2 {
         auto end() const noexcept
         {
             return sentinel;
+        }
+
+        std::size_t size() const noexcept
+        {
+            return first.n;
+        }
+
+        /* UB if the requested subview is out-of-range. */
+        auto subview(std::size_t offset, std::size_t count = -1) const noexcept
+        {
+            constexpr std::size_t npos = -1;
+            OperandsView result{};
+
+            assert(offset < size());
+            assert(count == npos || offset + count <= size());
+
+            result.first = std::next(first, offset);
+            result.sentinel = count == npos ? sentinel : std::next(result.first, count);
+
+            return result;
         }
 
       private:
