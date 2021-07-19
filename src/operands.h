@@ -24,6 +24,20 @@ namespace sym2 {
             assert(e.size() >= 1);
         }
 
+        /* Circumvents the constructor logic and treats the expression as the single operand of a theoretical composite.
+         * Example: when passing the symbol a, the resulting iterator points to a and becomes a sentinel after
+         * incrementing. When passing 2(b + c) + d*e, it points to 2(b + c) + d*e as one single 'operator', and is a
+         * sentinel after incrementing. */
+        static OperandIterator single(ExprView<> e) noexcept
+        {
+            OperandIterator result{};
+
+            result.op = &e[0];
+            result.n = 1;
+
+            return result;
+        }
+
         ExprView<> operator*() const noexcept
         {
             return {op, currentSize()};
@@ -65,8 +79,16 @@ namespace sym2 {
         OperandsView() = default;
         explicit OperandsView(ExprView<> e) noexcept
             : first{e}
-            , sentinel{}
         {}
+
+        static OperandsView single(ExprView<> e) noexcept
+        {
+            OperandsView result{};
+
+            result.first = OperandIterator::single(e);
+
+            return result;
+        }
 
         /* Necessary at least for Boost range compatibility: */
         using const_iterator = OperandIterator;

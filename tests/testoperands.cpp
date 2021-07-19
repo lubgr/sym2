@@ -27,12 +27,31 @@ TEST_CASE("Semantic traversal")
         CHECK(++op == OperandIterator{});
     }
 
+    SUBCASE("Single, artificial operand")
+    {
+        const Expr a = "a"_ex;
+        auto op = OperandIterator::single(a);
+
+        CHECK(*op == *OperandIterator{fct});
+        CHECK(++op == OperandIterator{});
+    }
+
     SUBCASE("OperandsView")
     {
         const std::vector<ExprView<>> expected{li, p1, p2, fct};
         std::vector<ExprView<>> actual;
 
         boost::copy(OperandsView{s}, std::back_inserter(actual));
+
+        CHECK_RANGES_EQ(actual, expected);
+    }
+
+    SUBCASE("Single, artificial OperandsView")
+    {
+        const std::vector<ExprView<>> expected{s};
+        std::vector<ExprView<>> actual;
+
+        boost::copy(OperandsView::single(s), std::back_inserter(actual));
 
         CHECK_RANGES_EQ(actual, expected);
     }
