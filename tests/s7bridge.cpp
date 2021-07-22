@@ -1,6 +1,7 @@
 
 #include "s7bridge.h"
 #include <cassert>
+#include <chrono>
 #include <s7.h>
 #include "autosimpl.h"
 #include "s7converter.h"
@@ -43,6 +44,15 @@ namespace sym2 {
 
             return conv.fromExpr(result);
         }
+
+        s7_pointer timeSinceEpochInMicroseconds(s7_scheme* sc, s7_pointer)
+        {
+            const auto now = std::chrono::system_clock::now();
+            const auto sinceEpoch = now.time_since_epoch();
+            const auto microSec = std::chrono::duration_cast<std::chrono::microseconds>(sinceEpoch);
+
+            return s7_make_integer(sc, microSec.count());
+        }
     }
 }
 
@@ -53,6 +63,7 @@ sym2::S7Interperter::S7Interperter()
 
     replaceOperators();
     replaceMathFunctions();
+    defineUtilities();
 }
 
 sym2::S7Interperter::~S7Interperter() = default;
@@ -98,4 +109,9 @@ void sym2::S7Interperter::defineSingleArgFct(std::string_view name)
     const std::string doc = "(" + terminated + " ...) sym2 " + terminated;
 
     s7_define_function(sc.get(), terminated.c_str(), singleArgFct<fct>, arity, 0, false, doc.c_str());
+}
+
+void sym2::S7Interperter::defineUtilities()
+{
+    s7_define_function(sc.get(), "timestamp", timeSinceEpochInMicroseconds, 0, 0, false, "(timestamp) ");
 }

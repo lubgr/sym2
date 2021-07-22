@@ -79,6 +79,10 @@ sym2::Expr sym2::S7Converter::toExpr(S7Ptr expression)
         return Expr{s7_string(expression)};
     else if (s7_is_real(expression))
         return Expr{s7_real(expression)};
+    else if (s7_is_boolean(expression))
+        throw std::invalid_argument{"Can't convert boolean to an Expr"};
+    else if (s7_is_null(&sc, expression))
+        throw std::invalid_argument{"Can't convert '() to an Expr"};
 
     throw std::invalid_argument{"Can't convert illegal argument to an Expr"};
 }

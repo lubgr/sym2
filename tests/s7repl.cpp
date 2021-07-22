@@ -36,6 +36,8 @@ int main(int argc, char** argv)
             std::fprintf(stderr, "Can't open %s\n", path);
     }
 
+    linenoiseSetMultiLine(1);
+
     char* input = nullptr;
     while ((input = linenoise("sym7> ")) != nullptr) {
         const auto result = s7.eval(input);

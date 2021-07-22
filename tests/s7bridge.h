@@ -21,6 +21,7 @@ namespace sym2 {
       private:
         void replaceOperators();
         void replaceMathFunctions();
+        void defineUtilities();
         Expr toExpr(S7Ptr expr);
 
         template <auto fct, int arity>
