@@ -23,3 +23,5 @@ augroup ft_cpp
   autocmd!
   autocmd Syntax cpp call s:addUDLSyntax()
 augroup end
+
+set lispwords+=test-group

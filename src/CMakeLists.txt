@@ -31,3 +31,22 @@ target_include_directories(sym2
 target_compile_features(sym2
     PUBLIC
     cxx_std_20)
+
+add_library(sym2chibi
+    chibibridge.cpp
+    chibiconverter.cpp
+    chibiutils.cpp)
+
+target_link_libraries(sym2chibi
+    PRIVATE
+    chibi::libchibi-scheme
+    sym2)
+
+target_include_directories(sym2chibi
+    SYSTEM
+    PRIVATE
+    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+
+set_target_properties(sym2chibi
+    PROPERTIES
+    PREFIX "")

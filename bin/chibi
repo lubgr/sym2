@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+chibi=`ls -1t build*/lib/chibi-scheme/chibi-scheme 2>/dev/null`
+
+if [ -z "${chibi}" ]; then
+    echo "No chibi-scheme executable found"
+    exit 1
+fi
+
+if [ `uname -s` == "Darwin" ]; then
+    libSuffix="dylib"
+    lddTool="otool -L"
+    preload="DYLD_INSERT_LIBRARIES"
+else
+    libSuffix="so"
+    lddTool="ldd"
+    preload="LD_PRELOAD"
+fi
+
+latest=`echo "${chibi}" | sed '1q'`
+builddir=`echo "${latest}" | cut -d'/' -f1`
+libsym2="${builddir}/src/libsym2.${libSuffix}"
+libasan=`${lddTool} "${libsym2}" | grep libasan | awk '{ print $1 }'`
+
+chibilibs="lib/chibi-scheme/lib"
+paths="-I ${chibilibs} -I ${builddir}/${chibilibs} -I ${builddir}/src -I src"
+
+export "${preload}=${libasan}"
+
+${latest} -i "${builddir}/lib/chibi-scheme/chibi.img" ${paths} -m sym2 $@

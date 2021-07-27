@@ -1,5 +1,5 @@
 
-set(gccFlags -pedantic-errors -Wall -Wextra -pedantic -Wredundant-decls -Wwrite-strings -Wpointer-arith -Wcast-qual
+set(gccFlags -pedantic-errors -Wall -Wextra -pedantic -Wwrite-strings -Wpointer-arith -Wcast-qual
     -Wformat=2 -Wmissing-include-dirs -Wcast-align -Wnon-virtual-dtor -Wctor-dtor-privacy -Wdisabled-optimization
     -Winvalid-pch -Wconversion -Wno-ctor-dtor-privacy -Wno-format-nonliteral -Wno-shadow)
 
