@@ -8,7 +8,7 @@ namespace sym2 {
     class ExprView;
 
     template <auto tag>
-    void enforceTag(ExprView<tag> e)
+    void enforceTag([[maybe_unused]] ExprView<tag> e)
     {
         if constexpr (!std::is_same_v<decltype(tag), AnyFlag>)
             assert(is<tag>(e));
