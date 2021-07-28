@@ -14,12 +14,13 @@
 #include <concepts>
 #include <functional>
 #include <type_traits>
+#include "stdbackport.h"
 
 namespace sym2 {
     enum class PredicateExprType { leaf, logicalNot, logicalAnd, logicalOr };
 
     template <auto fct, class... Arg>
-    requires std::predicate<decltype(fct), Arg...>
+    requires stdbackport::predicate<decltype(fct), Arg...>
     struct Predicate;
 
     template <PredicateExprType Kind, class... T>
@@ -93,7 +94,7 @@ namespace sym2 {
     concept PredicateOperand = detail::IsValidOperator<Operand>::value;
 
     template <auto fct, class... Arg>
-    requires std::predicate<decltype(fct), Arg...>
+    requires stdbackport::predicate<decltype(fct), Arg...>
     struct Predicate {
         /* Leaf type for predicates in expressions. Its main purpose is to allow for extracting the
          * function NTTP, which wouldn't be as easy with the full-blown PredicateExpr. */
