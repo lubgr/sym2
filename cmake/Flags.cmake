@@ -1,7 +1,7 @@
 
 set(gccFlags -pedantic-errors -Wall -Wextra -pedantic -Wwrite-strings -Wpointer-arith -Wcast-qual
     -Wformat=2 -Wmissing-include-dirs -Wcast-align -Wnon-virtual-dtor -Wctor-dtor-privacy -Wdisabled-optimization
-    -Winvalid-pch -Wconversion -Wno-ctor-dtor-privacy -Wno-format-nonliteral -Wno-shadow)
+    -Winvalid-pch -Wconversion -Wno-ctor-dtor-privacy -Wno-format-nonliteral -Wno-shadow -Wno-cast-function-type)
 
 set(clangFlags -Wall -Wextra -pedantic -Wconversion -Wno-sign-conversion -Wno-c99-extensions)
 
