@@ -8,8 +8,8 @@ namespace sym2 {
         explicit PreservedSexp(sexp ctx, sexp what);
         PreservedSexp(const PreservedSexp&) = delete;
         PreservedSexp& operator=(const PreservedSexp&) = delete;
-        PreservedSexp(PreservedSexp&& other);
-        PreservedSexp& operator=(PreservedSexp&&) = delete;
+        PreservedSexp(PreservedSexp&& other) noexcept;
+        PreservedSexp& operator=(PreservedSexp&&) noexcept;
         ~PreservedSexp();
 
         const sexp& get() const;
