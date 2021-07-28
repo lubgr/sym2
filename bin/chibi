@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-chibi=`ls -1t build*/lib/chibi-scheme/chibi-scheme 2>/dev/null`
-
-if [ -z "${chibi}" ]; then
-    echo "No chibi-scheme executable found"
-    exit 1
-fi
-
 if [ `uname -s` == "Darwin" ]; then
     libSuffix="dylib"
     lddTool="otool -L"
@@ -17,8 +10,16 @@ else
     preload="LD_PRELOAD"
 fi
 
-latest=`echo "${chibi}" | sed '1q'`
+libraries=`ls -1t build*/src/sym2chibi.${libSuffix} 2>/dev/null`
+
+if [ -z "${libraries}" ]; then
+    echo "No chibi-scheme bindings found"
+    exit 1
+fi
+
+latest=`echo "${libraries}" | sed '1q'`
 builddir=`echo "${latest}" | cut -d'/' -f1`
+chibi="${builddir}/lib/chibi-scheme/chibi-scheme"
 libsym2="${builddir}/src/libsym2.${libSuffix}"
 libasan=`${lddTool} "${libsym2}" | grep 'lib.*asan' | awk '{ print $1 }'`
 
@@ -27,4 +28,6 @@ paths="-I ${chibilibs} -I ${builddir}/${chibilibs} -I ${builddir}/src -I src"
 
 export "${preload}=${libasan}"
 
-${latest} -i "${builddir}/lib/chibi-scheme/chibi.img" ${paths} -m sym2 $@
+echo "Running chibi-scheme from ${builddir}..."
+
+${chibi} -i "${builddir}/lib/chibi-scheme/chibi.img" ${paths} -m sym2 $@
