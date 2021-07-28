@@ -20,7 +20,7 @@ fi
 latest=`echo "${chibi}" | sed '1q'`
 builddir=`echo "${latest}" | cut -d'/' -f1`
 libsym2="${builddir}/src/libsym2.${libSuffix}"
-libasan=`${lddTool} "${libsym2}" | grep libasan | awk '{ print $1 }'`
+libasan=`${lddTool} "${libsym2}" | grep 'lib.*asan' | awk '{ print $1 }'`
 
 chibilibs="lib/chibi-scheme/lib"
 paths="-I ${chibilibs} -I ${builddir}/${chibilibs} -I ${builddir}/src -I src"
