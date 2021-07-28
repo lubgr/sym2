@@ -27,16 +27,22 @@ namespace sym2 {
             : buffer{e.begin(), e.end()}
         {}
         Expr(Type composite, std::span<const ExprView<>> ops);
+        Expr(Type composite, std::span<const Expr> ops);
         Expr(Type composite, std::initializer_list<ExprView<>> ops);
 
         operator ExprView<>() const;
 
       private:
+        /* Used internally to avoid duplication. */
+        explicit Expr(Type composite, std::size_t nOps);
+
         void appendSmallInt(std::int32_t n);
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
         void appendSmallOrLargeInt(const LargeInt& n);
         void appendLargeInt(const LargeInt& n);
         void copyNameOrThrow(std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex = 0);
+        template <class Range>
+        void appendOperands(Type composite, const Range& ops);
 
         SmallVec<Blob, 10> buffer;
     };

@@ -5,6 +5,7 @@
 #include <chibi/sexp.h>
 #include <chibi/bignum.h>
 // clang-format on
+#include <array>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -60,10 +61,9 @@ sym2::Expr sym2::ChibiConverter::toExpr(sexp from)
     } else if (sexp_complexp(from)) {
         const PreservedSexp real{ctx, sexp_complex_real(from)};
         const PreservedSexp imag{ctx, sexp_complex_imag(from)};
-        std::array<Expr, 2> operands{{toExpr(real.get()), toExpr(imag.get())}};
-        std::array<ExprView<>, 2> view{{operands.front(), operands.back()}};
+        const std::array<Expr, 2> operands{{toExpr(real.get()), toExpr(imag.get())}};
 
-        return Expr{Type::complexNumber, view};
+        return Expr{Type::complexNumber, operands};
     }
 
     throw FailedConversionToExpr{"Can't convert illegal argument to an Expr", ctx, from};

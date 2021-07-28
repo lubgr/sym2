@@ -173,12 +173,34 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, Bi
         std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
+sym2::Expr::Expr(Type composite, std::span<const Expr> ops)
+    : Expr{composite, ops.size()}
+{
+    appendOperands(composite, ops);
+}
+
 sym2::Expr::Expr(Type composite, std::span<const ExprView<>> ops)
+    : Expr{composite, ops.size()}
+{
+    appendOperands(composite, ops);
+}
+
+sym2::Expr::Expr(Type composite, std::initializer_list<ExprView<>> ops)
+    : Expr{composite, ops.size()}
+{
+    appendOperands(composite, ops);
+}
+
+sym2::Expr::Expr(Type composite, std::size_t nOps)
     : buffer{Blob{.header = composite,
       .flags = Flag::none,
       .pre = preZero,
-      .mid = {.nLogicalOperands = static_cast<std::uint32_t>(ops.size())},
+      .mid = {.nLogicalOperands = static_cast<std::uint32_t>(nOps)},
       .main = mainZero /* Number of child blobs to be determined. */}}
+{}
+
+template <class Range>
+void sym2::Expr::appendOperands(Type composite, const Range& ops)
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
@@ -203,10 +225,6 @@ sym2::Expr::Expr(Type composite, std::span<const ExprView<>> ops)
     if (numEval)
         buffer.front().flags = Flag::numericallyEvaluable;
 }
-
-sym2::Expr::Expr(Type composite, std::initializer_list<ExprView<>> ops)
-    : Expr{composite, std::span<const ExprView<>>{ops.begin(), ops.end()}}
-{}
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
 {
