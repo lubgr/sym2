@@ -39,7 +39,8 @@ namespace sym2 {
         sexp fromExpr(ExprView<> from);
 
       private:
-        Expr toExpr(const PreservedSexp& from);
+        Expr toExpr(const PreservedSexp& from); /* Pure syntactical convenience. */
+        PreservedSexp preserve(sexp what);
         Expr numberToExpr(sexp from);
         LargeInt extractSmallOrLargeInt(sexp from);
         std::vector<PreservedSexp> collectItems(sexp list);

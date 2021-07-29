@@ -1,22 +1,25 @@
 #pragma once
 
 #include <chibi/sexp.h>
+#include <memory>
 
 namespace sym2 {
     class PreservedSexp {
       public:
         explicit PreservedSexp(sexp ctx, sexp what);
-        PreservedSexp(const PreservedSexp&) = delete;
-        PreservedSexp& operator=(const PreservedSexp&) = delete;
-        PreservedSexp(PreservedSexp&& other) noexcept;
-        PreservedSexp& operator=(PreservedSexp&&) noexcept;
-        ~PreservedSexp();
 
         const sexp& get() const;
 
       private:
-        sexp ctx;
-        sexp what;
-        sexp_gc_var_t preservation_list;
+        struct Payload {
+            Payload(sexp ctx, sexp what);
+            ~Payload();
+
+            sexp ctx;
+            sexp what;
+            sexp_gc_var_t preservation_list;
+        };
+
+        std::unique_ptr<Payload> handle;
     };
 }

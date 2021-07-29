@@ -72,7 +72,7 @@ sym2::Expr sym2::ChibiConverter::toExpr(sexp from)
     if (sexp_numberp(from))
         return numberToExpr(from);
     else if (sexp_symbolp(from)) {
-        const PreservedSexp str{ctx, sexp_symbol_to_string(ctx, from)};
+        const auto str = preserve(sexp_symbol_to_string(ctx, from));
         return toExpr(str);
     } else if (sexp_stringp(from)) {
         const auto length = sexp_string_size(from);
@@ -84,6 +84,11 @@ sym2::Expr sym2::ChibiConverter::toExpr(sexp from)
     }
 
     throw FailedConversionToExpr{"Can't convert illegal argument to an Expr", ctx, from};
+}
+
+sym2::PreservedSexp sym2::ChibiConverter::preserve(sexp what)
+{
+    return PreservedSexp{ctx, what};
 }
 
 sym2::Expr sym2::ChibiConverter::toExpr(const PreservedSexp& from)
@@ -102,14 +107,14 @@ sym2::Expr sym2::ChibiConverter::numberToExpr(sexp from)
     else if (sexp_exact_integerp(from))
         return Expr{extractSmallOrLargeInt(from)};
     else if (sexp_ratiop(from)) {
-        const PreservedSexp num{ctx, sexp_ratio_numerator(from)};
-        const PreservedSexp denom{ctx, sexp_ratio_denominator(from)};
+        const auto num = preserve(sexp_ratio_numerator(from));
+        const auto denom = preserve(sexp_ratio_denominator(from));
         const LargeRational n{extractSmallOrLargeInt(num.get()), extractSmallOrLargeInt(denom.get())};
 
         return Expr{n};
     } else if (sexp_complexp(from)) {
-        const PreservedSexp real{ctx, sexp_complex_real(from)};
-        const PreservedSexp imag{ctx, sexp_complex_imag(from)};
+        const auto real = preserve(sexp_complex_real(from));
+        const auto imag = preserve(sexp_complex_imag(from));
         const std::array<Expr, 2> operands{{toExpr(real), toExpr(imag)}};
 
         return Expr{Type::complexNumber, operands};
@@ -133,7 +138,7 @@ std::vector<sym2::PreservedSexp> sym2::ChibiConverter::collectItems(sexp list)
     std::vector<sym2::PreservedSexp> result;
 
     while (!sexp_nullp(list)) {
-        result.emplace_back(ctx, sexp_car(list));
+        result.push_back(preserve(sexp_car(list)));
         list = sexp_cdr(list);
     }
 
@@ -150,7 +155,7 @@ sym2::Expr sym2::ChibiConverter::nonEmptyListToExpr(std::span<const PreservedSex
     else if (ops.empty())
         throw FailedConversionToExpr{"Composite/constant without operands", ctx, type.get()};
 
-    const PreservedSexp str{ctx, sexp_symbol_to_string(ctx, type.get())};
+    const auto str = preserve(sexp_symbol_to_string(ctx, type.get()));
     const std::string_view name{sexp_string_data(str.get()), sexp_string_size(str.get())};
     const auto& lookup = knownCompositeOperators();
     const auto dispatch = overloaded{[&ops, this](Type kind) { return compositeToExpr(kind, ops); },
@@ -200,8 +205,8 @@ sexp sym2::ChibiConverter::fromExpr(ExprView<> from)
 {
     if (is<symbol>(from)) {
         const auto name = get<std::string_view>(from);
-        const PreservedSexp str{ctx, sexp_c_string(ctx, name.data(), name.size())};
-        const PreservedSexp symbol{ctx, sexp_string_to_symbol(ctx, str.get())};
+        const auto str = preserve(sexp_c_string(ctx, name.data(), name.size()));
+        const auto symbol = preserve(sexp_string_to_symbol(ctx, str.get()));
 
         return symbol.get();
     } else if (is < small && integer > (from))
@@ -216,22 +221,22 @@ sexp sym2::ChibiConverter::fromExpr(ExprView<> from)
         const LargeRational r = get<LargeRational>(from);
         const LargeInt& num = numerator(r);
         const LargeInt& denom = denominator(r);
-        const PreservedSexp nonNormalized{
-          ctx, sexp_make_ratio(ctx, serializeLargeInt(num).get(), serializeLargeInt(denom).get())};
+        const auto nonNormalized =
+          preserve(sexp_make_ratio(ctx, serializeLargeInt(num).get(), serializeLargeInt(denom).get()));
 
         return sexp_ratio_normalize(ctx, nonNormalized.get(), SEXP_VOID);
     } else if (is<floatingPoint>(from))
         return sexp_make_flonum(ctx, get<double>(from));
     else if (is < number && complexDomain > (from)) {
-        const PreservedSexp real{ctx, fromExpr(first(from))};
-        const PreservedSexp imag{ctx, fromExpr(second(from))};
+        const auto real = preserve(fromExpr(first(from)));
+        const auto imag = preserve(fromExpr(second(from)));
 
         return sexp_make_complex(ctx, real.get(), imag.get());
     } else if (is<function>(from)) {
         const std::string_view name = get<std::string_view>(from);
 
-        const PreservedSexp str{ctx, sexp_c_string(ctx, name.data(), name.size())};
-        const PreservedSexp symbol{ctx, sexp_string_to_symbol(ctx, str.get())};
+        const auto str = preserve(sexp_c_string(ctx, name.data(), name.size()));
+        const auto symbol = preserve(sexp_string_to_symbol(ctx, str.get()));
 
         return symbol.get();
     }
@@ -241,7 +246,7 @@ sexp sym2::ChibiConverter::fromExpr(ExprView<> from)
 
 sym2::PreservedSexp sym2::ChibiConverter::serializeLargeInt(const LargeInt& n)
 {
-    PreservedSexp result{ctx, sexp_make_bignum(ctx, n.backend().size())};
+    auto result = preserve(sexp_make_bignum(ctx, n.backend().size()));
 
     sexp_uint_t* data = sexp_bignum_data(result.get());
     export_bits(n, data, 8 * sizeof(sexp_uint_t), false);

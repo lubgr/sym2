@@ -1,7 +1,7 @@
 
 #include "chibiutils.h"
 
-sym2::PreservedSexp::PreservedSexp(sexp ctx, sexp what)
+sym2::PreservedSexp::Payload::Payload(sexp ctx, sexp what)
     : ctx{ctx}
     , what{what}
 {
@@ -10,36 +10,16 @@ sym2::PreservedSexp::PreservedSexp(sexp ctx, sexp what)
     sexp_context_saves(ctx) = &preservation_list;
 }
 
-sym2::PreservedSexp::PreservedSexp(PreservedSexp&& other) noexcept
-    : ctx{other.ctx}
-    , what{other.what}
-    , preservation_list{other.preservation_list}
+sym2::PreservedSexp::Payload::~Payload()
 {
-    other.what = nullptr;
-    other.ctx = nullptr;
+    sexp_context_saves(ctx) = preservation_list.next;
 }
 
-sym2::PreservedSexp& sym2::PreservedSexp::operator=(PreservedSexp&& other) noexcept
-{
-    if (this != &other) {
-        ctx = other.ctx;
-        what = other.what;
-        preservation_list = other.preservation_list;
-
-        other.what = nullptr;
-        other.ctx = nullptr;
-    }
-
-    return *this;
-}
-
-sym2::PreservedSexp::~PreservedSexp()
-{
-    if (what != nullptr && ctx != nullptr)
-        sexp_context_saves(ctx) = preservation_list.next;
-}
+sym2::PreservedSexp::PreservedSexp(sexp ctx, sexp what)
+    : handle{std::make_unique<Payload>(ctx, what)}
+{}
 
 const sexp& sym2::PreservedSexp::get() const
 {
-    return what;
+    return handle->what;
 }
