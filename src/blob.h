@@ -21,7 +21,7 @@ namespace sym2 {
         functionId
     };
 
-    enum class Flag : std::uint8_t { none, numericallyEvaluable, positive, real };
+    enum class Flag : std::uint8_t { none = 0b0, numericallyEvaluable = 0b1, positive = 0b10, real = 0b100 };
 
     Flag operator|(Flag lhs, Flag rhs);
     Flag& operator|=(Flag& lhs, Flag rhs);
