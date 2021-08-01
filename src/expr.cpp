@@ -4,6 +4,7 @@
 #include <boost/iterator/function_output_iterator.hpp>
 #include <boost/range/algorithm.hpp>
 #include <cstring>
+#include <exception>
 #include <limits>
 #include <numeric>
 #include <stdexcept>
@@ -57,6 +58,10 @@ namespace sym2 {
 
             ~ChildBlobNumberGuard()
             {
+                if (std::uncaught_exceptions() != 0)
+                    /* Make sure the assert below doesn't fire if stack unwinding is in process anyhow. */
+                    return;
+
                 assert(buffer.size() > 1);
 
                 buffer[index].main.nChildBlobs = buffer.size() - index - 1;
@@ -229,6 +234,8 @@ void sym2::Expr::appendOperands(Type composite, const Range& ops)
     if (composite == Type::complexNumber
       && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), is < number && realDomain >)))
         throw std::invalid_argument("Complex numbers must be created with two non-complex arguments");
+    else if (composite == Type::power && ops.size() != 2)
+        throw std::invalid_argument("Powers must be created with exactly two operands");
 
     /* Likely to be more, but we also don't premature allocation if it might just fit in-place: */
     buffer.reserve(ops.size());
