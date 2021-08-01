@@ -8,8 +8,6 @@
 namespace sym2 {
     class Expr; /* Only defined internally. */
 
-    using enum SymbolFlag;
-
     class Var {
       public:
         Var();
