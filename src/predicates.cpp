@@ -4,7 +4,6 @@
 
 bool sym2::isRealDomain(ExprView<> e)
 {
-    // TODO This is incomplete, we need a tag for symbols to be marked real
     switch (type(e)) {
         case Type::smallInt:
         case Type::smallRational:
@@ -12,6 +11,8 @@ bool sym2::isRealDomain(ExprView<> e)
         case Type::largeInt:
         case Type::largeRational:
             return true;
+        case Type::symbol:
+            return (flags(e) & Flag::real) != Flag::none;
         default:
             return false;
     }
@@ -19,7 +20,6 @@ bool sym2::isRealDomain(ExprView<> e)
 
 bool sym2::isComplexDomain(ExprView<> e)
 {
-    // TODO This is incomplete, we need a tag for symbols to be marked complex
     return type(e) == Type::complexNumber;
 }
 
@@ -130,10 +130,15 @@ bool sym2::isNumericallyEvaluable(ExprView<> e)
     return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
 }
 
-bool sym2::isPositive(ExprView<>)
+bool sym2::isPositive(ExprView<> e)
 {
-    // TODO
-    return true;
+    switch (type(e)) {
+        case Type::symbol:
+            return (flags(e) & Flag::positive) != Flag::none;
+        default:
+            // TODO
+            return true;
+    }
 }
 
 bool sym2::isNegative(ExprView<>)
