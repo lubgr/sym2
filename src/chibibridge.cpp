@@ -4,6 +4,7 @@
 #include <exception>
 #include <iostream>
 #include <vector>
+#include "autosimpl.h"
 #include "chibiconverter.h"
 #include "chibiutils.h"
 
@@ -19,25 +20,37 @@ namespace {
     {
         return sexp_user_exception(ctx, fct, error.what(), SEXP_FALSE);
     }
+
+    template <class Fct>
+    sexp wrappedTryCatch(sexp ctx, sexp caller, Fct&& f)
+    {
+        try {
+            return std::forward<Fct>(f)();
+        } catch (const FailedConversionToExpr& error) {
+            return translate(ctx, caller, error);
+        } catch (const FailedConversionToSexp& error) {
+            return translate(ctx, caller, error);
+        } catch (const std::exception& error) {
+            return translate(ctx, caller, error);
+        }
+
+        return SEXP_NULL;
+    }
 }
 
 extern "C" {
 sexp roundtrip(sexp ctx, sexp self, sexp_sint_t n, sexp arg)
 {
     assert(n == 1);
-    FromChibiToExpr first{ctx};
-    FromExprToChibi second{ctx};
 
-    try {
+    return wrappedTryCatch(ctx, self, [&]() {
+        FromChibiToExpr first{ctx};
         const Expr expression = first.convert(arg);
+
+        FromExprToChibi second{ctx};
+
         return second.convert(expression);
-    } catch (const FailedConversionToExpr& error) {
-        return translate(ctx, self, error);
-    } catch (const FailedConversionToSexp& error) {
-        return translate(ctx, self, error);
-    } catch (const std::exception& error) {
-        return translate(ctx, self, error);
-    }
+    });
 }
 
 sexp auto_times(sexp ctx, sexp self, sexp_sint_t n, sexp args)
@@ -72,6 +85,23 @@ sexp auto_plus(sexp ctx, sexp self, sexp_sint_t n, sexp args)
     return SEXP_FALSE;
 }
 
+sexp auto_power(sexp ctx, sexp self, sexp_sint_t n, sexp base, sexp exponent)
+{
+    assert(n == 2);
+
+    return wrappedTryCatch(ctx, self, [&]() {
+        FromChibiToExpr conv{ctx};
+        const Expr convertedBase = conv.convert(base);
+        const Expr convertedExp = conv.convert(exponent);
+
+        const Expr result = autoPower(convertedBase, convertedExp);
+
+        FromExprToChibi back{ctx};
+
+        return back.convert(result);
+    });
+}
+
 sexp sexp_init_library(
   sexp ctx, sexp self, sexp_sint_t n, sexp env, const char* version, const sexp_abi_identifier_t abi)
 {
@@ -81,6 +111,7 @@ sexp sexp_init_library(
     sexp_define_foreign(ctx, env, "roundtrip", 1, roundtrip);
     sexp_define_foreign(ctx, env, "auto-plus", 1, auto_plus);
     sexp_define_foreign(ctx, env, "auto-times", 1, auto_times);
+    sexp_define_foreign(ctx, env, "auto^", 2, auto_power);
 
     return SEXP_VOID;
 }
