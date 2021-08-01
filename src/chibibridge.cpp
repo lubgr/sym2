@@ -15,7 +15,7 @@ namespace {
         return sexp_user_exception(ctx, fct, error.what(), error.orig.get());
     }
 
-    sexp translate(sexp ctx, sexp fct, const FailedConversionToSexp& error)
+    sexp translate(sexp ctx, sexp fct, const std::exception& error)
     {
         return sexp_user_exception(ctx, fct, error.what(), SEXP_FALSE);
     }
@@ -25,14 +25,17 @@ extern "C" {
 sexp roundtrip(sexp ctx, sexp self, sexp_sint_t n, sexp arg)
 {
     assert(n == 1);
-    ChibiConverter conv{ctx};
+    FromChibiToExpr first{ctx};
+    FromExprToChibi second{ctx};
 
     try {
-        const Expr expression = conv.toExpr(arg);
-        return conv.fromExpr(expression);
+        const Expr expression = first.convert(arg);
+        return second.convert(expression);
     } catch (const FailedConversionToExpr& error) {
         return translate(ctx, self, error);
     } catch (const FailedConversionToSexp& error) {
+        return translate(ctx, self, error);
+    } catch (const std::exception& error) {
         return translate(ctx, self, error);
     }
 }
@@ -51,7 +54,7 @@ sexp auto_plus(sexp ctx, sexp self, sexp_sint_t n, sexp args)
     assert(n = 1 && sexp_listp(ctx, args));
     assert(sexp_unbox_fixnum(sexp_length(ctx, args)) >= 2);
 
-    ChibiConverter conv{ctx};
+    FromChibiToExpr conv{ctx};
     std::vector<Expr> ops;
 
     try {
@@ -59,7 +62,7 @@ sexp auto_plus(sexp ctx, sexp self, sexp_sint_t n, sexp args)
             const sexp arg = sexp_car(args);
             args = sexp_cdr(args);
 
-            ops.push_back(conv.toExpr(arg));
+            ops.push_back(conv.convert(arg));
         }
     } catch (const FailedConversionToExpr& error) {
         return translate(ctx, self, error);
