@@ -124,6 +124,24 @@ sym2::Expr::Expr(std::string_view symbol)
     copyNameOrThrow(symbol, largeNameLength);
 }
 
+sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint)
+    : Expr{symbol}
+{
+    Flag& flags = buffer.front().flags;
+
+    switch (constraint) {
+        case SymbolFlag::real:
+            flags |= Flag::real;
+            break;
+        case SymbolFlag::positive:
+            flags |= Flag::positive;
+            break;
+        case SymbolFlag::positiveReal:
+            flags |= Flag::real | Flag::positive;
+            break;
+    }
+}
+
 sym2::Expr::Expr(std::string_view constant, double value)
     : buffer{Blob{.header = Type::constant,
       .flags = Flag::numericallyEvaluable,

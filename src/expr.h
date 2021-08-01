@@ -7,6 +7,7 @@
 #include "blob.h"
 #include "largerational.h"
 #include "smallvec.h"
+#include "sym2/symbolflag.h"
 #include "view.h"
 
 namespace sym2 {
@@ -18,6 +19,7 @@ namespace sym2 {
         explicit Expr(const LargeInt& n);
         explicit Expr(const LargeRational& n);
         explicit Expr(std::string_view symbol);
+        Expr(std::string_view symbol, SymbolFlag constraint);
         /* Construct a constant: */
         Expr(std::string_view constant, double value);
         Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval);
