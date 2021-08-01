@@ -1,7 +1,7 @@
 
 #include "autosimpl.h"
 #include "logarithm.h"
-#include "sym2.h"
+#include "sym2/sym2.h"
 #include "trigonometric.h"
 
 sym2::Var sym2::sqrt(const Var& base)

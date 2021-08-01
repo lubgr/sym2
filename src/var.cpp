@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include "autosimpl.h"
 #include "expr.h"
-#include "sym2.h"
+#include "sym2/sym2.h"
 
 sym2::Var::Var()
     : Var{0}
@@ -26,6 +26,11 @@ sym2::Var::Var(std::int32_t num, std::int32_t denom)
 sym2::Var::Var(std::string_view symbol)
 {
     initialize(symbol);
+}
+
+sym2::Var::Var(std::string_view symbol, SymbolFlag constraint)
+{
+    initialize(symbol, constraint);
 }
 
 sym2::Var::Var(std::string_view constant, double value)
