@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <functional>
 #include <type_traits>
 
 /* Adjusted from LLVM, file libcxx/include/concepts, see the LICENSE file of sym2 for more details and a copy of the
