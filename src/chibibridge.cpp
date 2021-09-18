@@ -57,7 +57,12 @@ sexp auto_times(sexp ctx, sexp self, sexp_sint_t n, sexp args)
 {
     assert(n = 1 && sexp_listp(ctx, args));
 
-    // TODO
+    return wrappedTryCatch(ctx, self, [&]() {
+        const auto convertedArgs = convertList(ctx, args);
+        const Expr result = autoProductOf(convertedArgs);
+
+        return FromExprToChibi{ctx}.convert(result);
+    });
 
     return SEXP_FALSE;
 }
