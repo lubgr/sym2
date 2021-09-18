@@ -1,5 +1,6 @@
 
 #include "predicates.h"
+#include "expr.h"
 #include "query.h"
 
 bool sym2::isRealDomain(ExprView<> e)
@@ -145,4 +146,18 @@ bool sym2::isNegative(ExprView<>)
 {
     // TODO
     return false;
+}
+
+bool sym2::isZero(ExprView<> e)
+{
+    static const Expr zero{0};
+
+    return e == zero;
+}
+
+bool sym2::isOne(ExprView<> e)
+{
+    static const Expr one{1};
+
+    return e == one;
 }

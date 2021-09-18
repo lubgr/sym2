@@ -22,6 +22,8 @@ namespace sym2 {
     bool isNumericallyEvaluable(ExprView<> e);
     bool isPositive(ExprView<> e);
     bool isNegative(ExprView<> e);
+    bool isZero(ExprView<> e);
+    bool isOne(ExprView<> e);
 
     constexpr inline auto realDomain = predicate<isRealDomain>();
     constexpr inline auto complexDomain = predicate<isComplexDomain>();
@@ -41,4 +43,6 @@ namespace sym2 {
     constexpr inline auto numericallyEvaluable = predicate<isNumericallyEvaluable>();
     constexpr inline auto positive = predicate<isPositive>();
     constexpr inline auto negative = predicate<isNegative>();
+    constexpr inline auto zero = predicate<isZero>();
+    constexpr inline auto one = predicate<isOne>();
 }
