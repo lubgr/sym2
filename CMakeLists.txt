@@ -7,7 +7,7 @@ option(WITH_COVERAGE "Enable test coverage flags/generation" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Boost 1.73 REQUIRED)
+find_package(Boost 1.77 REQUIRED)
 include(cmake/Flags.cmake)
 include(cmake/Sanitizer.cmake)
 
