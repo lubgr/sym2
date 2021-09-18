@@ -79,4 +79,6 @@ namespace sym2 {
 
         sexp ctx;
     };
+
+    std::vector<Expr> convertList(sexp ctx, sexp list);
 }

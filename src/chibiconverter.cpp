@@ -403,3 +403,17 @@ sexp sym2::FromExprToChibi::compositeFrom(ExprView<sum || product || power> comp
 
     return serializeListWithLeadingSymbol(symbol, OperandsView{composite});
 }
+
+std::vector<sym2::Expr> sym2::convertList(sexp ctx, sexp list)
+{
+    std::vector<Expr> result;
+    FromChibiToExpr individual{ctx};
+
+    while (!sexp_nullp(list)) {
+        const PreservedSexp item{ctx, sexp_car(list)};
+        result.push_back(individual.convert(item.get()));
+        list = sexp_cdr(list);
+    }
+
+    return result;
+}
