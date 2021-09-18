@@ -3,6 +3,7 @@
 #include <boost/stl_interfaces/iterator_interface.hpp>
 #include <boost/stl_interfaces/view_interface.hpp>
 #include <cstdint>
+#include <iterator>
 #include <type_traits>
 #include "blob.h"
 #include "predicateexprsat.h"
@@ -10,7 +11,7 @@
 
 namespace sym2 {
     class ConstBlobIterator : public boost::stl_interfaces::iterator_interface<ConstBlobIterator,
-                                std::random_access_iterator_tag, const Blob> {
+                                std::contiguous_iterator_tag, const Blob> {
         /* Simple iterator based on the example in the STL interfaces library. While this could be a template, it won't
          * be reused as anything else, so we prefer simplicity and nicer error messages. The only notable detail of this
          * iterator is that it can be used for mutable access - everything ist const. */
@@ -57,6 +58,11 @@ namespace sym2 {
             return sentinel;
         }
 
+        auto data() const noexcept
+        {
+            return &*first;
+        }
+
         template <PredicateTag auto fromTag>
         explicit(needsExplicitCtor<tag, fromTag>) ExprView(ExprView<fromTag> other) noexcept
             : first{other.first}
@@ -64,6 +70,9 @@ namespace sym2 {
         {
             enforceTag(*this);
         }
+
+        // TODO only required until libstdc++ implements https://wg21.link/P2325R3
+        ExprView() = default;
 
       private:
         friend class Expr;
