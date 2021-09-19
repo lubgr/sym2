@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 
-fd -t f -e .cpp -e .cpp -e .h |\
-  /usr/local/bin/ctags --extras=+f --language-force=C++ --kinds-C++=-d+lzp -L -
+# Requires universal ctags (http://ctags.io), not the oder excuberant ctags
+fd -t f -e cc -e cxx -e cpp -e h -e hpp |\
+  ctags --extras=+f --language-force=C++ --kinds-C++=-d+lzp -L -
