@@ -2,13 +2,16 @@
 
 #include <span>
 #include "expr.h"
+#include "operands.h"
 #include "smallvec.h"
 
 namespace sym2 {
     inline constexpr std::size_t productResultBufferSize = 10;
     using ProductExprVec = SmallVec<Expr, productResultBufferSize>;
 
-    ProductExprVec autoProductIntermediate(SmallVecBase<ExprView<>>& ops);
+    ProductExprVec autoProductIntermediate(std::span<const ExprView<>> ops);
     ProductExprVec simplTwoFactors(ExprView<> lhs, ExprView<> rhs);
-    ProductExprVec simplNFactors(SmallVecBase<ExprView<>>& ops);
+    ProductExprVec simplNFactors(std::span<const ExprView<>> ops);
+    ProductExprVec merge(OperandsView p, OperandsView q);
+    ProductExprVec merge(ExprView<> p1, ExprView<> q1, OperandsView p, OperandsView q);
 }
