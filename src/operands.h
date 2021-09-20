@@ -4,6 +4,8 @@
 #include <boost/stl_interfaces/view_interface.hpp>
 #include <cassert>
 #include <cstdint>
+#include <span>
+#include "expr.h"
 #include "query.h"
 #include "view.h"
 
@@ -12,9 +14,9 @@ namespace sym2 {
                               std::forward_iterator_tag, ExprView<>> {
         /* Proxy iterator that traverses only through root operands, i.e., those Blob instances that define the header
          * of the sub-expression they belong to. As an example. consider the sum 2*(b + c) + d*e. When iterating over
-         * the operands of that sum with a OperandIterator, it traverses through 2*(b + c)  and d*e. As the step size is
-         * varies and must be constructed from individual root Blob instances, this can only be a forward iterator (as
-         * we don't want to store additional state apart from a pointer. */
+         * the operands of that sum with a OperandIterator, it traverses through two expressions, 2*(b + c)  and d*e. As
+         * the step size is varies and must be constructed from individual root Blob instances, this can only be a
+         * forward iterator (as we don't want to store additional state apart from a pointer. */
       public:
         OperandIterator() = default;
         explicit OperandIterator(ExprView<> e) noexcept
@@ -27,13 +29,26 @@ namespace sym2 {
         /* Circumvents the constructor logic and treats the expression as the single operand of a theoretical composite.
          * Example: when passing the symbol a, the resulting iterator points to a and becomes a sentinel after
          * incrementing. When passing 2(b + c) + d*e, it points to 2(b + c) + d*e as one single 'operator', and is a
-         * sentinel after incrementing. */
+         * sentinel after incrementing, too. */
         static OperandIterator single(ExprView<> e) noexcept
         {
             OperandIterator result{};
 
             result.op = &e[0];
             result.n = 1;
+
+            return result;
+        }
+
+        static OperandIterator sequence(std::span<const Expr> expressions) noexcept
+        {
+            OperandIterator result{};
+
+            assert(expressions.size() >= 1);
+
+            ExprView<> first = expressions.front();
+            result.op = &first[0];
+            result.n = expressions.size();
 
             return result;
         }
@@ -88,6 +103,15 @@ namespace sym2 {
             OperandsView result{};
 
             result.first = OperandIterator::single(e);
+
+            return result;
+        }
+
+        static OperandsView sequence(std::span<const Expr> expressions) noexcept
+        {
+            OperandsView result{};
+
+            result.first = OperandIterator::sequence(expressions);
 
             return result;
         }
