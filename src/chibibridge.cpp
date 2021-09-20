@@ -36,6 +36,12 @@ namespace {
 
         return SEXP_NULL;
     }
+
+    template <class Range>
+    std::vector<ExprView<>> expressionsToViews(const Range& input)
+    {
+        return {std::cbegin(input), std::cend(input)};
+    }
 }
 
 extern "C" {
@@ -59,7 +65,8 @@ sexp auto_times(sexp ctx, sexp self, sexp_sint_t n, sexp args)
 
     return wrappedTryCatch(ctx, self, [&]() {
         const auto convertedArgs = convertList(ctx, args);
-        const Expr result = autoProductOf(convertedArgs);
+        const auto views = expressionsToViews(convertedArgs);
+        const Expr result = autoProduct(views);
 
         return FromExprToChibi{ctx}.convert(result);
     });
