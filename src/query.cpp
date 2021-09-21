@@ -69,7 +69,7 @@ std::size_t sym2::nChildBlobs(Blob b)
 
 sym2::ExprView<> sym2::nth(ExprView<> e, std::uint32_t n)
 {
-    OperandIterator operand{e};
+    auto operand = OperandIterator::fromCompositeOrSingle(e);
 
     assert(n > 0);
 

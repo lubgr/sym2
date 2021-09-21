@@ -7,6 +7,7 @@ add_library(sym2
     get.cpp
     logarithm.cpp
     numeric.cpp
+    operands.cpp
     power.cpp
     predicates.cpp
     product.cpp

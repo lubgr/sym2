@@ -6,69 +6,37 @@
 #include <cstdint>
 #include <span>
 #include "expr.h"
+#include "predicates.h"
 #include "query.h"
 #include "view.h"
 
 namespace sym2 {
     class OperandIterator : public boost::stl_interfaces::proxy_iterator_interface<OperandIterator,
                               std::forward_iterator_tag, ExprView<>> {
-        /* Proxy iterator that traverses only through root operands, i.e., those Blob instances that define the header
-         * of the sub-expression they belong to. As an example. consider the sum 2*(b + c) + d*e. When iterating over
-         * the operands of that sum with a OperandIterator, it traverses through two expressions, 2*(b + c)  and d*e. As
-         * the step size is varies and must be constructed from individual root Blob instances, this can only be a
-         * forward iterator (as we don't want to store additional state apart from a pointer. */
+        /* Proxy iterator that is able to traverse through root operands, i.e., those Blob instances that define the
+         * header of the sub-expression they belong to. Can be constructed to refer to a single element as well, or
+         * refer to a sequence of owning Expr instances. Constructible through named static functions.
+         *
+         * As the step size varies when constructed from a root Blob composite, this can only be a forward iterator (as
+         * we don't want to store additional state apart from a pointer. */
       public:
         OperandIterator() = default;
-        explicit OperandIterator(ExprView<> e) noexcept
-            : op{type(e) == Type::function ? &e[2] : &e[1]}
-            , n{nLogicalOperands(e)}
-        {
-            assert(e.size() >= 1);
-        }
 
-        /* Circumvents the constructor logic and treats the expression as the single operand of a theoretical composite.
-         * Example: when passing the symbol a, the resulting iterator points to a and becomes a sentinel after
-         * incrementing. When passing 2(b + c) + d*e, it points to 2(b + c) + d*e as one single 'operator', and is a
-         * sentinel after incrementing, too. */
-        static OperandIterator single(ExprView<> e) noexcept
-        {
-            OperandIterator result{};
+        /* Creates an iterator over all operands of the given composite. Example: consider the sum 2*(b + c) + d*e. When
+         * iterating over the operands of that sum with a OperandIterator, it traverses through two expressions,
+         * 2*(b + c)  and d*e. */
+        static OperandIterator fromComposite(ExprView<> e) noexcept;
+        /* Treats the expression as the single operand. Example: when passing the symbol a, the resulting iterator
+         * points to a and becomes a sentinel after incrementing. When passing 2(b + c) + d*e, it points to 2(b + c) +
+         * d*e as one single 'operator', and is a sentinel after incrementing, too. */
+        static OperandIterator fromSingle(ExprView<> e) noexcept;
+        /* Returns fromComposite when the argument is a composite and fromSingle otherwise. */
+        static OperandIterator fromCompositeOrSingle(ExprView<> e) noexcept;
+        /* Same as the operand for composites, except there is no root composite Blob: */
+        static OperandIterator fromSequence(std::span<const Expr> expressions) noexcept;
 
-            result.op = &e[0];
-            result.n = 1;
-
-            return result;
-        }
-
-        static OperandIterator sequence(std::span<const Expr> expressions) noexcept
-        {
-            OperandIterator result{};
-
-            assert(expressions.size() >= 1);
-
-            ExprView<> first = expressions.front();
-            result.op = &first[0];
-            result.n = expressions.size();
-
-            return result;
-        }
-
-        ExprView<> operator*() const noexcept
-        {
-            return {op, currentSize()};
-        }
-
-        OperandIterator& operator++() noexcept
-        {
-            assert(op != nullptr);
-
-            if (--n == 0)
-                op = nullptr;
-            else
-                op = op + currentSize();
-
-            return *this;
-        }
+        ExprView<> operator*() const noexcept;
+        OperandIterator& operator++() noexcept;
 
         /* Necessary because the above operator++ hides the one in the base class, as mentioned in the docs. */
         using boost::stl_interfaces::proxy_iterator_interface<OperandIterator, std::forward_iterator_tag,
@@ -82,11 +50,9 @@ namespace sym2 {
       private:
         friend class OperandsView;
 
-        std::size_t currentSize() const noexcept
-        {
-            return nChildBlobs(*op) + 1;
-        }
+        OperandIterator(const Blob* op, std::size_t n);
 
+        std::size_t currentSize() const noexcept;
         const Blob* op = nullptr;
         std::size_t n = 0;
     };
@@ -94,62 +60,25 @@ namespace sym2 {
     class OperandsView : public boost::stl_interfaces::view_interface<OperandsView> {
       public:
         OperandsView() = default;
-        explicit OperandsView(ExprView<> e) noexcept
-            : first{e}
-        {}
 
-        static OperandsView single(ExprView<> e) noexcept
-        {
-            OperandsView result{};
-
-            result.first = OperandIterator::single(e);
-
-            return result;
-        }
-
-        static OperandsView sequence(std::span<const Expr> expressions) noexcept
-        {
-            OperandsView result{};
-
-            result.first = OperandIterator::sequence(expressions);
-
-            return result;
-        }
+        static OperandsView fromComposite(ExprView<> e) noexcept;
+        static OperandsView fromSingle(ExprView<> e) noexcept;
+        static OperandsView fromCompositeOrSingle(ExprView<> e) noexcept;
+        static OperandsView fromSequence(std::span<const Expr> expressions) noexcept;
 
         /* Necessary at least for Boost range compatibility: */
         using const_iterator = OperandIterator;
 
-        auto begin() const noexcept
-        {
-            return first;
-        }
-
-        auto end() const noexcept
-        {
-            return sentinel;
-        }
-
-        std::size_t size() const noexcept
-        {
-            return first.n;
-        }
+        OperandIterator begin() const noexcept;
+        OperandIterator end() const noexcept;
+        std::size_t size() const noexcept;
 
         /* UB if the requested subview is out-of-range. */
-        auto subview(std::size_t offset, std::size_t count = -1) const noexcept
-        {
-            constexpr std::size_t npos = -1;
-            OperandsView result{};
-
-            assert(offset < size());
-            assert(count == npos || offset + count <= size());
-
-            result.first = std::next(first, offset);
-            result.sentinel = count == npos ? sentinel : std::next(result.first, count);
-
-            return result;
-        }
+        OperandsView subview(std::size_t offset, std::size_t count = -1) const noexcept;
 
       private:
+        explicit OperandsView(OperandIterator first) noexcept;
+
         OperandIterator first{};
         OperandIterator sentinel{};
     };

@@ -16,7 +16,7 @@ TEST_CASE("Semantic traversal")
     const auto p2 = autoProduct("c"_ex, "d"_ex, "e"_ex, "f"_ex);
     const auto fct = sym2::atan2("a"_ex, "b"_ex);
     const auto s = autoSum(li, p1, p2, fct);
-    auto op = OperandIterator{s};
+    auto op = OperandIterator::fromComposite(s);
 
     SUBCASE("Nth child on increment")
     {
@@ -30,9 +30,9 @@ TEST_CASE("Semantic traversal")
     SUBCASE("Single, artificial operand")
     {
         const Expr a = "a"_ex;
-        auto op = OperandIterator::single(a);
+        auto op = OperandIterator::fromSingle(a);
 
-        CHECK(*op == *OperandIterator{fct});
+        CHECK(*op == *OperandIterator::fromComposite(fct));
         CHECK(++op == OperandIterator{});
     }
 
@@ -41,18 +41,18 @@ TEST_CASE("Semantic traversal")
         const std::vector<ExprView<>> expected{li, p1, p2, fct};
         std::vector<ExprView<>> actual;
 
-        boost::copy(OperandsView{s}, std::back_inserter(actual));
+        boost::copy(OperandsView::fromComposite(s), std::back_inserter(actual));
 
         CHECK_RANGES_EQ(actual, expected);
     }
 
     SUBCASE("OperandsView size")
     {
-        CHECK(OperandsView{s}.size() == 4);
-        CHECK(OperandsView{p1}.size() == 2);
+        CHECK(OperandsView::fromComposite(s).size() == 4);
+        CHECK(OperandsView::fromComposite(p1).size() == 2);
 
-        CHECK(OperandsView::single(li).size() == 1);
-        CHECK(OperandsView::single(s).size() == 1);
+        CHECK(OperandsView::fromSingle(li).size() == 1);
+        CHECK(OperandsView::fromSingle(s).size() == 1);
     }
 
     SUBCASE("Single, artificial OperandsView")
@@ -60,14 +60,14 @@ TEST_CASE("Semantic traversal")
         const std::vector<ExprView<>> expected{s};
         std::vector<ExprView<>> actual;
 
-        boost::copy(OperandsView::single(s), std::back_inserter(actual));
+        boost::copy(OperandsView::fromSingle(s), std::back_inserter(actual));
 
         CHECK_RANGES_EQ(actual, expected);
     }
 
     SUBCASE("OperandsView subview")
     {
-        const OperandsView orig{s};
+        const OperandsView orig = OperandsView::fromComposite(s);
         std::vector<ExprView<>> actual;
 
         boost::copy(orig.subview(1), std::back_inserter(actual));

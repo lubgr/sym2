@@ -22,11 +22,11 @@ namespace sym2 {
             case Type::complexNumber:
                 return {recurReal(first(e)), recurReal(second(e))};
             case Type::sum:
-                return std::transform_reduce(
-                  OperandIterator{e}, OperandIterator{}, std::complex<double>{}, std::plus<>{}, recurComplex);
+                return std::transform_reduce(OperandIterator::fromCompositeOrSingle(e), OperandIterator{},
+                  std::complex<double>{}, std::plus<>{}, recurComplex);
             case Type::product:
-                return std::transform_reduce(OperandIterator{e}, OperandIterator{}, std::complex<double>{1.0, 0.0},
-                  std::multiplies<>{}, recurComplex);
+                return std::transform_reduce(OperandIterator::fromCompositeOrSingle(e), OperandIterator{},
+                  std::complex<double>{1.0, 0.0}, std::multiplies<>{}, recurComplex);
             case Type::power:
                 return std::pow(recurComplex(first(e)), recurComplex(second(e)));
             default:
@@ -55,9 +55,11 @@ namespace sym2 {
             case Type::complexNumber:
                 return recur(first(e));
             case Type::sum:
-                return std::transform_reduce(OperandIterator{e}, OperandIterator{}, 0.0, std::plus<>{}, recur);
+                return std::transform_reduce(
+                  OperandIterator::fromCompositeOrSingle(e), OperandIterator{}, 0.0, std::plus<>{}, recur);
             case Type::product:
-                return std::transform_reduce(OperandIterator{e}, OperandIterator{}, 1.0, std::multiplies<>{}, recur);
+                return std::transform_reduce(
+                  OperandIterator::fromCompositeOrSingle(e), OperandIterator{}, 1.0, std::multiplies<>{}, recur);
             case Type::power:
                 return std::pow(recur(first(e)), recur(second(e)));
             case Type::function:

@@ -31,9 +31,7 @@ sym2::ProductExprVec sym2::autoProductIntermediate(std::span<const ExprView<>> o
 
 sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
 {
-    static const auto asProductOperands = [](ExprView<> e) {
-        return is<product>(e) ? OperandsView{e} : OperandsView::single(e);
-    };
+    static const auto asProductOperands = OperandsView::fromCompositeOrSingle;
 
     if (is<product>(lhs) || is<product>(rhs))
         return merge(asProductOperands(lhs), asProductOperands(rhs));
@@ -49,9 +47,9 @@ sym2::ProductExprVec sym2::simplNFactors(std::span<const ExprView<>> ops)
     const auto simplifiedRest = autoProductIntermediate(rest);
 
     if (is<product>(u1))
-        return merge(OperandsView{u1}, OperandsView::sequence(simplifiedRest));
+        return merge(OperandsView::fromComposite(u1), OperandsView::fromSequence(simplifiedRest));
     else
-        return merge(OperandsView::single(u1), OperandsView::sequence(simplifiedRest));
+        return merge(OperandsView::fromSingle(u1), OperandsView::fromSequence(simplifiedRest));
 }
 
 sym2::ProductExprVec sym2::merge(OperandsView p, OperandsView q)

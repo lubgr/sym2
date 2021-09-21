@@ -370,7 +370,7 @@ sexp sym2::FromExprToChibi::compositeFrom(ExprView<function> fct)
 {
     const auto symbol = chibiSymbolFromNamedExpr(fct);
 
-    return serializeListWithLeadingSymbol(symbol, OperandsView{fct});
+    return serializeListWithLeadingSymbol(symbol, OperandsView::fromComposite(fct));
 }
 
 sexp sym2::FromExprToChibi::serializeListWithLeadingSymbol(const PreservedSexp& identifier, OperandsView rest)
@@ -401,7 +401,7 @@ sexp sym2::FromExprToChibi::compositeFrom(ExprView<sum || product || power> comp
 {
     const auto symbol = leadingSymbolForComposite(composite);
 
-    return serializeListWithLeadingSymbol(symbol, OperandsView{composite});
+    return serializeListWithLeadingSymbol(symbol, OperandsView::fromComposite(composite));
 }
 
 std::vector<sym2::Expr> sym2::convertList(sexp ctx, sexp list)
