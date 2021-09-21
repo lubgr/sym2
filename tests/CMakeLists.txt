@@ -30,6 +30,19 @@ target_link_libraries(unit-tests
 
 add_test(NAME sym2.unittests COMMAND unit-tests)
 
+
+function(add_scm_test source)
+    get_filename_component(name ${source} NAME_WLE)
+    add_test(NAME "sym2.${name}"
+        WORKING_DIRECTORY ${chibiExecWorkingDir}
+        COMMAND ${chibiExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+endfunction()
+
+add_scm_test(power.scm)
+add_scm_test(product.scm)
+add_scm_test(roundtrip.scm)
+
+
 add_executable(pretty
     prettydebug.cpp)
 
