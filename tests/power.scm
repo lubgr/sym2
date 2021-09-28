@@ -8,3 +8,5 @@
   (test 1 (auto^ 1 42))
   (test 42 (auto^ 42 1))
   (test 'a (auto^ 'a 1)))
+
+(test-exit)

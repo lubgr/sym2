@@ -10,3 +10,5 @@
   (test 42 (auto* 42 1))
 
   (test 'a (auto* 'a 1)))
+
+(test-exit)

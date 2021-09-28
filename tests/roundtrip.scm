@@ -112,3 +112,5 @@
     (test-roundtrip-error '(^ a))
     (test-roundtrip-error '(^ a b c))
     (test-roundtrip-error '(^ a b c d 1 2 3))))
+
+(test-exit)
