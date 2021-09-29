@@ -18,6 +18,31 @@ namespace sym2 {
 
             return result;
         }
+
+        template <class Iter>
+        auto constructIter(Iter op)
+        {
+            return boost::make_transform_iterator(op, boost::hof::construct<Expr>());
+        }
+
+        auto frontAndRest(OperandsView ops)
+        {
+            assert(ops.size() >= 1);
+            return std::make_pair(ops.front(), ops.subview(1));
+        }
+
+        template <class T>
+        auto frontAndRest(std::span<T> ops)
+        {
+            assert(ops.size() >= 1);
+            return std::make_pair(std::ref(ops.front()), ops.subspan(1));
+        }
+
+        template <class Range>
+        auto frontAndRest(const Range& ops)
+        {
+            return frontAndRest(std::span{ops});
+        }
     }
 }
 
@@ -43,42 +68,48 @@ sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
 
 sym2::ProductExprVec sym2::simplNFactors(std::span<const ExprView<>> ops)
 {
-    const ExprView<>& u1 = ops.front();
-    const std::span<const ExprView<>> rest = ops.subspan(1);
-
+    const auto [u1, rest] = frontAndRest(ops);
     const auto simplifiedRest = autoProductIntermediate(rest);
 
     if (is<product>(u1))
-        return merge(OperandsView::operandsOf(u1), OperandsView::asOperands(simplifiedRest));
+        return merge(OperandsView::operandsOf(u1), simplifiedRest);
     else
-        return merge(OperandsView::singleOperand(u1), OperandsView::asOperands(simplifiedRest));
+        return merge(OperandsView::singleOperand(u1), simplifiedRest);
 }
 
-sym2::ProductExprVec sym2::merge(OperandsView p, OperandsView q)
+template <class View>
+sym2::ProductExprVec sym2::merge(OperandsView p, View q)
 {
-    const auto constructIter = [](ChildIterator op) {
-        return boost::make_transform_iterator(op, boost::hof::construct<Expr>());
-    };
-
-    assert(!(p.empty() && q.size()));
+    assert(!(p.empty() && q.empty()));
 
     if (p.empty())
         return {constructIter(q.begin()), constructIter(q.end())};
     else if (q.empty())
         return {constructIter(p.begin()), constructIter(p.end())};
     else
-        return merge(p.front(), q.front(), p.subview(1), q.subview(1));
+        return mergeNonEmpty(p, q);
 }
 
-sym2::ProductExprVec sym2::merge(ExprView<> p1, ExprView<> q1, OperandsView p, OperandsView q)
+template <class View>
+sym2::ProductExprVec sym2::mergeNonEmpty(OperandsView p, View q)
 {
+    const auto [p1, pRest] = frontAndRest(p);
+    const auto [q1, qRest] = frontAndRest(q);
     const ProductExprVec firstTwo = simplTwoFactors(p1, q1);
 
     if (firstTwo.empty())
-        return merge(p, q);
+        return merge(pRest, qRest);
     else if (firstTwo.size() == 1)
-        return prepend(firstTwo.front(), merge(p, q));
-    // TODO
+        return prepend(firstTwo.front(), merge(pRest, qRest));
 
-    return {};
+    ExprView<> first = firstTwo.front();
+    ExprView<> second = firstTwo.back();
+
+    assert(firstTwo.size() == 2);
+    assert((first == p1 && second == q1) || (first == q1 && second == p1));
+
+    if (first == p1 && second == q1)
+        return prepend(p1, merge(pRest, q));
+    else
+        return prepend(q1, merge(p, qRest));
 }
