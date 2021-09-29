@@ -34,9 +34,6 @@ sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
     else if (std::any_of(ops.begin(), ops.end(), isZero))
         return 0_ex;
 
-    // TODO
-    return Expr{Type::product, ops};
-
     const auto res = autoProductIntermediate(ops);
 
     if (res.empty())
