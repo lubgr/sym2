@@ -310,13 +310,6 @@ void sym2::Expr::copyNameOrThrow(std::string_view name, std::uint8_t maxLength, 
     std::copy(name.cbegin(), name.cend(), dest);
 }
 
-sym2::Expr::operator sym2::ExprView<>() const
-{
-    assert(buffer.size() >= 1);
-
-    return ExprView<>{buffer.data(), buffer.size()};
-}
-
 sym2::Expr sym2::operator"" _ex(const char* str, std::size_t)
 {
     return Expr{str};

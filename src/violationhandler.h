@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cassert>
-#include "predicateexprsat.h"
+#include "predicateexpr.h"
 
 namespace sym2 {
     template <PredicateTag auto tag>

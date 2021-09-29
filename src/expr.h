@@ -32,7 +32,12 @@ namespace sym2 {
         Expr(Type composite, std::span<const Expr> ops);
         Expr(Type composite, std::initializer_list<ExprView<>> ops);
 
-        operator ExprView<>() const;
+        /* Implicit conversions to any tag are indeed desired here: */
+        template <PredicateTag auto tag>
+        operator ExprView<tag>() const
+        {
+            return ExprView<tag>{buffer.data(), buffer.size()};
+        }
 
       private:
         /* Used internally to avoid duplication. */

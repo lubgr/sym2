@@ -1,6 +1,6 @@
 #pragma once
 
-#include "predicateexprsat.h"
+#include "predicateexpr.h"
 #include "view.h"
 
 namespace sym2 {

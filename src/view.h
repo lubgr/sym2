@@ -6,7 +6,7 @@
 #include <iterator>
 #include <type_traits>
 #include "blob.h"
-#include "predicateexprsat.h"
+#include "predicateexpr.h"
 #include "violationhandler.h"
 
 namespace sym2 {
@@ -64,7 +64,7 @@ namespace sym2 {
         }
 
         template <PredicateTag auto fromTag>
-        explicit(needsExplicitCtor<tag, fromTag>) ExprView(ExprView<fromTag> other) noexcept
+        ExprView(ExprView<fromTag> other) noexcept
             : first{other.first}
             , sentinel{other.sentinel}
         {
