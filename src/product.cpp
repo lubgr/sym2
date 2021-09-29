@@ -63,7 +63,7 @@ sym2::ProductExprVec sym2::merge(OperandsView p, OperandsView q)
     assert(!(p.empty() && q.size()));
 
     if (p.empty())
-        return {constructIter(p.begin()), constructIter(p.end())};
+        return {constructIter(q.begin()), constructIter(q.end())};
     else if (q.empty())
         return {constructIter(p.begin()), constructIter(p.end())};
     else
