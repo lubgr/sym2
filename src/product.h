@@ -2,7 +2,7 @@
 
 #include <span>
 #include "expr.h"
-#include "operands.h"
+#include "operandsview.h"
 #include "smallvec.h"
 
 namespace sym2 {

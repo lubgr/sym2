@@ -47,7 +47,7 @@ namespace sym2 {
         union Data4 {
             char name[4];
             std::int32_t largeIntSign; /* Could be smaller, but same size is less error prone. */
-            std::uint32_t nLogicalOperands;
+            std::uint32_t nLogicalOrPhysicalChildren;
         } mid;
 
         union Data8 {

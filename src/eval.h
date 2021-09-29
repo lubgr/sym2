@@ -3,8 +3,8 @@
 #include <cassert>
 #include <complex>
 #include <numeric>
+#include "childiterator.h"
 #include "get.h"
-#include "operands.h"
 #include "query.h"
 #include "view.h"
 
@@ -20,15 +20,15 @@ namespace sym2 {
 
         switch (type(e)) {
             case Type::complexNumber:
-                return {recurReal(first(e)), recurReal(second(e))};
+                return {recurReal(real(e)), recurReal(imag(e))};
             case Type::sum:
-                return std::transform_reduce(OperandIterator::fromCompositeOrSingle(e), OperandIterator{},
-                  std::complex<double>{}, std::plus<>{}, recurComplex);
+                return std::transform_reduce(ChildIterator::logicalChildren(e), ChildIterator{}, std::complex<double>{},
+                  std::plus<>{}, recurComplex);
             case Type::product:
-                return std::transform_reduce(OperandIterator::fromCompositeOrSingle(e), OperandIterator{},
+                return std::transform_reduce(ChildIterator::logicalChildren(e), ChildIterator{},
                   std::complex<double>{1.0, 0.0}, std::multiplies<>{}, recurComplex);
             case Type::power:
-                return std::pow(recurComplex(first(e)), recurComplex(second(e)));
+                return std::pow(recurComplex(firstOperand(e)), recurComplex(secondOperand(e)));
             default:
                 return {recurReal(e)};
         }
@@ -49,23 +49,23 @@ namespace sym2 {
             case Type::smallRational:
                 return static_cast<double>(e[0].main.exact.num) / e[0].main.exact.denom;
             case Type::largeRational:
-                return recur(first(e)) / recur(second(e));
+                return recur(numerator(e)) / recur(denominator(e));
             case Type::largeInt:
                 return static_cast<double>(get<LargeInt>(e));
             case Type::complexNumber:
-                return recur(first(e));
+                return recur(real(e));
             case Type::sum:
                 return std::transform_reduce(
-                  OperandIterator::fromCompositeOrSingle(e), OperandIterator{}, 0.0, std::plus<>{}, recur);
+                  ChildIterator::logicalChildren(e), ChildIterator{}, 0.0, std::plus<>{}, recur);
             case Type::product:
                 return std::transform_reduce(
-                  OperandIterator::fromCompositeOrSingle(e), OperandIterator{}, 1.0, std::multiplies<>{}, recur);
+                  ChildIterator::logicalChildren(e), ChildIterator{}, 1.0, std::multiplies<>{}, recur);
             case Type::power:
-                return std::pow(recur(first(e)), recur(second(e)));
+                return std::pow(recur(firstOperand(e)), recur(secondOperand(e)));
             case Type::function:
-                assert(nLogicalOperands(e) == 1 || nLogicalOperands(e) == 2);
-                return nLogicalOperands(e) == 1 ? get<UnaryDoubleFctPtr>(e)(recur(first(e))) :
-                                                  get<BinaryDoubleFctPtr>(e)(recur(first(e)), recur(second(e)));
+                assert(nOperands(e) == 1 || nOperands(e) == 2);
+                return nOperands(e) == 1 ? get<UnaryDoubleFctPtr>(e)(recur(firstOperand(e))) :
+                                           get<BinaryDoubleFctPtr>(e)(recur(firstOperand(e)), recur(secondOperand(e)));
             default:
                 assert(false);
                 return 0.0;

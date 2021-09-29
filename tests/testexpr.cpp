@@ -142,8 +142,8 @@ TEST_CASE("Expr constructor")
             const Expr e{lr};
 
             CHECK(hasLargeRationalCharacteristics(e));
-            CHECK(isSmallIntEqualTo(first(e), 1));
-            CHECK(hasLargeIntCharacteristics(second(e)));
+            CHECK(isSmallIntEqualTo(numerator(e), 1));
+            CHECK(hasLargeIntCharacteristics(denominator(e)));
         }
 
         SUBCASE("< 0")
@@ -151,8 +151,8 @@ TEST_CASE("Expr constructor")
             const Expr e{-lr};
 
             CHECK(hasLargeRationalCharacteristics(e));
-            CHECK(isSmallIntEqualTo(first(e), -1));
-            CHECK(hasLargeIntCharacteristics(second(e)));
+            CHECK(isSmallIntEqualTo(numerator(e), -1));
+            CHECK(hasLargeIntCharacteristics(denominator(e)));
         }
 
         SUBCASE("Num/denom saved as small int if possible")
@@ -209,7 +209,7 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].header == Type::function);
         CHECK(e[0].flags == Flag::none);
         CHECK(allNullChars(e[0].pre.name));
-        CHECK(e[0].mid.nLogicalOperands == 1);
+        CHECK(e[0].mid.nLogicalOrPhysicalChildren == 1);
         CHECK(e[0].main.nChildBlobs == 2);
 
         CHECK(e[1].pre.name == "sin"sv);
@@ -228,7 +228,7 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].header == Type::function);
         CHECK(e[0].flags == Flag::none);
         CHECK(allNullChars(e[0].pre.name));
-        CHECK(e[0].mid.nLogicalOperands == 2);
+        CHECK(e[0].mid.nLogicalOrPhysicalChildren == 2);
         CHECK(e[0].main.nChildBlobs == 3);
 
         CHECK(e[1].pre.name == "atan2"sv);
@@ -249,7 +249,7 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].header == Type::complexNumber);
         CHECK(e[0].flags == Flag::numericallyEvaluable);
         CHECK(allNullChars(e[0].pre.name));
-        CHECK(e[0].mid.nLogicalOperands == 2);
+        CHECK(e[0].mid.nLogicalOrPhysicalChildren == 2);
         CHECK(e[0].main.nChildBlobs == 2);
     }
 }

@@ -25,14 +25,14 @@ TEST_CASE("Counters")
     SUBCASE("Number of operands")
     {
         for (ExprView<> e : {"a"_ex, 42_ex, fp, sr, pi, euler, lr})
-            CHECK(nLogicalOperands(e) == 0);
+            CHECK(nOperands(e) == 0);
 
-        CHECK(nLogicalOperands(cx) == 2);
-        CHECK(nLogicalOperands(s) == 3);
-        CHECK(nLogicalOperands(pr) == 3);
-        CHECK(nLogicalOperands(pw) == 2);
-        CHECK(nLogicalOperands(sinA) == 1);
-        CHECK(nLogicalOperands(atan2Ab) == 2);
+        CHECK(nOperands(cx) == 2);
+        CHECK(nOperands(s) == 3);
+        CHECK(nOperands(pr) == 3);
+        CHECK(nOperands(pw) == 2);
+        CHECK(nOperands(sinA) == 1);
+        CHECK(nOperands(atan2Ab) == 2);
     }
 
     SUBCASE("Number of child blobs")
@@ -40,21 +40,21 @@ TEST_CASE("Counters")
         const auto composite = autoSum(sinA, autoProduct(pw, s), pr, cx, lr, atan2Ab);
 
         for (ExprView<> e : {"a"_ex, 42_ex, fp, sr, pi, euler, li, lr, cx})
-            CHECK(nChildBlobs(e) == e.size() - 1);
+            CHECK(nPhysicalChildren(e) == e.size() - 1);
     }
 }
 
-TEST_CASE("Nth operand queries")
+TEST_CASE("Physical and logical children queries")
 {
     SUBCASE("Sum with product")
     {
         const Expr pr = autoProduct(10_ex, "b"_ex, "c"_ex);
         const Expr s = autoSum(42_ex, "a"_ex, pr, "d"_ex);
 
-        CHECK(first(s) == 42_ex);
-        CHECK(second(s) == "a"_ex);
-        CHECK(nth(s, 3) == pr);
-        CHECK(nth(s, 4) == "d"_ex);
+        CHECK(firstOperand(s) == 42_ex);
+        CHECK(secondOperand(s) == "a"_ex);
+        CHECK(nthOperand(s, 3) == pr);
+        CHECK(nthOperand(s, 4) == "d"_ex);
     }
 
     SUBCASE("Large Rational")
@@ -62,16 +62,16 @@ TEST_CASE("Nth operand queries")
         const LargeInt denom{"1234528973498279834827384284"};
         const Expr lr{LargeRational{1, denom}};
 
-        CHECK(first(lr) == 1_ex);
-        CHECK(second(lr) == Expr{denom});
+        CHECK(numerator(lr) == 1_ex);
+        CHECK(denominator(lr) == Expr{denom});
     }
 
     SUBCASE("Complex number")
     {
         const Expr cx = autoComplex(2_ex, 3_ex);
 
-        CHECK(first(cx) == 2_ex);
-        CHECK(second(cx) == 3_ex);
+        CHECK(real(cx) == 2_ex);
+        CHECK(imag(cx) == 3_ex);
     }
 }
 

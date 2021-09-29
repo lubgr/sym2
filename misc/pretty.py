@@ -86,7 +86,7 @@ def blobSummary(valobj, unused):
     pre = valobj.GetChildMemberWithName('pre')
     mid = valobj.GetChildMemberWithName('mid')
     data = valobj.GetChildMemberWithName('main')
-    nOps = mid.GetChildMemberWithName('nLogicalOperands').GetValueAsUnsigned(0)
+    nOps = mid.GetChildMemberWithName('nLogicalOrPhysicalChildren').GetValueAsUnsigned(0)
     nChildBlobs = data.GetChildMemberWithName('nChildBlobs').GetValueAsUnsigned(0)
 
     if isLargeIntBlob(valobj, headerName, nOps, nChildBlobs):

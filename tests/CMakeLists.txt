@@ -1,12 +1,13 @@
 
 add_executable(unit-tests
     testassumptions.cpp
+    testchilditerator.cpp
     testequality.cpp
     testfunctionview.cpp
     testget.cpp
     testeval.cpp
     testexpr.cpp
-    testoperands.cpp
+    testoperandsview.cpp
     testpredicates.cpp
     testquery.cpp
     testvar.cpp

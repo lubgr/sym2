@@ -86,7 +86,7 @@ sym2::Expr::Expr(const LargeRational& n)
     buffer.push_back(Blob{.header = Type::largeRational,
       .flags = Flag::numericallyEvaluable,
       .pre = preZero,
-      .mid = {.nLogicalOperands = 2},
+      .mid = {.nLogicalOrPhysicalChildren = 2},
       .main = mainZero /* Number of child blobs to be determined. */});
 
     appendSmallOrLargeInt(num);
@@ -131,7 +131,7 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr ev
     : buffer{Blob{.header = Type::function,
       .flags = Flag::none /* TODO */,
       .pre = preZero,
-      .mid = {.nLogicalOperands = 1},
+      .mid = {.nLogicalOrPhysicalChildren = 1},
       .main = mainZero}}
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
@@ -150,7 +150,7 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, Bi
     : buffer{Blob{.header = Type::function,
       .flags = Flag::none /* TODO */,
       .pre = preZero,
-      .mid = {.nLogicalOperands = 2},
+      .mid = {.nLogicalOrPhysicalChildren = 2},
       .main = mainZero}}
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
@@ -188,7 +188,7 @@ sym2::Expr::Expr(Type composite, std::size_t nOps)
     : buffer{Blob{.header = composite,
       .flags = Flag::none,
       .pre = preZero,
-      .mid = {.nLogicalOperands = static_cast<std::uint32_t>(nOps)},
+      .mid = {.nLogicalOrPhysicalChildren = static_cast<std::uint32_t>(nOps)},
       .main = mainZero /* Number of child blobs to be determined. */}}
 {}
 

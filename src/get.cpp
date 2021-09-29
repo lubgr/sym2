@@ -1,8 +1,8 @@
 
 #include "get.h"
 #include <cassert>
+#include "childiterator.h"
 #include "eval.h"
-#include "operands.h"
 #include "predicates.h"
 
 template <>
@@ -45,7 +45,7 @@ sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView<> e)
     LargeInt result;
 
     const auto* first = reinterpret_cast<const unsigned char*>(std::next(e.data()));
-    const auto* last = std::next(first, nChildBlobs(e) * sizeof(Blob));
+    const auto* last = std::next(first, nPhysicalChildren(e) * sizeof(Blob));
 
     import_bits(result, first, last);
 
@@ -63,7 +63,7 @@ sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView<> e)
         const auto value = get<SmallRational>(e);
         return LargeRational{value.num, value.denom};
     } else
-        return LargeRational{get<LargeInt>(first(e)), get<LargeInt>(second(e))};
+        return LargeRational{get<LargeInt>(numerator(e)), get<LargeInt>(denominator(e))};
 }
 
 template <>

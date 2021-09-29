@@ -7,7 +7,7 @@
 #include <vector>
 #include "chibiutils.h"
 #include "expr.h"
-#include "operands.h"
+#include "operandsview.h"
 #include "predicates.h"
 #include "smallvec.h"
 

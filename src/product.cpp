@@ -31,7 +31,9 @@ sym2::ProductExprVec sym2::autoProductIntermediate(std::span<const ExprView<>> o
 
 sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
 {
-    static const auto asProductOperands = OperandsView::fromCompositeOrSingle;
+    static const auto asProductOperands = [](ExprView<> e) {
+        return is<product>(e) ? OperandsView::operandsOf(e) : OperandsView::singleOperand(e);
+    };
 
     if (is<product>(lhs) || is<product>(rhs))
         return merge(asProductOperands(lhs), asProductOperands(rhs));
@@ -47,14 +49,14 @@ sym2::ProductExprVec sym2::simplNFactors(std::span<const ExprView<>> ops)
     const auto simplifiedRest = autoProductIntermediate(rest);
 
     if (is<product>(u1))
-        return merge(OperandsView::fromComposite(u1), OperandsView::fromSequence(simplifiedRest));
+        return merge(OperandsView::operandsOf(u1), OperandsView::asOperands(simplifiedRest));
     else
-        return merge(OperandsView::fromSingle(u1), OperandsView::fromSequence(simplifiedRest));
+        return merge(OperandsView::singleOperand(u1), OperandsView::asOperands(simplifiedRest));
 }
 
 sym2::ProductExprVec sym2::merge(OperandsView p, OperandsView q)
 {
-    const auto constructIter = [](OperandIterator op) {
+    const auto constructIter = [](ChildIterator op) {
         return boost::make_transform_iterator(op, boost::hof::construct<Expr>());
     };
 

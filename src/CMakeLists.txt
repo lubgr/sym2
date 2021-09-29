@@ -2,12 +2,13 @@
 add_library(sym2
     autosimpl.cpp
     blob.cpp
+    childiterator.cpp
     expr.cpp
     functions.cpp
     get.cpp
     logarithm.cpp
     numeric.cpp
-    operands.cpp
+    operandsview.cpp
     power.cpp
     predicates.cpp
     product.cpp

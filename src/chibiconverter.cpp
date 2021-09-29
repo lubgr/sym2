@@ -137,9 +137,9 @@ sym2::Expr sym2::FromChibiToExpr::numberToExpr(sexp from)
 
         return Expr{n};
     } else if (sexp_complexp(from)) {
-        const auto real = preserve(sexp_complex_real(from));
-        const auto imag = preserve(sexp_complex_imag(from));
-        const std::array<Expr, 2> operands{{convert(real), convert(imag)}};
+        const auto realPart = preserve(sexp_complex_real(from));
+        const auto imagPart = preserve(sexp_complex_imag(from));
+        const std::array<Expr, 2> operands{{convert(realPart), convert(imagPart)}};
 
         return Expr{Type::complexNumber, operands};
     }
@@ -337,10 +337,10 @@ sexp sym2::FromExprToChibi::dispatchOver(ExprView<number> from)
     } else if (is<floatingPoint>(from))
         return sexp_make_flonum(ctx, get<double>(from));
     else if (is<complexDomain>(from)) {
-        const auto real = preserve(convert(first(from)));
-        const auto imag = preserve(convert(second(from)));
+        const auto realPart = preserve(convert(real(from)));
+        const auto imagPart = preserve(convert(imag(from)));
 
-        return sexp_make_complex(ctx, real.get(), imag.get());
+        return sexp_make_complex(ctx, realPart.get(), imagPart.get());
     }
 
     throw FailedConversionToSexp{"Unknown numeric type", Expr{from}};
@@ -370,7 +370,7 @@ sexp sym2::FromExprToChibi::compositeFrom(ExprView<function> fct)
 {
     const auto symbol = chibiSymbolFromNamedExpr(fct);
 
-    return serializeListWithLeadingSymbol(symbol, OperandsView::fromComposite(fct));
+    return serializeListWithLeadingSymbol(symbol, OperandsView::operandsOf(fct));
 }
 
 sexp sym2::FromExprToChibi::serializeListWithLeadingSymbol(const PreservedSexp& identifier, OperandsView rest)
@@ -401,7 +401,7 @@ sexp sym2::FromExprToChibi::compositeFrom(ExprView<sum || product || power> comp
 {
     const auto symbol = leadingSymbolForComposite(composite);
 
-    return serializeListWithLeadingSymbol(symbol, OperandsView::fromComposite(composite));
+    return serializeListWithLeadingSymbol(symbol, OperandsView::operandsOf(composite));
 }
 
 std::vector<sym2::Expr> sym2::convertList(sexp ctx, sexp list)

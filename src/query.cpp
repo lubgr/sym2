@@ -1,9 +1,9 @@
 
 #include "query.h"
 #include <cassert>
+#include "childiterator.h"
 #include "expr.h"
 #include "get.h"
-#include "operands.h"
 #include "predicates.h"
 #include "view.h"
 
@@ -22,17 +22,17 @@ sym2::BaseExp sym2::asPower(ExprView<> e)
     static const auto one = 1_ex;
 
     if (is<power>(e))
-        return {first(e), second(e)};
+        return {firstOperand(e), secondOperand(e)};
 
     return {e, one};
 }
 
-std::size_t sym2::nLogicalOperands(ExprView<> e)
+std::size_t sym2::nOperands(ExprView<> e)
 {
-    return nLogicalOperands(e[0]);
+    return nOperands(e[0]);
 }
 
-std::size_t sym2::nLogicalOperands(Blob b)
+std::size_t sym2::nOperands(Blob b)
 {
     switch (b.header) {
         case Type::smallInt:
@@ -44,16 +44,16 @@ std::size_t sym2::nLogicalOperands(Blob b)
         case Type::constant:
             return 0;
         default:
-            return b.mid.nLogicalOperands;
+            return b.mid.nLogicalOrPhysicalChildren;
     }
 }
 
-std::size_t sym2::nChildBlobs(ExprView<> e)
+std::size_t sym2::nPhysicalChildren(ExprView<> e)
 {
-    return nChildBlobs(e[0]);
+    return nPhysicalChildren(e[0]);
 }
 
-std::size_t sym2::nChildBlobs(Blob b)
+std::size_t sym2::nPhysicalChildren(Blob b)
 {
     switch (b.header) {
         case Type::smallInt:
@@ -67,23 +67,54 @@ std::size_t sym2::nChildBlobs(Blob b)
     }
 }
 
-sym2::ExprView<> sym2::nth(ExprView<> e, std::uint32_t n)
+sym2::ExprView<> sym2::nthOperand(ExprView<> e, std::uint32_t n)
 {
-    auto operand = OperandIterator::fromCompositeOrSingle(e);
+    auto operand = ChildIterator::logicalChildren(e);
 
     assert(n > 0);
 
-    std::advance(operand, n - 1);
-
-    return *operand;
+    return *std::next(operand, n - 1);
 }
 
-sym2::ExprView<> sym2::first(ExprView<> e)
+sym2::ExprView<> sym2::firstOperand(ExprView<> e)
 {
-    return nth(e, 1);
+    return nthOperand(e, 1);
 }
 
-sym2::ExprView<> sym2::second(ExprView<> e)
+sym2::ExprView<> sym2::secondOperand(ExprView<> e)
 {
-    return nth(e, 2);
+    return nthOperand(e, 2);
+}
+
+namespace sym2 {
+    namespace {
+        sym2::ExprView<> nthPhysical(ExprView<> e, std::uint32_t n)
+        {
+            auto operand = ChildIterator::physicalChildren(e);
+
+            assert(n > 0);
+
+            return *std::next(operand, n - 1);
+        }
+    }
+}
+
+sym2::ExprView<sym2::number> sym2::real(ExprView<complexDomain> c)
+{
+    return nthPhysical(c, 1);
+}
+
+sym2::ExprView<sym2::number> sym2::imag(ExprView<complexDomain> c)
+{
+    return nthPhysical(c, 2);
+}
+
+sym2::ExprView<sym2::integer> sym2::numerator(ExprView<rational> n)
+{
+    return nthPhysical(n, 1);
+}
+
+sym2::ExprView<sym2::integer> sym2::denominator(ExprView<rational> n)
+{
+    return nthPhysical(n, 2);
 }
