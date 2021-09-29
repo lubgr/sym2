@@ -68,7 +68,7 @@ namespace sym2 {
             : first{other.first}
             , sentinel{other.sentinel}
         {
-            enforceTag(*this);
+            assertTagWithStacktrace(*this);
         }
 
         // TODO only required until libstdc++ implements https://wg21.link/P2325R3
@@ -84,7 +84,7 @@ namespace sym2 {
             : first{first}
             , sentinel{first + n}
         {
-            enforceTag(*this);
+            assertTagWithStacktrace(*this);
         }
 
         ConstBlobIterator first;

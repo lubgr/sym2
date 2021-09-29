@@ -15,7 +15,8 @@ add_library(sym2
     query.cpp
     trigonometric.cpp
     var.cpp
-    view.cpp)
+    view.cpp
+    violationhandler.cpp)
 
 target_link_libraries(sym2
     PUBLIC
