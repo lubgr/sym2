@@ -34,9 +34,6 @@ TEST_CASE("Semantic traversal")
 
         CHECK(OperandsView::singleOperand(li).size() == 1);
         CHECK(OperandsView::singleOperand(s).size() == 1);
-
-        const std::vector<Expr> someOperands{p1, p2, fct, s};
-        CHECK(OperandsView::asOperands(someOperands).size() == someOperands.size());
     }
 
     SUBCASE("Single, artificial OperandsView")

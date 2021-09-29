@@ -33,16 +33,6 @@ sym2::ChildIterator sym2::ChildIterator::ChildIterator::singleChild(ExprView<> e
     return ChildIterator{&e[0], 1};
 }
 
-sym2::ChildIterator sym2::ChildIterator::asChildren(std::span<const Expr> expressions) noexcept
-{
-    if (expressions.empty())
-        return ChildIterator{};
-    else {
-        ExprView<> first = expressions.front();
-        return ChildIterator{&first.front(), expressions.size()};
-    }
-}
-
 sym2::ExprView<> sym2::ChildIterator::operator*() const noexcept
 {
     return {op, currentSize()};

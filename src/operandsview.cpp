@@ -17,11 +17,6 @@ sym2::OperandsView sym2::OperandsView::singleOperand(ExprView<> e) noexcept
     return OperandsView{ChildIterator::singleChild(e)};
 }
 
-sym2::OperandsView sym2::OperandsView::asOperands(std::span<const Expr> expressions) noexcept
-{
-    return OperandsView{ChildIterator::asChildren(expressions)};
-}
-
 sym2::ChildIterator sym2::OperandsView::begin() const noexcept
 {
     return first;

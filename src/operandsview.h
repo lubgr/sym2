@@ -16,7 +16,6 @@ namespace sym2 {
         /* See ChildIterator for an explanation of the different named constructors. */
         static OperandsView operandsOf(ExprView<> e) noexcept;
         static OperandsView singleOperand(ExprView<> e) noexcept;
-        static OperandsView asOperands(std::span<const Expr> expressions) noexcept;
 
         /* Necessary at least for Boost range compatibility: */
         using const_iterator = ChildIterator;

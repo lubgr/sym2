@@ -9,10 +9,9 @@ namespace sym2 {
     class ChildIterator
         : public boost::stl_interfaces::proxy_iterator_interface<ChildIterator, std::forward_iterator_tag, ExprView<>> {
         /* Proxy iterator that is able to traverse through both logical and physical children. Can be constructed with
-         * static functions, for an expression with children, treating a single expression as a single child or for a
-         * sequence of owning Expr instances. As the step size can vary when constructed from an expression with
-         * children, this can only be a forward iterator (as we don't want to store additional state apart from a
-         * pointer. */
+         * static functions, for an expression with children, or treating a single expression as a single child. As the
+         * step size can vary when constructed from an expression with children, this can only be a forward iterator (as
+         * we don't want to store additional state apart from a pointer. */
       public:
         ChildIterator() = default;
 
@@ -30,8 +29,6 @@ namespace sym2 {
          * incrementing. When passing 2(b + c) + d*e, it points to 2(b + c) + d*e as one single 'child', and is a
          * sentinel after incrementing, too. */
         static ChildIterator singleChild(ExprView<> e) noexcept;
-        /* Treats the given sequence as children to iterate over: */
-        static ChildIterator asChildren(std::span<const Expr> expressions) noexcept;
 
         ExprView<> operator*() const noexcept;
         ChildIterator& operator++() noexcept;
