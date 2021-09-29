@@ -2,10 +2,10 @@
 #include "autosimpl.h"
 #include <array>
 #include "get.h"
-#include "power.h"
+#include "powersimpl.h"
 #include "predicates.h"
-#include "product.h"
-#include "sum.h"
+#include "productsimpl.h"
+#include "sumsimpl.h"
 
 sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
 {

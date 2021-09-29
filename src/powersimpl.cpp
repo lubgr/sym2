@@ -1,5 +1,5 @@
 
-#include "power.h"
+#include "powersimpl.h"
 #include "autosimpl.h"
 #include "get.h"
 #include "query.h"

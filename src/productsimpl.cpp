@@ -1,5 +1,5 @@
 
-#include "product.h"
+#include "productsimpl.h"
 #include <boost/hof/construct.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include "predicates.h"

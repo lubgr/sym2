@@ -9,9 +9,9 @@ add_library(sym2
     logarithm.cpp
     numeric.cpp
     operandsview.cpp
-    power.cpp
+    powersimpl.cpp
     predicates.cpp
-    product.cpp
+    productsimpl.cpp
     query.cpp
     trigonometric.cpp
     var.cpp
