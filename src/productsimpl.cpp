@@ -14,7 +14,7 @@ namespace sym2 {
             result.reserve(rest.size() + 1);
 
             result.emplace_back(first);
-            std::move(rest.begin(), rest.end(), std::back_inserter(rest));
+            std::move(rest.begin(), rest.end(), std::back_inserter(result));
 
             return result;
         }
