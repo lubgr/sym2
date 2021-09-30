@@ -20,7 +20,7 @@ add_library(sym2
 
 target_link_libraries(sym2
     PUBLIC
-    sanitizer
+    $<$<BOOL:${WITH_SANITIZER}>:sanitizer>
     flags)
 
 target_include_directories(sym2
