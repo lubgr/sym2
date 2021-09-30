@@ -65,5 +65,9 @@ TEST_CASE("Semantic traversal")
         actual.clear();
         boost::copy(orig.subview(3), std::back_inserter(actual));
         CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{fct}));
+
+        actual.clear();
+        boost::copy(orig.subview(4), std::back_inserter(actual));
+        CHECK(actual.empty());
     }
 }

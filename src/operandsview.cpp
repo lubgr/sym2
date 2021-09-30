@@ -37,7 +37,7 @@ sym2::OperandsView sym2::OperandsView::subview(std::size_t offset, std::size_t c
     constexpr std::size_t npos = -1;
     OperandsView result{};
 
-    assert(offset < size());
+    assert(offset <= size());
     assert(count == npos || offset + count <= size());
 
     result.first = std::next(first, offset);
