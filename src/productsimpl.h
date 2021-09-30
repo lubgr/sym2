@@ -11,7 +11,7 @@ namespace sym2 {
 
     ProductExprVec autoProductIntermediate(std::span<const ExprView<>> ops);
     ProductExprVec simplTwoFactors(ExprView<> lhs, ExprView<> rhs);
-    ProductExprVec simplNFactors(std::span<const ExprView<>> ops);
+    ProductExprVec simplMoreThanTwoFactors(std::span<const ExprView<>> ops);
     template <class View>
     ProductExprVec merge(OperandsView p, View q);
     template <class View>

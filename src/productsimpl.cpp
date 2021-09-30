@@ -51,7 +51,7 @@ sym2::ProductExprVec sym2::autoProductIntermediate(std::span<const ExprView<>> o
     if (ops.size() == 2)
         return simplTwoFactors(ops.front(), ops.back());
     else
-        return simplNFactors(ops);
+        return simplMoreThanTwoFactors(ops);
 }
 
 sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
@@ -66,8 +66,10 @@ sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
     return {Expr{lhs}, Expr{rhs}};
 }
 
-sym2::ProductExprVec sym2::simplNFactors(std::span<const ExprView<>> ops)
+sym2::ProductExprVec sym2::simplMoreThanTwoFactors(std::span<const ExprView<>> ops)
 {
+    assert(ops.size() > 2);
+
     const auto [u1, rest] = frontAndRest(ops);
     const auto simplifiedRest = autoProductIntermediate(rest);
 
