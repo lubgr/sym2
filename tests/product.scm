@@ -12,9 +12,9 @@
   (test 'a (auto* 'a 1)))
 
 (test-group "(Re-)ordering"
-  (test (auto* 'a 'b 'c '(sin a)) '(* a b c (sin a)))
-  (test (auto* 2 'a 'b 'c) '(* 2 a b c))
+  (test '(* a b c (sin a)) (auto* 'a 'b 'c '(sin a)))
+  (test '(* 2 a b c) (auto* 2 'a 'b 'c))
 
-  (test (auto* 'b 'a) '(* a b)))
+  (test '(* a b) (auto* 'b 'a)))
 
 (test-exit)
