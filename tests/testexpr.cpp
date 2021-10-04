@@ -212,6 +212,7 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].mid.nLogicalOrPhysicalChildren == 1);
         CHECK(e[0].main.nChildBlobs == 2);
 
+        CHECK(e[1].header == Type::functionId);
         CHECK(e[1].pre.name == "sin"sv);
         CHECK(e[1].main.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
 
@@ -231,6 +232,7 @@ TEST_CASE("Expr constructor")
         CHECK(e[0].mid.nLogicalOrPhysicalChildren == 2);
         CHECK(e[0].main.nChildBlobs == 3);
 
+        CHECK(e[1].header == Type::functionId);
         CHECK(e[1].pre.name == "atan2"sv);
         CHECK(e[1].main.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
 
