@@ -7,6 +7,7 @@
 #include "autosimpl.h"
 #include "chibiconverter.h"
 #include "chibiutils.h"
+#include "orderrelation.h"
 
 using namespace sym2;
 
@@ -97,7 +98,7 @@ sexp auto_plus(sexp ctx, sexp self, sexp_sint_t n, sexp args)
     return SEXP_FALSE;
 }
 
-sexp auto_power(sexp ctx, sexp self, sexp_sint_t n, sexp base, sexp exponent)
+sexp auto_power(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp base, sexp exponent)
 {
     assert(n == 2);
 
@@ -114,6 +115,17 @@ sexp auto_power(sexp ctx, sexp self, sexp_sint_t n, sexp base, sexp exponent)
     });
 }
 
+sexp order_less_than(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp lhs, sexp rhs)
+{
+    assert(n == 2);
+
+    return wrappedTryCatch(ctx, self, [&]() {
+        FromChibiToExpr conv{ctx};
+        const bool result = orderLessThan(conv.convert(lhs), conv.convert(rhs));
+        return result ? SEXP_TRUE : SEXP_FALSE;
+    });
+}
+
 sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] sexp_sint_t n, sexp env,
   const char* version, const sexp_abi_identifier_t abi)
 {
@@ -124,6 +136,7 @@ sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] se
     sexp_define_foreign(ctx, env, "auto-plus", 1, auto_plus);
     sexp_define_foreign(ctx, env, "auto-times", 1, auto_times);
     sexp_define_foreign(ctx, env, "auto^", 2, auto_power);
+    sexp_define_foreign(ctx, env, "order-lt", 2, order_less_than);
 
     return SEXP_VOID;
 }

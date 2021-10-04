@@ -5,6 +5,7 @@
     roundtrip
     auto+
     auto*
-    auto^)
+    auto^
+    order-lt)
   (include "sym2chibi.scm")
   (include-shared "sym2chibi"))

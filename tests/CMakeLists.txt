@@ -8,6 +8,7 @@ add_executable(unit-tests
     testeval.cpp
     testexpr.cpp
     testoperandsview.cpp
+    testorderrelationimpl.cpp
     testpredicates.cpp
     testquery.cpp
     testvar.cpp

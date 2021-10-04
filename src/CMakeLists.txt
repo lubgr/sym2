@@ -9,6 +9,7 @@ add_library(sym2
     logarithm.cpp
     numeric.cpp
     operandsview.cpp
+    orderrelationimpl.cpp
     powersimpl.cpp
     predicates.cpp
     productsimpl.cpp
