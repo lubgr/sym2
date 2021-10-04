@@ -31,6 +31,21 @@ namespace {
 
 TEST_CASE("Numeric evaluation of numerics/constant")
 {
+    SUBCASE("Integer")
+    {
+        CHECK(evalReal(42_ex, lookupThrow) == doctest::Approx(42.0));
+    }
+
+    SUBCASE("Double")
+    {
+        CHECK(evalReal(1.23456789_ex, lookupThrow) == doctest::Approx(1.23456789));
+    }
+
+    SUBCASE("Small rational")
+    {
+        CHECK(evalReal(Expr{2, 3}, lookupThrow) == doctest::Approx(2.0 / 3.0));
+    }
+
     SUBCASE("Constant")
     {
         CHECK(evalReal(pi, lookupThrow) == doctest::Approx(M_PI));
@@ -133,7 +148,27 @@ TEST_CASE("Numeric evaluation with lookup")
     }
 }
 
-TEST_CASE("Numeric evaluation with complex/real distinction")
+TEST_CASE("Numeric evaluation to complex")
+{
+    SUBCASE("Complex number")
+    {
+        const Expr cplx{Type::complexNumber, {2_ex, 3_ex}};
+        const std::complex<double> actual = evalComplex(cplx, lookupThrow);
+
+        CHECK(actual.real() == doctest::Approx(2.0));
+        CHECK(actual.imag() == doctest::Approx(3.0));
+    }
+
+    SUBCASE("Real number")
+    {
+        const std::complex<double> actual = evalComplex(1.2345_ex, lookupThrow);
+
+        CHECK(actual.real() == doctest::Approx(1.2345));
+        CHECK(actual.imag() == doctest::Approx(0.0));
+    }
+}
+
+TEST_CASE("Numeric power evaluation with complex/real distinction")
 {
     const double base = -42.0;
     const double exp = 9.87654;
