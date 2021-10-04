@@ -51,6 +51,10 @@ TEST_CASE("Semantic traversal")
         const OperandsView orig = OperandsView::operandsOf(s);
         std::vector<ExprView<>> actual;
 
+        boost::copy(orig.subview(0), std::back_inserter(actual));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{li, p1, p2, fct}));
+
+        actual.clear();
         boost::copy(orig.subview(1), std::back_inserter(actual));
         CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{p1, p2, fct}));
 
