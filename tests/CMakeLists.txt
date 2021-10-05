@@ -40,6 +40,7 @@ function(add_scm_test source)
         COMMAND ${chibiExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${source})
 endfunction()
 
+add_scm_test(order.scm)
 add_scm_test(power.scm)
 add_scm_test(product.scm)
 add_scm_test(roundtrip.scm)
