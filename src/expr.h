@@ -2,11 +2,12 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <memory_resource>
 #include <span>
 #include <string_view>
+#include <vector>
 #include "blob.h"
 #include "largerational.h"
-#include "smallvec.h"
 #include "sym2/symbolflag.h"
 #include "view.h"
 
@@ -51,7 +52,7 @@ namespace sym2 {
         template <class Range>
         void appendOperands(Type composite, const Range& ops);
 
-        SmallVec<Blob, 10> buffer;
+        std::pmr::vector<Blob> buffer;
     };
 
     Expr operator"" _ex(const char* str, std::size_t);

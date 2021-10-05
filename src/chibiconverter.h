@@ -9,7 +9,6 @@
 #include "expr.h"
 #include "operandsview.h"
 #include "predicates.h"
-#include "smallvec.h"
 
 namespace sym2 {
     struct FailedConversionToExpr : std::invalid_argument {

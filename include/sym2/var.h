@@ -43,7 +43,7 @@ namespace sym2 {
         template <class... Args>
         void initialize(Args&&... ctorArgs);
 
-        static constexpr std::size_t pimplSize = 184;
+        static constexpr std::size_t pimplSize = 32;
         static constexpr std::size_t pimplAlignment = 8;
 
         std::aligned_storage_t<pimplSize, pimplAlignment> buffer;

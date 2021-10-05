@@ -23,7 +23,7 @@ namespace sym2 {
             /* RAII class to make sure we don't forget to update the number of child blobs at the end of a ctor body.
              * Shall guard against early returns. Exceptions aren't an issue (then the object has no lifetime anyhow).
              * Instances should be declared at the beginning of a ctor, non-statically. */
-            SmallVecBase<Blob>& buffer;
+            std::pmr::vector<Blob>& buffer;
             const std::size_t index;
 
             ~ChildBlobNumberGuard()

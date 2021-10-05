@@ -7,9 +7,9 @@
 
 namespace sym2 {
     namespace {
-        ProductExprVec prepend(ExprView<> first, ProductExprVec&& rest)
+        std::pmr::vector<Expr> prepend(ExprView<> first, std::pmr::vector<Expr>&& rest)
         {
-            ProductExprVec result;
+            std::pmr::vector<Expr> result;
 
             result.reserve(rest.size() + 1);
 
@@ -46,7 +46,7 @@ namespace sym2 {
     }
 }
 
-sym2::ProductExprVec sym2::autoProductIntermediate(std::span<const ExprView<>> ops)
+std::pmr::vector<sym2::Expr> sym2::autoProductIntermediate(std::span<const ExprView<>> ops)
 {
     if (ops.size() == 2)
         return simplTwoFactors(ops.front(), ops.back());
@@ -54,7 +54,7 @@ sym2::ProductExprVec sym2::autoProductIntermediate(std::span<const ExprView<>> o
         return simplMoreThanTwoFactors(ops);
 }
 
-sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
+std::pmr::vector<sym2::Expr> sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
 {
     static const auto asProductOperands = [](ExprView<> e) {
         return is<product>(e) ? OperandsView::operandsOf(e) : OperandsView::singleOperand(e);
@@ -66,7 +66,7 @@ sym2::ProductExprVec sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
     return {Expr{lhs}, Expr{rhs}};
 }
 
-sym2::ProductExprVec sym2::simplMoreThanTwoFactors(std::span<const ExprView<>> ops)
+std::pmr::vector<sym2::Expr> sym2::simplMoreThanTwoFactors(std::span<const ExprView<>> ops)
 {
     assert(ops.size() > 2);
 
@@ -80,7 +80,7 @@ sym2::ProductExprVec sym2::simplMoreThanTwoFactors(std::span<const ExprView<>> o
 }
 
 template <class View>
-sym2::ProductExprVec sym2::merge(OperandsView p, View q)
+std::pmr::vector<sym2::Expr> sym2::merge(OperandsView p, View q)
 {
     assert(!(p.empty() && q.empty()));
 
@@ -93,11 +93,11 @@ sym2::ProductExprVec sym2::merge(OperandsView p, View q)
 }
 
 template <class View>
-sym2::ProductExprVec sym2::mergeNonEmpty(OperandsView p, View q)
+std::pmr::vector<sym2::Expr> sym2::mergeNonEmpty(OperandsView p, View q)
 {
     const auto [p1, pRest] = frontAndRest(p);
     const auto [q1, qRest] = frontAndRest(q);
-    const ProductExprVec firstTwo = simplTwoFactors(p1, q1);
+    const std::pmr::vector<Expr> firstTwo = simplTwoFactors(p1, q1);
 
     if (firstTwo.empty())
         return merge(pRest, qRest);
