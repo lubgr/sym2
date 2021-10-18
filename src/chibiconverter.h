@@ -71,10 +71,10 @@ namespace sym2 {
         sexp dispatchOver(ExprView<number> from);
         PreservedSexp serializeLargeInt(const LargeInt& n);
         sexp symbolDoubleListFrom(ExprView<constant> from);
-        sexp compositeFrom(ExprView<function> fct);
+        sexp compositeFromFunction(ExprView<function> fct);
         sexp serializeListWithLeadingSymbol(const PreservedSexp& identifier, OperandsView rest);
         PreservedSexp leadingSymbolForComposite(ExprView<sum || product || power> composite);
-        sexp compositeFrom(ExprView<sum || product || power> composite);
+        sexp compositeFromSumProductOrPower(ExprView<sum || product || power> composite);
 
         sexp ctx;
     };

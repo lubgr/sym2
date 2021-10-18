@@ -93,7 +93,7 @@ TEST_CASE("Deconstruct as power")
 
         SUBCASE("Tagged")
         {
-            const auto [base, exp] = asPower(tag<power>(pw));
+            const auto [base, exp] = asPower(pw);
 
             CHECK(base == a);
             CHECK(exp == b);

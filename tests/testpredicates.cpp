@@ -149,9 +149,9 @@ TEST_CASE("Type queries for tagged types")
 {
     const Expr n = 42_ex;
 
-    CHECK(is<number>(tag < number && positive && realDomain > (n)));
-    CHECK(is<small>(tag<number>(n)));
-    CHECK(is < small && realDomain > (tag<number>(n)));
-    CHECK(is < small && number && realDomain > (tag<number>(n)));
-    CHECK(is<number>(tag < !symbol && !function && !(sum || power || complexDomain || !small) > (n)));
+    CHECK(is<number>(ExprView < number && positive && realDomain > {n}));
+    CHECK(is<small>(ExprView<number>{n}));
+    CHECK(is < small && realDomain > (ExprView<number>{n}));
+    CHECK(is < small && number && realDomain > (ExprView<number>{n}));
+    CHECK(is<number>(ExprView < !symbol && !function && !(sum || power || complexDomain || !small) > {n}));
 }

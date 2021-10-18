@@ -13,7 +13,7 @@ sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp)
     else if (exp == 1_ex)
         return Expr{base};
     else if (is < realDomain && number > (base) && is < integer && small > (exp))
-        return autoPowerImpl(tag < number && realDomain > (base), get<std::int32_t>(exp));
+        return autoPowerImpl(base, get<std::int32_t>(exp));
     else if (is<power>(base) && is<integer>(exp)) {
         const auto [_, origExp] = asPower(base);
         return autoPowerImpl(base, autoProduct(exp, origExp));

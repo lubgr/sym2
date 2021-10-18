@@ -83,12 +83,6 @@ namespace sym2 {
         ConstBlobIterator sentinel;
     };
 
-    template <PredicateOperand auto newTag>
-    auto tag(ExprView<> e)
-    {
-        return ExprView<newTag>{e};
-    }
-
     bool operator==(ExprView<> lhs, ExprView<> rhs);
     bool operator!=(ExprView<> lhs, ExprView<> rhs);
 

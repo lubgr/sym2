@@ -272,15 +272,15 @@ sym2::FromExprToChibi::FromExprToChibi(sexp ctx)
 sexp sym2::FromExprToChibi::convert(ExprView<> from)
 {
     if (is<symbol>(from))
-        return symbolFrom(tag<symbol>(from));
+        return symbolFrom(from);
     else if (is<number>(from))
-        return dispatchOver(tag<number>(from));
+        return dispatchOver(from);
     else if (is<constant>(from))
-        return symbolDoubleListFrom(tag<constant>(from));
+        return symbolDoubleListFrom(from);
     else if (is<function>(from))
-        return compositeFrom(tag<function>(from));
+        return compositeFromFunction(from);
     else
-        return compositeFrom(tag < sum || product || power > (from));
+        return compositeFromSumProductOrPower(from);
 
     throw FailedConversionToSexp{"Can't convert to chibi type", Expr{from}};
 }
@@ -366,7 +366,7 @@ sexp sym2::FromExprToChibi::symbolDoubleListFrom(ExprView<constant> from)
     return sexp_list2(ctx, symbol.get(), flonum.get());
 }
 
-sexp sym2::FromExprToChibi::compositeFrom(ExprView<function> fct)
+sexp sym2::FromExprToChibi::compositeFromFunction(ExprView<function> fct)
 {
     const auto symbol = chibiSymbolFromNamedExpr(fct);
 
@@ -406,7 +406,7 @@ sym2::PreservedSexp sym2::FromExprToChibi::leadingSymbolForComposite(ExprView<su
     throw FailedConversionToSexp{"Unknown composite type", Expr{composite}};
 }
 
-sexp sym2::FromExprToChibi::compositeFrom(ExprView<sum || product || power> composite)
+sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(ExprView<sum || product || power> composite)
 {
     const auto symbol = leadingSymbolForComposite(composite);
 
