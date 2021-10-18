@@ -1,9 +1,9 @@
 
 #include "predicates.h"
-#include "expr.h"
-#include "blob.h"
-#include "query.h"
 #include "access.h"
+#include "blob.h"
+#include "expr.h"
+#include "query.h"
 
 bool sym2::isRealDomain(ExprView<> e)
 {
@@ -87,14 +87,19 @@ bool sym2::isLarge(ExprView<> e)
 
 bool sym2::isScalar(ExprView<> e)
 {
+    return !isComposite(e);
+}
+
+bool sym2::isComposite(ExprView<> e)
+{
     switch (type(e)) {
         case Type::sum:
         case Type::product:
         case Type::power:
         case Type::function:
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 

@@ -13,6 +13,7 @@ namespace sym2 {
     bool isSmall(ExprView<> e);
     bool isLarge(ExprView<> e);
     bool isScalar(ExprView<> e);
+    bool isComposite(ExprView<> e);
     bool isSymbol(ExprView<> e);
     bool isConstant(ExprView<> e);
     bool isSum(ExprView<> e);
@@ -33,7 +34,8 @@ namespace sym2 {
     constexpr inline auto floatingPoint = predicate<isFloatingPoint>();
     constexpr inline auto small = predicate<isSmall>();
     constexpr inline auto large = predicate<isLarge>();
-    constexpr inline auto scalar = predicate<isScalar>();
+    constexpr inline auto composite = predicate<isComposite>(); // Sum, product, power, function.
+    constexpr inline auto scalar = predicate<isScalar>(); // Not a composite
     constexpr inline auto symbol = predicate<isSymbol>();
     constexpr inline auto constant = predicate<isConstant>();
     constexpr inline auto sum = predicate<isSum>();

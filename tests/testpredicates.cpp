@@ -58,11 +58,15 @@ TEST_CASE("Type queries for untagged types")
 
     SUBCASE("Scalar")
     {
-        for (ExprView<> e : {42_ex, cx, "d"_ex, "a"_ex, "b"_ex, euler, pi})
+        for (ExprView<> e : {42_ex, cx, "d"_ex, "a"_ex, "b"_ex, euler, pi}) {
             CHECK(is<scalar>(e));
+            CHECK(is<!composite>(e));
+        }
 
-        for (ExprView<> e : {pw, pr, s, sinA, atan2Ab})
+        for (ExprView<> e : {pw, pr, s, sinA, atan2Ab}) {
             CHECK_FALSE(is<scalar>(e));
+            CHECK_FALSE(is<!composite>(e));
+        }
     }
 
     SUBCASE("Number")

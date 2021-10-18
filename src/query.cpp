@@ -17,7 +17,7 @@ sym2::BaseExp sym2::asPower(ExprView<> e)
     return {e, one};
 }
 
-sym2::ExprView<> sym2::nthOperand(ExprView<> e, std::uint32_t n)
+sym2::ExprView<> sym2::nthOperand(ExprView<composite> e, std::uint32_t n)
 {
     auto operand = ChildIterator::logicalChildren(e);
 
@@ -26,12 +26,12 @@ sym2::ExprView<> sym2::nthOperand(ExprView<> e, std::uint32_t n)
     return *std::next(operand, n - 1);
 }
 
-sym2::ExprView<> sym2::firstOperand(ExprView<> e)
+sym2::ExprView<> sym2::firstOperand(ExprView<composite> e)
 {
     return nthOperand(e, 1);
 }
 
-sym2::ExprView<> sym2::secondOperand(ExprView<> e)
+sym2::ExprView<> sym2::secondOperand(ExprView<composite> e)
 {
     return nthOperand(e, 2);
 }
