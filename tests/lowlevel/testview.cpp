@@ -1,6 +1,7 @@
 
 #include <boost/range/algorithm.hpp>
 #include "autosimpl.h"
+#include "blob.h"
 #include "doctest/doctest.h"
 #include "predicates.h"
 #include "testutils.h"

@@ -3,12 +3,14 @@
 #include <algorithm>
 #include <boost/iterator/function_output_iterator.hpp>
 #include <boost/range/algorithm.hpp>
+#include <cassert>
 #include <cstring>
 #include <exception>
 #include <limits>
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
+#include "blob.h"
 #include "predicates.h"
 
 static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
@@ -18,25 +20,42 @@ static constexpr std::size_t smallNameLength = sizeof(sym2::Blob::Data2::name) +
 static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Blob::Data8::name);
 
 namespace sym2 {
+    struct ChildBlobNumberGuard {
+        /* RAII class to make sure we don't forget to update the number of child blobs at the end of a ctor body.
+         * Shall guard against early returns. Exceptions aren't an issue (then the object has no lifetime anyhow).
+         * Instances should be declared at the beginning of a ctor, non-statically. */
+        std::pmr::vector<Blob>& buffer;
+        const std::size_t index;
+
+        ~ChildBlobNumberGuard()
+        {
+            if (std::uncaught_exceptions() != 0)
+                /* Make sure the assert below doesn't fire if stack unwinding is in process anyhow. */
+                return;
+
+            assert(buffer.size() > 1);
+
+            buffer[index].main.nChildBlobs = buffer.size() - index - 1;
+        }
+    };
+
     namespace {
-        struct ChildBlobNumberGuard {
-            /* RAII class to make sure we don't forget to update the number of child blobs at the end of a ctor body.
-             * Shall guard against early returns. Exceptions aren't an issue (then the object has no lifetime anyhow).
-             * Instances should be declared at the beginning of a ctor, non-statically. */
-            std::pmr::vector<Blob>& buffer;
-            const std::size_t index;
-
-            ~ChildBlobNumberGuard()
-            {
-                if (std::uncaught_exceptions() != 0)
-                    /* Make sure the assert below doesn't fire if stack unwinding is in process anyhow. */
-                    return;
-
-                assert(buffer.size() > 1);
-
-                buffer[index].main.nChildBlobs = buffer.size() - index - 1;
+        Type toInternalType(CompositeType composite)
+        {
+            switch (composite) {
+                case CompositeType::sum:
+                    return Type::sum;
+                case CompositeType::product:
+                    return Type::product;
+                case CompositeType::power:
+                    return Type::power;
+                case CompositeType::complexNumber:
+                    return Type::complexNumber;
+                default:
+                    assert(false && "Unhandled composite type");
+                    return Type::sum; // Random choice
             }
-        };
+        }
     }
 }
 
@@ -66,15 +85,15 @@ sym2::Expr::Expr(std::int32_t num, std::int32_t denom)
     appendSmallRationalOrInt(num, denom);
 }
 
-sym2::Expr::Expr(const LargeInt& n)
+sym2::Expr::Expr(LargeIntRef n)
 {
-    appendSmallOrLargeInt(n);
+    appendSmallOrLargeInt(n.value);
 }
 
-sym2::Expr::Expr(const LargeRational& n)
+sym2::Expr::Expr(LargeRationalRef n)
 {
-    const auto num = numerator(n);
-    const auto denom = denominator(n);
+    const auto num = numerator(n.value);
+    const auto denom = denominator(n.value);
 
     if (fitsInto<std::int32_t>(num) && fitsInto<std::int32_t>(denom)) {
         appendSmallRationalOrInt(static_cast<std::int32_t>(num), static_cast<std::int32_t>(denom));
@@ -166,26 +185,30 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, Bi
         std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
-sym2::Expr::Expr(Type composite, std::span<const Expr> ops)
+sym2::Expr::Expr(ExprView<> e)
+    : buffer{e.begin(), e.end()}
+{}
+
+sym2::Expr::Expr(CompositeType composite, std::span<const Expr> ops)
     : Expr{composite, ops.size()}
 {
     appendOperands(composite, ops);
 }
 
-sym2::Expr::Expr(Type composite, std::span<const ExprView<>> ops)
+sym2::Expr::Expr(CompositeType composite, std::span<const ExprView<>> ops)
     : Expr{composite, ops.size()}
 {
     appendOperands(composite, ops);
 }
 
-sym2::Expr::Expr(Type composite, std::initializer_list<ExprView<>> ops)
+sym2::Expr::Expr(CompositeType composite, std::initializer_list<ExprView<>> ops)
     : Expr{composite, ops.size()}
 {
     appendOperands(composite, ops);
 }
 
-sym2::Expr::Expr(Type composite, std::size_t nOps)
-    : buffer{Blob{.header = composite,
+sym2::Expr::Expr(CompositeType composite, std::size_t nOps)
+    : buffer{Blob{.header = toInternalType(composite),
       .flags = Flag::none,
       .pre = preZero,
       .mid = {.nLogicalOrPhysicalChildren = static_cast<std::uint32_t>(nOps)},
@@ -193,18 +216,16 @@ sym2::Expr::Expr(Type composite, std::size_t nOps)
 {}
 
 template <class Range>
-void sym2::Expr::appendOperands(Type composite, const Range& ops)
+void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
     assert(ops.size() <= std::numeric_limits<std::uint32_t>::max());
-    assert(composite == Type::sum || composite == Type::product || composite == Type::power
-      || composite == Type::complexNumber);
 
-    if (composite == Type::complexNumber
+    if (composite == CompositeType::complexNumber
       && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), is < number && realDomain >)))
         throw std::invalid_argument("Complex numbers must be created with two non-complex arguments");
-    else if (composite == Type::power && ops.size() != 2)
+    else if (composite == CompositeType::power && ops.size() != 2)
         throw std::invalid_argument("Powers must be created with exactly two operands");
 
     /* Likely to be more, but we also don't premature allocation if it might just fit in-place: */
@@ -292,9 +313,9 @@ void sym2::Expr::appendLargeInt(const LargeInt& n)
     assert(buffer.size() > frontIdx + 1);
     const auto length = buffer.size() - frontIdx - 1;
 
-    /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits happens with the
-     * most significant bits first, leading zeros are dropped. This allows for an easier import, as the whole
-     * Blob span can be used as the bit source: */
+    /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits happens with the most
+     * significant bits first, leading zeros are dropped. This allows for an easier import, as the whole Blob span can
+     * be used as the bit source: */
     std::rotate(aliased, aliased + length * opSize - (opSize - remainder), aliased + length * opSize);
 }
 
@@ -308,6 +329,21 @@ void sym2::Expr::copyNameOrThrow(std::string_view name, std::uint8_t maxLength, 
         throw std::invalid_argument("Names must be non-empty and < 13 characters long");
 
     std::copy(name.cbegin(), name.cend(), dest);
+}
+
+sym2::Expr::Expr(const Expr& other) = default;
+
+sym2::Expr& sym2::Expr::operator=(const Expr& other) = default;
+
+sym2::Expr::Expr(Expr&& other) noexcept = default;
+
+sym2::Expr& sym2::Expr::operator=(Expr&& other) noexcept = default;
+
+sym2::Expr::~Expr() = default;
+
+sym2::ExprView<> sym2::Expr::view() const
+{
+    return ExprView<>{buffer.data(), buffer.size()};
 }
 
 sym2::Expr sym2::operator"" _ex(const char* str, std::size_t)

@@ -5,11 +5,12 @@
 #include <cstdint>
 #include <iterator>
 #include <type_traits>
-#include "blob.h"
 #include "predicateexpr.h"
 #include "violationhandler.h"
 
 namespace sym2 {
+    struct Blob;
+
     class ConstBlobIterator : public boost::stl_interfaces::iterator_interface<ConstBlobIterator,
                                 std::contiguous_iterator_tag, const Blob> {
         /* Simple iterator based on the example in the STL interfaces library. While this could be a template, it won't
@@ -17,29 +18,20 @@ namespace sym2 {
          * iterator is that it can't be used for mutable access - everything ist const. */
       public:
         ConstBlobIterator() = default;
-        explicit ConstBlobIterator(const Blob* b) noexcept
-            : b{b}
-        {}
+        explicit ConstBlobIterator(const Blob* b) noexcept;
 
-        const Blob& operator*() const noexcept
-        {
-            return *b;
-        }
-
-        ConstBlobIterator& operator+=(std::ptrdiff_t n) noexcept
-        {
-            b += n;
-            return *this;
-        }
-
-        auto operator-(ConstBlobIterator other) const noexcept
-        {
-            return b - other.b;
-        }
+        const Blob& operator*() const noexcept;
+        ConstBlobIterator& operator+=(std::ptrdiff_t n) noexcept;
+        difference_type operator-(ConstBlobIterator other) const noexcept;
 
       private:
         const Blob* b = nullptr;
     };
+
+    namespace detail {
+        // We need this being defined in a TU where Blob is know.
+        const Blob* nextBlobHelper(const Blob* current, std::size_t n);
+    }
 
     template <PredicateTag auto tag = any>
     class ExprView : public boost::stl_interfaces::view_interface<ExprView<tag>,
@@ -82,7 +74,7 @@ namespace sym2 {
 
         ExprView(const Blob* first, std::size_t n) noexcept
             : first{first}
-            , sentinel{first + n}
+            , sentinel{detail::nextBlobHelper(first, n)}
         {
             assertTagWithStacktrace(*this);
         }

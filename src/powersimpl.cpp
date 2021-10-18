@@ -19,7 +19,7 @@ sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp)
         return autoPowerImpl(base, autoProduct(exp, origExp));
     }
 
-    return Expr{Type::power, {base, exp}};
+    return Expr{CompositeType::power, {base, exp}};
 }
 
 sym2::Expr sym2::autoPowerImpl(ExprView<number && realDomain> base, std::int32_t exp)

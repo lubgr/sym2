@@ -12,7 +12,7 @@ TEST_CASE("Scalar retrieval")
     const Expr si{42};
     const Expr sr{7, 11};
     const LargeInt largeInt{"8233298749837489247029730960165010709217309487209740928934928"};
-    const Expr li{largeInt};
+    const Expr li{LargeIntRef{largeInt}};
 
     SUBCASE("Get small integer")
     {
@@ -43,7 +43,7 @@ TEST_CASE("Scalar retrieval")
 
     SUBCASE("Get large negative integer")
     {
-        const Expr nli{-largeInt};
+        const Expr nli{LargeIntRef{-largeInt}};
 
         CHECK(get<LargeInt>(nli) == -largeInt);
     }
@@ -58,19 +58,19 @@ TEST_CASE("Scalar retrieval")
     {
         const LargeRational largeRational{LargeInt{3}, largeInt};
 
-        CHECK(get<LargeRational>(Expr{largeInt}) == LargeRational{largeInt, 1});
-        CHECK(get<LargeRational>(Expr{largeRational}) == largeRational);
+        CHECK(get<LargeRational>(Expr{LargeIntRef{largeInt}}) == LargeRational{largeInt, 1});
+        CHECK(get<LargeRational>(Expr{LargeRationalRef{largeRational}}) == largeRational);
     }
 
     SUBCASE("Get double from numeric types")
     {
         CHECK(get<double>(42_ex) == doctest::Approx(42.0));
         CHECK(get<double>(Expr{7, 11}) == doctest::Approx(7.0 / 11.0));
-        CHECK(get<double>(Expr{largeInt}) == doctest::Approx(static_cast<double>(largeInt)));
+        CHECK(get<double>(Expr{LargeIntRef{largeInt}}) == doctest::Approx(static_cast<double>(largeInt)));
 
         const LargeRational largeRational{LargeInt{123456789}, largeInt};
         const double expected = 123456789.0 / static_cast<double>(largeInt);
-        CHECK(get<double>(Expr{largeRational}) == doctest::Approx(expected));
+        CHECK(get<double>(Expr{LargeRationalRef{largeRational}}) == doctest::Approx(expected));
     }
 
     SUBCASE("Get double from nuerically evaluable expression")

@@ -1,7 +1,9 @@
 
 #include "predicates.h"
 #include "expr.h"
+#include "blob.h"
 #include "query.h"
+#include "access.h"
 
 bool sym2::isRealDomain(ExprView<> e)
 {

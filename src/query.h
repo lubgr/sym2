@@ -6,9 +6,6 @@
 #include "view.h"
 
 namespace sym2 {
-    Type type(ExprView<> e);
-    Flag flags(ExprView<> e);
-
     struct BaseExp {
         ExprView<> base;
         ExprView<!power> exponent;
@@ -17,9 +14,7 @@ namespace sym2 {
     BaseExp asPower(ExprView<> e);
 
     std::size_t nOperands(ExprView<> e);
-    std::size_t nOperands(Blob b);
     std::size_t nPhysicalChildren(ExprView<> e);
-    std::size_t nPhysicalChildren(Blob b);
 
     /* Access to the logical operands of composites, like sums, products, functions. It is _not_ meant to access
      * physical children of scalars that happen to have > 1 blobs (e.g. large rationals, complex numbers) etc. Parameter

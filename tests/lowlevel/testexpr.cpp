@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string_view>
+#include "blob.h"
 #include "doctest/doctest.h"
 #include "expr.h"
 #include "query.h"
@@ -101,12 +102,12 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            CHECK(hasLargeIntCharacteristics(Expr{largeInt}));
+            CHECK(hasLargeIntCharacteristics(Expr{LargeIntRef{largeInt}}));
         }
 
         SUBCASE("< 0")
         {
-            CHECK(hasLargeIntCharacteristics(Expr{-largeInt}));
+            CHECK(hasLargeIntCharacteristics(Expr{LargeIntRef{-largeInt}}));
         }
     }
 
@@ -114,22 +115,22 @@ TEST_CASE("Expr constructor")
     {
         const LargeInt fits{"12345"};
 
-        CHECK(isSmallIntEqualTo(Expr{fits}, 12345));
-        CHECK(isSmallIntEqualTo(Expr{-fits}, -12345));
+        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{fits}}, 12345));
+        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{-fits}}, -12345));
     }
 
     SUBCASE("Large zero to small zero")
     {
         const LargeInt zero{0};
 
-        CHECK(isSmallIntEqualTo(Expr{zero}, 0));
+        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{zero}}, 0));
     }
 
     SUBCASE("Large to small rational")
     {
         const LargeRational fits{17, 31};
 
-        CHECK(isSmallRationalEqualTo(Expr{fits}, 17, 31));
+        CHECK(isSmallRationalEqualTo(Expr{LargeRationalRef{fits}}, 17, 31));
     }
 
     SUBCASE("Large rational")
@@ -139,7 +140,7 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            const Expr e{lr};
+            const Expr e{LargeRationalRef{lr}};
 
             CHECK(hasLargeRationalCharacteristics(e));
             CHECK(isSmallIntEqualTo(numerator(e), 1));
@@ -148,7 +149,7 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("< 0")
         {
-            const Expr e{-lr};
+            const Expr e{LargeRationalRef{-lr}};
 
             CHECK(hasLargeRationalCharacteristics(e));
             CHECK(isSmallIntEqualTo(numerator(e), -1));
@@ -157,7 +158,7 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("Num/denom saved as small int if possible")
         {
-            const Expr e{lr};
+            const Expr e{LargeRationalRef{lr}};
             auto v = view(e);
 
             CHECK(v[1].header == Type::smallInt);
@@ -245,7 +246,7 @@ TEST_CASE("Expr constructor")
         const auto two = 2_ex;
         const Expr frac{3, 7};
         const std::vector<ExprView<>> args{two, frac};
-        const Expr c{Type::complexNumber, args};
+        const Expr c{CompositeType::complexNumber, args};
         auto e = view(c);
 
         CHECK(e[0].header == Type::complexNumber);

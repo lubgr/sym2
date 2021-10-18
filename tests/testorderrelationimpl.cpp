@@ -24,8 +24,8 @@ TEST_CASE("Order relation")
         std::vector<ExprView<>> views;
         std::copy(symbols.cbegin(), symbols.cend(), std::back_inserter(views));
 
-        const Expr lhs{Type::sum, views};
-        const Expr rhs{Type::sum, views};
+        const Expr lhs{CompositeType::sum, views};
+        const Expr rhs{CompositeType::sum, views};
 
         CHECK_FALSE(productsOrSums(lhs, rhs));
         CHECK_FALSE(productsOrSums(rhs, lhs));

@@ -1,41 +1,68 @@
 
+add_library(sym2common
+    INTERFACE)
+
+target_link_libraries(sym2common
+    INTERFACE
+    $<$<BOOL:${WITH_SANITIZER}>:sanitizer>
+    flags)
+
+target_include_directories(sym2common
+    INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
+target_compile_features(sym2common
+    INTERFACE
+    cxx_std_20)
+
+add_library(sym2lowlevel
+    OBJECT
+    lowlevel/access.cpp
+    lowlevel/blob.cpp
+    lowlevel/childiterator.cpp
+    lowlevel/expr.cpp
+    lowlevel/get.cpp
+    lowlevel/predicates.cpp
+    lowlevel/query.cpp
+    lowlevel/view.cpp)
+
+target_link_libraries(sym2lowlevel
+    PRIVATE
+    sym2common)
+
+target_include_directories(sym2lowlevel
+    SYSTEM
+    PUBLIC
+    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+
+target_include_directories(sym2lowlevel
+    PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
 add_library(sym2
     autosimpl.cpp
-    blob.cpp
-    childiterator.cpp
-    expr.cpp
     functions.cpp
-    get.cpp
     logarithm.cpp
     numeric.cpp
     operandsview.cpp
     orderrelationimpl.cpp
     powersimpl.cpp
-    predicates.cpp
     productsimpl.cpp
     query.cpp
     trigonometric.cpp
     var.cpp
-    view.cpp
     violationhandler.cpp)
 
 target_link_libraries(sym2
     PUBLIC
-    $<$<BOOL:${WITH_SANITIZER}>:sanitizer>
-    flags)
-
-target_include_directories(sym2
-    PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+    sym2common
+    PRIVATE
+    sym2lowlevel)
 
 target_include_directories(sym2
     SYSTEM
     PRIVATE
     $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
-
-target_compile_features(sym2
-    PUBLIC
-    cxx_std_20)
 
 add_library(sym2chibi
     chibibridge.cpp

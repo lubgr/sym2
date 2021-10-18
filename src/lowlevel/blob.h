@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include "doublefctptr.h"
+#include "smallrational.h"
 
 namespace sym2 {
     enum class Type : std::uint8_t {
@@ -27,14 +29,6 @@ namespace sym2 {
     Flag& operator|=(Flag& lhs, Flag rhs);
     Flag operator&(Flag lhs, Flag rhs);
     Flag& operator&=(Flag& lhs, Flag rhs);
-
-    struct SmallRational {
-        std::int32_t num;
-        std::int32_t denom;
-    };
-
-    using UnaryDoubleFctPtr = double (*)(double);
-    using BinaryDoubleFctPtr = double (*)(double, double);
 
     struct Blob {
         Type header;

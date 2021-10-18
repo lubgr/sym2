@@ -13,8 +13,8 @@ TEST_CASE("Counters")
     const Expr fp{3.14};
     const Expr sr{7, 11};
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr li{largeInt};
-    const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}};
+    const Expr li{LargeIntRef{largeInt}};
+    const Expr lr{LargeRationalRef{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}}};
     const Expr cx = autoComplex(2_ex, 3_ex);
     const Expr s = autoSum(42_ex, "a"_ex, "b"_ex);
     const Expr pr = autoProduct(42_ex, "a"_ex, "b"_ex);
@@ -60,10 +60,10 @@ TEST_CASE("Physical and logical children queries")
     SUBCASE("Large Rational")
     {
         const LargeInt denom{"1234528973498279834827384284"};
-        const Expr lr{LargeRational{1, denom}};
+        const Expr lr{LargeRationalRef{LargeRational{1, denom}}};
 
         CHECK(numerator(lr) == 1_ex);
-        CHECK(denominator(lr) == Expr{denom});
+        CHECK(denominator(lr) == Expr{LargeIntRef{denom}});
     }
 
     SUBCASE("Complex number")

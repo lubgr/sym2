@@ -7,16 +7,6 @@
 #include "predicates.h"
 #include "view.h"
 
-sym2::Type sym2::type(ExprView<> e)
-{
-    return e[0].header;
-}
-
-sym2::Flag sym2::flags(ExprView<> e)
-{
-    return e[0].flags;
-}
-
 sym2::BaseExp sym2::asPower(ExprView<> e)
 {
     static const auto one = 1_ex;
@@ -25,46 +15,6 @@ sym2::BaseExp sym2::asPower(ExprView<> e)
         return {firstOperand(e), secondOperand(e)};
 
     return {e, one};
-}
-
-std::size_t sym2::nOperands(ExprView<> e)
-{
-    return nOperands(e[0]);
-}
-
-std::size_t sym2::nOperands(Blob b)
-{
-    switch (b.header) {
-        case Type::smallInt:
-        case Type::smallRational:
-        case Type::floatingPoint:
-        case Type::largeInt:
-        case Type::largeRational:
-        case Type::symbol:
-        case Type::constant:
-            return 0;
-        default:
-            return b.mid.nLogicalOrPhysicalChildren;
-    }
-}
-
-std::size_t sym2::nPhysicalChildren(ExprView<> e)
-{
-    return nPhysicalChildren(e[0]);
-}
-
-std::size_t sym2::nPhysicalChildren(Blob b)
-{
-    switch (b.header) {
-        case Type::smallInt:
-        case Type::smallRational:
-        case Type::floatingPoint:
-        case Type::symbol:
-        case Type::constant:
-            return 0;
-        default:
-            return b.main.nChildBlobs;
-    }
 }
 
 sym2::ExprView<> sym2::nthOperand(ExprView<> e, std::uint32_t n)

@@ -46,7 +46,7 @@ namespace sym2 {
         SymbolFlag symbolConstraintsOrThrow(std::string_view flags);
         std::vector<PreservedSexp> collectItems(sexp list);
         Expr nonEmptyListToExpr(std::span<const PreservedSexp> from);
-        Expr compositeToExpr(Type kind, std::span<const PreservedSexp> operands);
+        Expr compositeToExpr(CompositeType kind, std::span<const PreservedSexp> operands);
         Expr compositeToExpr(std::string_view name, UnaryDoubleFctPtr fct, std::span<const PreservedSexp> operands);
         Expr compositeToExpr(std::string_view name, BinaryDoubleFctPtr fct, std::span<const PreservedSexp> operands);
         Expr attemptConstantToExpr(std::string_view name, std::span<const PreservedSexp> operands);
@@ -73,7 +73,7 @@ namespace sym2 {
         sexp symbolDoubleListFrom(ExprView<constant> from);
         sexp compositeFrom(ExprView<function> fct);
         sexp serializeListWithLeadingSymbol(const PreservedSexp& identifier, OperandsView rest);
-        PreservedSexp leadingSymbolForComposite(ExprView<> composite);
+        PreservedSexp leadingSymbolForComposite(ExprView<sum || product || power> composite);
         sexp compositeFrom(ExprView<sum || product || power> composite);
 
         sexp ctx;

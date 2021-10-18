@@ -17,7 +17,7 @@ sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
 sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
 {
     // TODO
-    return Expr{Type::sum, ops};
+    return Expr{CompositeType::sum, ops};
 }
 
 sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
@@ -41,7 +41,7 @@ sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
     else if (res.size() == 1)
         return res.front();
     else
-        return {Type::product, res};
+        return {CompositeType::product, res};
 }
 
 sym2::Expr sym2::autoMinus(ExprView<> arg)
@@ -66,5 +66,5 @@ sym2::Expr sym2::autoOneOver(ExprView<> arg)
 sym2::Expr sym2::autoComplex(ExprView<> real, ExprView<> imag)
 {
     // TODO
-    return Expr{Type::complexNumber, {real, imag}};
+    return Expr{CompositeType::complexNumber, {real, imag}};
 }

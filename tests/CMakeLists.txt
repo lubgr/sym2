@@ -1,34 +1,46 @@
 
+add_library(unit-tests-lowlevel
+    OBJECT
+    lowlevel/testassumptions.cpp
+    lowlevel/testexpr.cpp
+    lowlevel/testview.cpp)
+
+target_include_directories(unit-tests-lowlevel
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/lowlevel)
+
+target_include_directories(unit-tests-lowlevel
+    PUBLIC
+    ${PROJECT_SOURCE_DIR}/include/sym2
+    ${PROJECT_SOURCE_DIR}/src)
+
+target_include_directories(unit-tests-lowlevel
+    SYSTEM
+    PUBLIC
+    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+
+target_link_libraries(unit-tests-lowlevel
+    PUBLIC
+    sym2
+    doctest::doctest)
+
 add_executable(unit-tests
-    testassumptions.cpp
     testchilditerator.cpp
     testequality.cpp
     testfunctionview.cpp
     testget.cpp
     testeval.cpp
-    testexpr.cpp
     testoperandsview.cpp
     testorderrelationimpl.cpp
     testpredicates.cpp
     testquery.cpp
     testvar.cpp
-    testview.cpp
     main.cpp)
-
-target_include_directories(unit-tests
-    PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/sym2
-    ${PROJECT_SOURCE_DIR}/src)
-
-target_include_directories(unit-tests
-    SYSTEM
-    PRIVATE
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
 
 target_link_libraries(unit-tests
     PRIVATE
-    sym2
-    doctest::doctest)
+    unit-tests-lowlevel)
 
 add_test(NAME sym2.unittests COMMAND unit-tests)
 

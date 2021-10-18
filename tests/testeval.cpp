@@ -53,7 +53,7 @@ TEST_CASE("Numeric evaluation of numerics/constant")
 
     SUBCASE("Complex")
     {
-        const Expr cplx{Type::complexNumber, {2_ex, 3_ex}};
+        const Expr cplx{CompositeType::complexNumber, {2_ex, 3_ex}};
 
         CHECK(evalComplex(cplx, lookupThrow) == std::complex<double>{2, 3});
         CHECK(evalReal(cplx, lookupThrow) == doctest::Approx(2.0));
@@ -152,7 +152,7 @@ TEST_CASE("Numeric evaluation to complex")
 {
     SUBCASE("Complex number")
     {
-        const Expr cplx{Type::complexNumber, {2_ex, 3_ex}};
+        const Expr cplx{CompositeType::complexNumber, {2_ex, 3_ex}};
         const std::complex<double> actual = evalComplex(cplx, lookupThrow);
 
         CHECK(actual.real() == doctest::Approx(2.0));

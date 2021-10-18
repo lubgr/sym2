@@ -13,8 +13,8 @@ TEST_CASE("Type queries for untagged types")
     const Expr fp{3.14};
     const Expr sr{7, 11};
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr li{largeInt};
-    const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}};
+    const Expr li{LargeIntRef{largeInt}};
+    const Expr lr{LargeRationalRef{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}}};
     const Expr cx = autoComplex(2_ex, 3_ex);
     const Expr s = autoSum(42_ex, "a"_ex, "b"_ex);
     const Expr pr = autoProduct(42_ex, "a"_ex, "b"_ex);

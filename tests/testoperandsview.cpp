@@ -11,7 +11,7 @@ using namespace sym2;
 TEST_CASE("Semantic traversal")
 {
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr li{largeInt};
+    const Expr li{LargeIntRef{largeInt}};
     const Expr p1 = autoProduct(2_ex, autoSum("a"_ex, "b"_ex));
     const Expr p2 = autoProduct("c"_ex, "d"_ex, "e"_ex, "f"_ex);
     const Expr fct = sym2::atan2("a"_ex, "b"_ex);

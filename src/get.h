@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <string_view>
+#include "doublefctptr.h"
 #include "largerational.h"
+#include "smallrational.h"
 #include "view.h"
 
 namespace sym2 {

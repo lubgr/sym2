@@ -59,11 +59,11 @@ namespace sym2 {
 
     const auto& knownCompositeOperators()
     {
-        using MappedType = std::variant<Type, UnaryDoubleFctPtr, BinaryDoubleFctPtr>;
+        using MappedType = std::variant<CompositeType, UnaryDoubleFctPtr, BinaryDoubleFctPtr>;
         static const boost::container::flat_map<std::string_view, MappedType> known{
-          {"+", Type::sum},
-          {"*", Type::product},
-          {"^", Type::power},
+          {"+", CompositeType::sum},
+          {"*", CompositeType::product},
+          {"^", CompositeType::power},
           {"atan2", BinaryDoubleFctPtr{&std::atan2}},
           {"sin", UnaryDoubleFctPtr{&std::sin}},
           {"cos", UnaryDoubleFctPtr{&std::cos}},
@@ -129,19 +129,19 @@ sym2::Expr sym2::FromChibiToExpr::numberToExpr(sexp from)
          * loss also qualify as integers. */
         return Expr{sexp_flonum_value(from)};
     else if (sexp_exact_integerp(from))
-        return Expr{extractSmallOrLargeInt(from)};
+        return Expr{LargeIntRef{extractSmallOrLargeInt(from)}};
     else if (sexp_ratiop(from)) {
         const auto num = preserve(sexp_ratio_numerator(from));
         const auto denom = preserve(sexp_ratio_denominator(from));
         const LargeRational n{extractSmallOrLargeInt(num.get()), extractSmallOrLargeInt(denom.get())};
 
-        return Expr{n};
+        return Expr{LargeRationalRef{n}};
     } else if (sexp_complexp(from)) {
         const auto realPart = preserve(sexp_complex_real(from));
         const auto imagPart = preserve(sexp_complex_imag(from));
         const std::array<Expr, 2> operands{{convert(realPart), convert(imagPart)}};
 
-        return Expr{Type::complexNumber, operands};
+        return Expr{CompositeType::complexNumber, operands};
     }
 
     return throwSexp("Can't convert number to a numeric Expr", from);
@@ -214,7 +214,7 @@ sym2::Expr sym2::FromChibiToExpr::nonEmptyListToExpr(std::span<const PreservedSe
     const auto str = preserve(sexp_symbol_to_string(ctx, type.get()));
     const std::string_view name{sexp_string_data(str.get()), sexp_string_size(str.get())};
     const auto& lookup = knownCompositeOperators();
-    const auto dispatch = overloaded{[&ops, this](Type kind) { return compositeToExpr(kind, ops); },
+    const auto dispatch = overloaded{[&ops, this](CompositeType kind) { return compositeToExpr(kind, ops); },
       [&ops, &name, this](auto fct) { return compositeToExpr(name, fct, ops); }};
 
     if (lookup.contains(name))
@@ -223,7 +223,7 @@ sym2::Expr sym2::FromChibiToExpr::nonEmptyListToExpr(std::span<const PreservedSe
         return attemptConstantToExpr(name, ops);
 }
 
-sym2::Expr sym2::FromChibiToExpr::compositeToExpr(Type kind, std::span<const PreservedSexp> operands)
+sym2::Expr sym2::FromChibiToExpr::compositeToExpr(CompositeType kind, std::span<const PreservedSexp> operands)
 {
     std::vector<Expr> converted;
 
@@ -385,12 +385,21 @@ sexp sym2::FromExprToChibi::serializeListWithLeadingSymbol(const PreservedSexp& 
     return result.get();
 }
 
-sym2::PreservedSexp sym2::FromExprToChibi::leadingSymbolForComposite(ExprView<> composite)
+sym2::PreservedSexp sym2::FromExprToChibi::leadingSymbolForComposite(ExprView<sum || product || power> composite)
 {
     const auto& lookup = knownCompositeOperators();
+    const auto compositeType = [](ExprView<sum || product || power> composite) {
+        if (is<sum>(composite))
+            return CompositeType::sum;
+        else if (is<product>(composite))
+            return CompositeType::product;
+        else
+            return CompositeType::power;
+    };
 
     for (const auto& [identifier, mapped] : lookup)
-        if (const Type* kind = std::get_if<Type>(&mapped); kind && *kind == type(composite)) {
+        if (const CompositeType* kind = std::get_if<CompositeType>(&mapped);
+            kind && *kind == compositeType(composite)) {
             return chibiSymbolFromString(identifier);
         }
 

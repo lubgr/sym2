@@ -3,6 +3,7 @@
 #include <cassert>
 #include "childiterator.h"
 #include "eval.h"
+#include "blob.h"
 #include "predicates.h"
 
 template <>
@@ -25,6 +26,11 @@ template <>
 double sym2::get<double>(ExprView<> e)
 {
     assert((is<numericallyEvaluable>(e)));
+
+    if (is < floatingPoint || constant > (e))
+        return e[0].main.inexact;
+    else if (is < small && (integer || rational) > (e))
+        return static_cast<double>(e[0].main.exact.num) / e[0].main.exact.denom;
 
     return evalReal(e, [](auto&&...) {
         assert(false);
