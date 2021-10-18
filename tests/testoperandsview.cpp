@@ -36,6 +36,15 @@ TEST_CASE("Semantic traversal")
         CHECK(OperandsView::singleOperand(s).size() == 1);
     }
 
+    SUBCASE("Empty OperandsView")
+    {
+        CHECK(OperandsView{}.empty());
+        CHECK(OperandsView{}.size() == 0);
+
+        for ([[maybe_unused]] ExprView<> e : OperandsView{})
+            CHECK(false);
+    }
+
     SUBCASE("Single, artificial OperandsView")
     {
         const std::vector<ExprView<>> expected{s};
