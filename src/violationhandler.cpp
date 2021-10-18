@@ -2,7 +2,9 @@
 #include "violationhandler.h"
 #include <cstdio>
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <boost/stacktrace.hpp>
 
 void sym2::detail::printStacktrace(std::FILE* fp)
