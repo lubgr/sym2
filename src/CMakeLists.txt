@@ -4,6 +4,7 @@ add_library(sym2common
 
 target_link_libraries(sym2common
     INTERFACE
+    ${CMAKE_DL_LIBS}
     $<$<BOOL:${WITH_SANITIZER}>:sanitizer>
     flags)
 
@@ -25,6 +26,9 @@ add_library(sym2lowlevel
     lowlevel/predicates.cpp
     lowlevel/query.cpp
     lowlevel/view.cpp)
+
+set_property(TARGET sym2lowlevel
+    PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
 
 target_link_libraries(sym2lowlevel
     PRIVATE
