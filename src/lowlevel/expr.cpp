@@ -13,6 +13,9 @@
 #include "blob.h"
 #include "predicates.h"
 
+static_assert(std::is_nothrow_move_constructible_v<sym2::Expr>);
+static_assert(std::is_nothrow_move_assignable_v<sym2::Expr>);
+
 static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
