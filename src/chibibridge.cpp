@@ -44,7 +44,7 @@ namespace {
 }
 
 extern "C" {
-sexp roundtrip(sexp ctx, sexp self, sexp_sint_t n, sexp arg)
+sexp roundtrip(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
 {
     assert(n == 1);
 
@@ -58,7 +58,7 @@ sexp roundtrip(sexp ctx, sexp self, sexp_sint_t n, sexp arg)
     });
 }
 
-sexp auto_times(sexp ctx, sexp self, sexp_sint_t n, sexp args)
+sexp auto_times(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
 {
     assert(n = 1 && sexp_listp(ctx, args));
 
@@ -73,7 +73,7 @@ sexp auto_times(sexp ctx, sexp self, sexp_sint_t n, sexp args)
     return SEXP_FALSE;
 }
 
-sexp auto_plus(sexp ctx, sexp self, sexp_sint_t n, sexp args)
+sexp auto_plus(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
 {
     assert(n = 1 && sexp_listp(ctx, args));
     assert(sexp_unbox_fixnum(sexp_length(ctx, args)) >= 2);
