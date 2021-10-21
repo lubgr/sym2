@@ -11,7 +11,6 @@
 #include <cassert>
 #include <cmath>
 #include <variant>
-#include "chibiutils.h"
 #include "get.h"
 #include "query.h"
 
@@ -80,8 +79,9 @@ namespace sym2 {
     }
 }
 
-sym2::FromChibiToExpr::FromChibiToExpr(sexp ctx)
+sym2::FromChibiToExpr::FromChibiToExpr(sexp ctx, SexpPreserver& registry)
     : ctx{ctx}
+    , registry{registry}
 {}
 
 sym2::Expr sym2::FromChibiToExpr::convert(sexp from)
@@ -105,14 +105,14 @@ sym2::Expr sym2::FromChibiToExpr::convert(sexp from)
 sym2::Expr sym2::FromChibiToExpr::throwSexp(const char* msg, sexp irritant)
 {
     if (irritant == nullptr)
-        throw FailedConversionToExpr{msg, ctx, current.top().get()};
+        throw FailedConversionToExpr{msg, ctx, current.top()};
     else
-        throw FailedConversionToExpr{msg, ctx, irritant};
+        throw FailedConversionToExpr{msg, ctx, preserve(irritant)};
 }
 
 sym2::PreservedSexp sym2::FromChibiToExpr::preserve(sexp what)
 {
-    return PreservedSexp{ctx, what};
+    return registry.markAsPreserved(ctx, what);
 }
 
 sym2::Expr sym2::FromChibiToExpr::convert(const PreservedSexp& from)
@@ -265,8 +265,9 @@ sym2::Expr sym2::FromChibiToExpr::attemptConstantToExpr(std::string_view name, s
     return Expr{name, value};
 }
 
-sym2::FromExprToChibi::FromExprToChibi(sexp ctx)
+sym2::FromExprToChibi::FromExprToChibi(sexp ctx, SexpPreserver& registry)
     : ctx{ctx}
+    , registry{registry}
 {}
 
 sexp sym2::FromExprToChibi::convert(ExprView<> from)
@@ -287,7 +288,7 @@ sexp sym2::FromExprToChibi::convert(ExprView<> from)
 
 sym2::PreservedSexp sym2::FromExprToChibi::preserve(sexp what)
 {
-    return PreservedSexp{ctx, what};
+    return registry.markAsPreserved(ctx, what);
 }
 
 sexp sym2::FromExprToChibi::symbolFrom(ExprView<symbol> symbol)
@@ -413,13 +414,13 @@ sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(ExprView<sum || produ
     return serializeListWithLeadingSymbol(symbol, OperandsView::operandsOf(composite));
 }
 
-std::vector<sym2::Expr> sym2::convertList(sexp ctx, sexp list)
+std::vector<sym2::Expr> sym2::convertList(sexp ctx, sexp list, SexpPreserver& registry)
 {
     std::vector<Expr> result;
-    FromChibiToExpr individual{ctx};
+    FromChibiToExpr individual{ctx, registry};
 
     while (!sexp_nullp(list)) {
-        const PreservedSexp item{ctx, sexp_car(list)};
+        const PreservedSexp item = registry.markAsPreserved(ctx, sexp_car(list));
         result.push_back(individual.convert(item.get()));
         list = sexp_cdr(list);
     }

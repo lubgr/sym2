@@ -70,8 +70,7 @@ target_include_directories(sym2
 
 add_library(sym2chibi
     chibibridge.cpp
-    chibiconverter.cpp
-    chibiutils.cpp)
+    chibiconverter.cpp)
 
 target_link_libraries(sym2chibi
     PRIVATE

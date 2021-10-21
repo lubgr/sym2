@@ -5,16 +5,36 @@
 #include <stack>
 #include <stdexcept>
 #include <vector>
-#include "chibiutils.h"
 #include "expr.h"
 #include "operandsview.h"
 #include "predicates.h"
 
 namespace sym2 {
+    class PreservedSexp {
+      public:
+        explicit PreservedSexp(sexp notCollected)
+            : notCollected{notCollected}
+        {}
+
+        const sexp& get() const
+        {
+            return notCollected;
+        }
+
+      private:
+        sexp notCollected;
+    };
+
+    class SexpPreserver {
+      public:
+        virtual ~SexpPreserver() = default;
+        virtual PreservedSexp markAsPreserved(sexp ctx, sexp what) = 0;
+    };
+
     struct FailedConversionToExpr : std::invalid_argument {
-        FailedConversionToExpr(const char* msg, sexp ctx, sexp orig)
+        FailedConversionToExpr(const char* msg, sexp ctx, PreservedSexp orig)
             : std::invalid_argument(msg)
-            , orig{ctx, orig}
+            , orig{std::move(orig)}
             , ctx{ctx}
         {}
 
@@ -33,7 +53,7 @@ namespace sym2 {
 
     class FromChibiToExpr {
       public:
-        explicit FromChibiToExpr(sexp ctx);
+        FromChibiToExpr(sexp ctx, SexpPreserver& registry);
 
         Expr convert(sexp from);
 
@@ -55,11 +75,12 @@ namespace sym2 {
 
         sexp ctx;
         std::stack<PreservedSexp> current; /* For getting the relevant bits into exceptions. */
+        SexpPreserver& registry;
     };
 
     class FromExprToChibi {
       public:
-        explicit FromExprToChibi(sexp ctx);
+        FromExprToChibi(sexp ctx, SexpPreserver& registry);
 
         sexp convert(ExprView<> from);
 
@@ -77,7 +98,8 @@ namespace sym2 {
         sexp compositeFromSumProductOrPower(ExprView<sum || product || power> composite);
 
         sexp ctx;
+        SexpPreserver& registry;
     };
 
-    std::vector<Expr> convertList(sexp ctx, sexp list);
+    std::vector<Expr> convertList(sexp ctx, sexp list, SexpPreserver& registry);
 }
