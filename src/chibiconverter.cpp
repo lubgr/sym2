@@ -79,6 +79,20 @@ namespace sym2 {
     }
 }
 
+sym2::PreservedSexp::PreservedSexp(sexp ctx, sexp toPreserve)
+    : handle{new Payload{toPreserve, ctx}, [](Payload* ptr) {
+                 sexp_release_object(ptr->ctx, ptr->preserved);
+                 delete (ptr);
+             }}
+{
+    sexp_preserve_object(handle->ctx, handle->preserved);
+}
+
+const sexp& sym2::PreservedSexp::get() const
+{
+    return handle->preserved;
+}
+
 sym2::FromChibiToExpr::FromChibiToExpr(sexp ctx, SexpPreserver& registry)
     : ctx{ctx}
     , registry{registry}

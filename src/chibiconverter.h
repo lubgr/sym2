@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chibi/sexp.h>
+#include <memory>
 #include <span>
 #include <stack>
 #include <stdexcept>
@@ -12,17 +13,17 @@
 namespace sym2 {
     class PreservedSexp {
       public:
-        explicit PreservedSexp(sexp notCollected)
-            : notCollected{notCollected}
-        {}
+        PreservedSexp(sexp ctx, sexp toPreserve);
 
-        const sexp& get() const
-        {
-            return notCollected;
-        }
+        const sexp& get() const;
 
       private:
-        sexp notCollected;
+        struct Payload {
+            sexp preserved;
+            sexp ctx;
+        };
+
+        std::shared_ptr<Payload> handle;
     };
 
     class SexpPreserver {

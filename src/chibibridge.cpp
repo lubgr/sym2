@@ -1,9 +1,7 @@
 
 #include <cassert>
 #include <chibi/sexp.h>
-#include <deque>
 #include <exception>
-#include <iostream>
 #include <vector>
 #include "autosimpl.h"
 #include "chibiconverter.h"
@@ -13,40 +11,13 @@ using namespace sym2;
 
 class ScopedSexpPreserver : public SexpPreserver {
   public:
-    explicit ScopedSexpPreserver(sexp ctx)
-        : ctx{ctx}
+    explicit ScopedSexpPreserver(sexp)
     {}
-
-    ~ScopedSexpPreserver()
-    {
-        if (!targets.empty())
-            sexp_context_saves(ctx) = targets.back().linkedList.next;
-    }
 
     PreservedSexp markAsPreserved(sexp ctx, sexp what) override
     {
-        assert(this->ctx == ctx);
-
-        targets.push_front({});
-
-        Entry& newEntry = targets.front();
-
-        newEntry.what = what;
-        newEntry.linkedList.var = &newEntry.what;
-        newEntry.linkedList.next = sexp_context_saves(ctx);
-        sexp_context_saves(ctx) = &newEntry.linkedList;
-
-        return PreservedSexp{what};
+        return PreservedSexp{ctx, what};
     }
-
-  private:
-    struct Entry {
-        sexp_gc_var_t linkedList;
-        sexp what;
-    };
-
-    std::deque<Entry> targets;
-    sexp ctx;
 };
 
 namespace {
