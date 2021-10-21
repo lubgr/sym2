@@ -26,12 +26,6 @@ namespace sym2 {
         std::shared_ptr<Payload> handle;
     };
 
-    class SexpPreserver {
-      public:
-        virtual ~SexpPreserver() = default;
-        virtual PreservedSexp markAsPreserved(sexp ctx, sexp what) = 0;
-    };
-
     struct FailedConversionToExpr : std::invalid_argument {
         FailedConversionToExpr(const char* msg, sexp ctx, PreservedSexp orig)
             : std::invalid_argument(msg)
@@ -54,7 +48,7 @@ namespace sym2 {
 
     class FromChibiToExpr {
       public:
-        FromChibiToExpr(sexp ctx, SexpPreserver& registry);
+        explicit FromChibiToExpr(sexp ctx);
 
         Expr convert(sexp from);
 
@@ -76,12 +70,11 @@ namespace sym2 {
 
         sexp ctx;
         std::stack<PreservedSexp> current; /* For getting the relevant bits into exceptions. */
-        SexpPreserver& registry;
     };
 
     class FromExprToChibi {
       public:
-        FromExprToChibi(sexp ctx, SexpPreserver& registry);
+        explicit FromExprToChibi(sexp ctx);
 
         sexp convert(ExprView<> from);
 
@@ -99,8 +92,7 @@ namespace sym2 {
         sexp compositeFromSumProductOrPower(ExprView<sum || product || power> composite);
 
         sexp ctx;
-        SexpPreserver& registry;
     };
 
-    std::vector<Expr> convertList(sexp ctx, sexp list, SexpPreserver& registry);
+    std::vector<Expr> convertList(sexp ctx, sexp list);
 }

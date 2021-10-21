@@ -9,17 +9,6 @@
 
 using namespace sym2;
 
-class ScopedSexpPreserver : public SexpPreserver {
-  public:
-    explicit ScopedSexpPreserver(sexp)
-    {}
-
-    PreservedSexp markAsPreserved(sexp ctx, sexp what) override
-    {
-        return PreservedSexp{ctx, what};
-    }
-};
-
 namespace {
     sexp translate(sexp ctx, sexp fct, const FailedConversionToExpr& error)
     {
@@ -57,14 +46,13 @@ namespace {
 extern "C" {
 sexp roundtrip(sexp ctx, sexp self, sexp_sint_t n, sexp arg)
 {
-    ScopedSexpPreserver registry{ctx};
     assert(n == 1);
 
     return wrappedTryCatch(ctx, self, [&]() {
-        FromChibiToExpr first{ctx, registry};
+        FromChibiToExpr first{ctx};
         const Expr expression = first.convert(arg);
 
-        FromExprToChibi second{ctx, registry};
+        FromExprToChibi second{ctx};
 
         return second.convert(expression);
     });
@@ -74,14 +62,12 @@ sexp auto_times(sexp ctx, sexp self, sexp_sint_t n, sexp args)
 {
     assert(n = 1 && sexp_listp(ctx, args));
 
-    ScopedSexpPreserver registry{ctx};
-
     return wrappedTryCatch(ctx, self, [&]() {
-        const auto convertedArgs = convertList(ctx, args, registry);
+        const auto convertedArgs = convertList(ctx, args);
         const auto views = expressionsToViews(convertedArgs);
         const Expr result = autoProduct(views);
 
-        return FromExprToChibi{ctx, registry}.convert(result);
+        return FromExprToChibi{ctx}.convert(result);
     });
 
     return SEXP_FALSE;
@@ -92,8 +78,7 @@ sexp auto_plus(sexp ctx, sexp self, sexp_sint_t n, sexp args)
     assert(n = 1 && sexp_listp(ctx, args));
     assert(sexp_unbox_fixnum(sexp_length(ctx, args)) >= 2);
 
-    ScopedSexpPreserver registry{ctx};
-    FromChibiToExpr conv{ctx, registry};
+    FromChibiToExpr conv{ctx};
     std::vector<Expr> ops;
 
     try {
@@ -115,16 +100,14 @@ sexp auto_power(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp base, 
 {
     assert(n == 2);
 
-    ScopedSexpPreserver registry{ctx};
-
     return wrappedTryCatch(ctx, self, [&]() {
-        FromChibiToExpr conv{ctx, registry};
+        FromChibiToExpr conv{ctx};
         const Expr convertedBase = conv.convert(base);
         const Expr convertedExp = conv.convert(exponent);
 
         const Expr result = autoPower(convertedBase, convertedExp);
 
-        FromExprToChibi back{ctx, registry};
+        FromExprToChibi back{ctx};
 
         return back.convert(result);
     });
@@ -134,10 +117,8 @@ sexp order_less_than(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp l
 {
     assert(n == 2);
 
-    ScopedSexpPreserver registry{ctx};
-
     return wrappedTryCatch(ctx, self, [&]() {
-        FromChibiToExpr conv{ctx, registry};
+        FromChibiToExpr conv{ctx};
         const bool result = orderLessThan(conv.convert(lhs), conv.convert(rhs));
         return result ? SEXP_TRUE : SEXP_FALSE;
     });
