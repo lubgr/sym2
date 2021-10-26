@@ -60,7 +60,7 @@ sexp roundtrip(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
 
 sexp auto_times(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
 {
-    assert(n = 1 && sexp_listp(ctx, args));
+    assert(n == 1 && sexp_listp(ctx, args));
 
     return wrappedTryCatch(ctx, self, [&]() {
         const auto convertedArgs = convertList(ctx, args);
@@ -75,7 +75,7 @@ sexp auto_times(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
 
 sexp auto_plus(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
 {
-    assert(n = 1 && sexp_listp(ctx, args));
+    assert(n == 1 && sexp_listp(ctx, args));
     assert(sexp_unbox_fixnum(sexp_length(ctx, args)) >= 2);
 
     FromChibiToExpr conv{ctx};
