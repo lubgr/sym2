@@ -10,4 +10,5 @@ algorithms are/will be implemented according to _Cohen, Computer Algebra and Sym
 
 Primary target platforms are Linux, BSD and MacOS. This library is under development and unusable at
 this point (apart from the tests). See the [notes on the implementation](docs/implementation.md) for
-details on the design of internal high-speed data structures or the scripting interface.
+details on the design of internal high-speed data structures or [notes on testing](docs/testing.md)
+the scripting interface.

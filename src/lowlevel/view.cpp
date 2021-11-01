@@ -3,6 +3,11 @@
 #include <cstring>
 #include "blob.h"
 
+static_assert(std::is_trivially_copyable_v<sym2::ExprView<>>);
+static_assert(std::is_trivially_copy_assignable_v<sym2::ExprView<>>);
+static_assert(std::is_trivially_move_constructible_v<sym2::ExprView<>>);
+static_assert(std::is_trivially_move_assignable_v<sym2::ExprView<>>);
+
 sym2::ConstBlobIterator::ConstBlobIterator(const Blob* b) noexcept
     : b{b}
 {}

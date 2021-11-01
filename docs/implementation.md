@@ -94,5 +94,3 @@ custom polymorphic allocators (not implemented yet) to avoid numerous small allo
 arranges the data layout of all expression trees. These trees are represented in a contiguous array
 of a 16 byte `struct` called `Blob`. It consists of some small flags and tightly packed `union`s
 that use only primitive builtin types. Critically, it is trivially copyable.
-
-# Scripting interface for testing
