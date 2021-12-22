@@ -24,12 +24,31 @@ bool sym2::orderLessThan(ExprView<> lhs, ExprView<> rhs)
     else if (areAll<product>(lhs, rhs) || areAll<sum>(lhs, rhs))
         return productsOrSums(lhs, rhs);
     else if (areAll<constant>(lhs, rhs))
+        // This diverges from Cohen's algorithm, where constants are treated the same way as numbers:
         return constants(lhs, rhs);
     else if (areAll<function>(lhs, rhs))
         return functions(lhs, rhs);
-    else
-        // TODO
+
+    if (is<number>(lhs))
         return true;
+    else if (is<number>(rhs))
+        // This branch could be omitted since it's handled by the final recursive swap, but it simplifies the following
+        // condition for catching a constant.
+        return false;
+    else if (is<constant>(lhs))
+        // Cohen's algorithm treats constants as numbers, hence this branch doesn't exist in his outline. We need it
+        // here since we don't treat constants as numbers.
+        return true;
+    else if (is<product>(lhs) && is < power || sum || symbol || function > (rhs))
+        return orderLessThan(OperandsView::operandsOf(lhs), OperandsView::singleOperand(rhs));
+    else if (is<power>(lhs) && is < sum || symbol || function > (rhs))
+        return powers(asPower(lhs), {rhs, 1_ex});
+    else if (is<sum>(lhs) && is < symbol || function > (rhs))
+        return orderLessThan(OperandsView::operandsOf(lhs), OperandsView::singleOperand(rhs));
+    else if (is<function>(lhs) && is<symbol>(rhs))
+        return leftFunctionRightSymbol(lhs, rhs);
+
+    return !orderLessThan(rhs, lhs);
 }
 
 bool sym2::numbers(ExprView<number> lhs, ExprView<number> rhs)
@@ -62,8 +81,13 @@ bool sym2::symbols(ExprView<symbol> lhs, ExprView<symbol> rhs)
 
 bool sym2::powers(ExprView<power> lhs, ExprView<power> rhs)
 {
-    const auto [lhsBase, lhsExp] = asPower(lhs);
-    const auto [rhsBase, rhsExp] = asPower(rhs);
+    return powers(asPower(lhs), asPower(rhs));
+}
+
+bool sym2::powers(BaseExp lhs, BaseExp rhs)
+{
+    const auto [lhsBase, lhsExp] = lhs;
+    const auto [rhsBase, rhsExp] = rhs;
 
     if (lhsBase == rhsBase)
         return orderLessThan(lhsExp, rhsExp);
@@ -75,7 +99,7 @@ bool sym2::productsOrSums(ExprView<product || sum> lhs, ExprView<product || sum>
 {
     /* Cohen's algorithm determines the order relation of two sums or products such that the order relation of their
      * operands are compared, starting at the end, i.e., the last operand is the most significant one. When both last
-     * operands compare equal, the two next to last are evaluated and so on. This imposes are technical difficulty for
+     * operands compare equal, the two next to last are evaluated and so on. This imposes a technical difficulty for
      * handling the data layout of our composites: iterators over operands are only forward iterators, so we can't
      * easily reverse a sequence of operands. See below for details. Examples of order relation of sum/product operands:
      *
@@ -88,11 +112,16 @@ bool sym2::productsOrSums(ExprView<product || sum> lhs, ExprView<product || sum>
      * <?:  f t t => false     <?:  f t t => false    <?:  t t f => false */
     const auto lhsOps = OperandsView::operandsOf(lhs);
     const auto rhsOps = OperandsView::operandsOf(rhs);
-    const std::size_t maxSize = std::max(lhsOps.size(), rhsOps.size());
-    const std::size_t lhsStart = maxSize - rhsOps.size();
-    const std::size_t rhsStart = maxSize - lhsOps.size();
-    const boost::logic::tribool lessThan =
-      orderLessThanOperandsReverse(lhsOps.subview(lhsStart), rhsOps.subview(rhsStart));
+
+    return orderLessThan(lhsOps, rhsOps);
+}
+
+bool sym2::orderLessThan(OperandsView lhs, OperandsView rhs)
+{
+    const std::size_t maxSize = std::max(lhs.size(), rhs.size());
+    const std::size_t lhsStart = maxSize - rhs.size();
+    const std::size_t rhsStart = maxSize - lhs.size();
+    const boost::logic::tribool lessThan = orderLessThanOperandsReverse(lhs.subview(lhsStart), rhs.subview(rhsStart));
 
     if (boost::logic::indeterminate(lessThan))
         return lhsStart < rhsStart;
@@ -176,4 +205,12 @@ boost::logic::tribool sym2::orderLessThanOperands(OperandsView lhs, OperandsView
             return orderLessThan(lhsOp, rhsOp);
 
     return boost::logic::indeterminate;
+}
+
+bool sym2::leftFunctionRightSymbol(ExprView<function> lhs, ExprView<symbol> rhs)
+{
+    const auto lhsName = get<std::string_view>(lhs);
+    const auto rhsName = get<std::string_view>(rhs);
+
+    return lhsName < rhsName;
 }

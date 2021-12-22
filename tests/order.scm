@@ -65,4 +65,37 @@
     (tlt '(atan2 a b) '(atan2 a c))
     (tlt '(atan2 a (+ 2 a b)) '(atan2 a (+ 2 b c)))))
 
+  (test-group "Different types"
+    (tlt 42 'a)
+    (tlt 42 '(pi 3.14))
+    (tlt 42 '(+ a b))
+    (tlt 42 '(^ a 1/2))
+
+    (tlt '(pi 3.14) 'a)
+
+    (tlt '(* a (^ b 2)) '(^ b 3) )
+    (tlt 'b '(* a b))
+
+    (tlt '(^ a 1/2) 'a)
+    (tlt '(^ a 1/2) 'b)
+    (tlt '(pi 3.14) '(^ a 1/2))
+    (tlt '(^ a 1/4) '(^ a 1/2))
+
+    (tlt 'b '(+ a b c))
+    (tlt '(pi 3.14) '(+ a b c))
+    (tlt '(^ (+ 1/2 a) 2) '(+ 1/2 b))
+    (tlt '(^ (+ a b) 1/2) '(+ a b))
+    (tlt '(^ a 1/2) 'b)
+    (tlt 2 '(^ 2 1/2))
+    (tlt '(+ 2 a) 'e)
+
+    (tlt 'b '(cos a))
+    (tlt '(cos a) 'd)
+    (tlt '(* a b) '(sin a))
+
+    (tlt '(sin d) '(* a b c (sin d)))
+    (tlt '(^ a 2) '(sin a))
+    (tlt '(+ b (sin a)) '(sin c))
+    (tlt-not '(cos (^ 7 2/3)) '(cos (^ 7 2/3))))
+
 (test-exit)
