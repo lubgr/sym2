@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory_resource>
 #include <string_view>
 #include "doublefctptr.h"
 #include "largerational.h"
@@ -10,6 +11,9 @@
 namespace sym2 {
     template <class T>
     T get(ExprView<> e) = delete;
+    template <class T>
+    T get(ExprView<> e, std::pmr::memory_resource*) = delete;
+
     /* If there is a mismatch between requested and actual type, this results in UB. Still, these specializations try to
      * be as applicable as possible: anything that can be numerically evaluated can be retrieved as get<double>, and a
      * small integer can be accessed via get<LargeInt> etc. */
@@ -20,9 +24,9 @@ namespace sym2 {
     template <>
     double get<double>(ExprView<> e);
     template <>
-    LargeInt get<LargeInt>(ExprView<> e);
+    LargeInt get<LargeInt>(ExprView<> e, std::pmr::memory_resource* buffer);
     template <>
-    LargeRational get<LargeRational>(ExprView<> e);
+    LargeRational get<LargeRational>(ExprView<> e, std::pmr::memory_resource* buffer);
     template <>
     std::string_view get<std::string_view>(ExprView<> e);
     template <>
