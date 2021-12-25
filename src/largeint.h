@@ -30,7 +30,7 @@ namespace sym2 {
 
     using LargeInt = boost::multiprecision::number<
       boost::multiprecision::cpp_int_backend<128, 0, boost::multiprecision::signed_magnitude,
-        boost::multiprecision::checked, detail::AssignablePmrAllocator<boost::multiprecision::limb_type>>>;
+        boost::multiprecision::unchecked, detail::AssignablePmrAllocator<boost::multiprecision::limb_type>>>;
 
     using boost::multiprecision::abs;
     using boost::multiprecision::gcd;
