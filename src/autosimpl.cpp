@@ -1,7 +1,11 @@
 
 #include "autosimpl.h"
 #include <array>
+#include <functional>
+#include <memory_resource>
 #include "get.h"
+#include "numberarithmetic.h"
+#include "orderrelation.h"
 #include "powersimpl.h"
 #include "predicates.h"
 #include "productsimpl.h"
@@ -29,19 +33,14 @@ sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
 
 sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
 {
-    if (ops.size() == 1)
-        return Expr{ops.front()};
-    else if (std::any_of(ops.begin(), ops.end(), isZero))
-        return 0_ex;
+    std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
+    NumberArithmetic numerics{buffer};
+    auto numericMultiply = std::bind_front(&NumberArithmetic::multiply, numerics);
+    ProductSimpl::Dependencies callbacks{
+      orderLessThan, autoPower, static_cast<Expr (*)(ExprView<>, ExprView<>)>(autoSum), numericMultiply};
+    ProductSimpl simplifier{callbacks, buffer};
 
-    const auto res = autoProductIntermediate(ops);
-
-    if (res.empty())
-        return 1_ex;
-    else if (res.size() == 1)
-        return res.front();
-    else
-        return {CompositeType::product, res};
+    return simplifier.autoSimplify(ops);
 }
 
 sym2::Expr sym2::autoMinus(ExprView<> arg)

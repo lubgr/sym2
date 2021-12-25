@@ -47,7 +47,7 @@ add_library(sym2
     autosimpl.cpp
     functions.cpp
     logarithm.cpp
-    numeric.cpp
+    numberarithmetic.cpp
     operandsview.cpp
     orderrelationimpl.cpp
     powersimpl.cpp

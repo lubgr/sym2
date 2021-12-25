@@ -46,7 +46,29 @@ namespace sym2 {
     }
 }
 
-std::pmr::vector<sym2::Expr> sym2::autoProductIntermediate(std::span<const ExprView<>> ops)
+sym2::ProductSimpl::ProductSimpl(Dependencies callbacks, std::pmr::memory_resource* buffer)
+    : callbacks{std::move(callbacks)}
+    , buffer{buffer}
+{}
+
+sym2::Expr sym2::ProductSimpl::autoSimplify(std::span<const ExprView<>> ops)
+{
+    if (ops.size() == 1)
+        return Expr{ops.front()};
+    else if (std::any_of(ops.begin(), ops.end(), isZero))
+        return 0_ex;
+
+    const auto res = intermediateSimplify(ops);
+
+    if (res.empty())
+        return 1_ex;
+    else if (res.size() == 1)
+        return res.front();
+    else
+        return {CompositeType::product, res};
+}
+
+std::pmr::vector<sym2::Expr> sym2::ProductSimpl::intermediateSimplify(std::span<const ExprView<>> ops)
 {
     if (ops.size() == 2)
         return simplTwoFactors(ops.front(), ops.back());
@@ -54,7 +76,7 @@ std::pmr::vector<sym2::Expr> sym2::autoProductIntermediate(std::span<const ExprV
         return simplMoreThanTwoFactors(ops);
 }
 
-std::pmr::vector<sym2::Expr> sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
+std::pmr::vector<sym2::Expr> sym2::ProductSimpl::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
 {
     static const auto asProductOperands = [](ExprView<> e) {
         return is<product>(e) ? OperandsView::operandsOf(e) : OperandsView::singleOperand(e);
@@ -62,16 +84,46 @@ std::pmr::vector<sym2::Expr> sym2::simplTwoFactors(ExprView<> lhs, ExprView<> rh
 
     if (is<product>(lhs) || is<product>(rhs))
         return merge(asProductOperands(lhs), asProductOperands(rhs));
-
-    return {Expr{lhs}, Expr{rhs}};
+    else
+        return binaryProduct(lhs, rhs);
 }
 
-std::pmr::vector<sym2::Expr> sym2::simplMoreThanTwoFactors(std::span<const ExprView<>> ops)
+std::pmr::vector<sym2::Expr> sym2::ProductSimpl::binaryProduct(ExprView<!product> lhs, ExprView<!product> rhs)
+{
+    std::pmr::vector<Expr> result;
+
+    if (areAll<number>(lhs, rhs)) {
+        Expr numProduct = callbacks.numericMultiply(lhs, rhs);
+        if (numProduct != 1_ex)
+            result.push_back(std::move(numProduct));
+    } else if (lhs == 1_ex)
+        result.emplace_back(rhs);
+    else if (rhs == 1_ex)
+        result.emplace_back(lhs);
+    else if (asPower(lhs).base == asPower(rhs).base) {
+        const auto [base, exp1] = asPower(lhs);
+        const ExprView<> exp2 = asPower(rhs).exponent;
+        const Expr expSum = callbacks.autoSum(exp1, exp2);
+
+        if (Expr power = callbacks.autoPower(base, expSum); power != 1_ex)
+            result.push_back(std::move(power));
+    } else if (callbacks.orderLessThan(lhs, rhs)) {
+        result.emplace_back(lhs);
+        result.emplace_back(rhs);
+    } else {
+        result.emplace_back(rhs);
+        result.emplace_back(lhs);
+    }
+
+    return result;
+}
+
+std::pmr::vector<sym2::Expr> sym2::ProductSimpl::simplMoreThanTwoFactors(std::span<const ExprView<>> ops)
 {
     assert(ops.size() > 2);
 
     const auto [u1, rest] = frontAndRest(ops);
-    const auto simplifiedRest = autoProductIntermediate(rest);
+    const auto simplifiedRest = intermediateSimplify(rest);
 
     if (is<product>(u1))
         return merge(OperandsView::operandsOf(u1), simplifiedRest);
@@ -80,7 +132,7 @@ std::pmr::vector<sym2::Expr> sym2::simplMoreThanTwoFactors(std::span<const ExprV
 }
 
 template <class View>
-std::pmr::vector<sym2::Expr> sym2::merge(OperandsView p, View q)
+std::pmr::vector<sym2::Expr> sym2::ProductSimpl::merge(OperandsView p, View q)
 {
     assert(!(p.empty() && q.empty()));
 
@@ -93,7 +145,7 @@ std::pmr::vector<sym2::Expr> sym2::merge(OperandsView p, View q)
 }
 
 template <class View>
-std::pmr::vector<sym2::Expr> sym2::mergeNonEmpty(OperandsView p, View q)
+std::pmr::vector<sym2::Expr> sym2::ProductSimpl::mergeNonEmpty(OperandsView p, View q)
 {
     const auto [p1, pRest] = frontAndRest(p);
     const auto [q1, qRest] = frontAndRest(q);
