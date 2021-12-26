@@ -13,9 +13,6 @@
 #include "blob.h"
 #include "predicates.h"
 
-static_assert(std::is_nothrow_move_constructible_v<sym2::Expr>);
-static_assert(std::is_nothrow_move_assignable_v<sym2::Expr>);
-
 static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
@@ -62,20 +59,23 @@ namespace sym2 {
     }
 }
 
-sym2::Expr::Expr(std::int32_t n)
+sym2::Expr::Expr(std::int32_t n, allocator_type allocator)
+    : buffer{allocator}
 {
     appendSmallInt(n);
 }
 
-sym2::Expr::Expr(double n)
-    : buffer{Blob{.header = Type::floatingPoint,
-      .flags = Flag::numericallyEvaluable,
-      .pre = preZero,
-      .mid = midZero,
-      .main = {.inexact = n}}}
+sym2::Expr::Expr(double n, allocator_type allocator)
+    : buffer{{Blob{.header = Type::floatingPoint,
+               .flags = Flag::numericallyEvaluable,
+               .pre = preZero,
+               .mid = midZero,
+               .main = {.inexact = n}}},
+      allocator}
 {}
 
-sym2::Expr::Expr(std::int32_t num, std::int32_t denom)
+sym2::Expr::Expr(std::int32_t num, std::int32_t denom, allocator_type allocator)
+    : buffer{allocator}
 {
     if (denom == 0)
         throw std::domain_error("Zero denominator of small exact rational");
@@ -88,12 +88,14 @@ sym2::Expr::Expr(std::int32_t num, std::int32_t denom)
     appendSmallRationalOrInt(num, denom);
 }
 
-sym2::Expr::Expr(LargeIntRef n)
+sym2::Expr::Expr(LargeIntRef n, allocator_type allocator)
+    : buffer{allocator}
 {
     appendSmallOrLargeInt(n.value);
 }
 
-sym2::Expr::Expr(LargeRationalRef n)
+sym2::Expr::Expr(LargeRationalRef n, allocator_type allocator)
+    : buffer{allocator}
 {
     const auto num = numerator(n.value);
     const auto denom = denominator(n.value);
@@ -115,14 +117,15 @@ sym2::Expr::Expr(LargeRationalRef n)
     appendSmallOrLargeInt(denom);
 }
 
-sym2::Expr::Expr(std::string_view symbol)
-    : buffer{Blob{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = mainZero}}
+sym2::Expr::Expr(std::string_view symbol, allocator_type allocator)
+    : buffer{
+      {Blob{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = mainZero}}, allocator}
 {
     copyNameOrThrow(symbol, largeNameLength);
 }
 
-sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint)
-    : Expr{symbol}
+sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint, allocator_type allocator)
+    : Expr{symbol, allocator}
 {
     Flag& flags = buffer.front().flags;
 
@@ -139,22 +142,24 @@ sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint)
     }
 }
 
-sym2::Expr::Expr(std::string_view constant, double value)
-    : buffer{Blob{.header = Type::constant,
-      .flags = Flag::numericallyEvaluable,
-      .pre = preZero,
-      .mid = midZero,
-      .main = {.inexact = value}}}
+sym2::Expr::Expr(std::string_view constant, double value, allocator_type allocator)
+    : buffer{{Blob{.header = Type::constant,
+               .flags = Flag::numericallyEvaluable,
+               .pre = preZero,
+               .mid = midZero,
+               .main = {.inexact = value}}},
+      allocator}
 {
     copyNameOrThrow(constant, smallNameLength);
 }
 
-sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval)
-    : buffer{Blob{.header = Type::function,
-      .flags = Flag::none /* TODO */,
-      .pre = preZero,
-      .mid = {.nLogicalOrPhysicalChildren = 1},
-      .main = mainZero}}
+sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval, allocator_type allocator)
+    : buffer{{Blob{.header = Type::function,
+               .flags = Flag::none /* TODO */,
+               .pre = preZero,
+               .mid = {.nLogicalOrPhysicalChildren = 1},
+               .main = mainZero}},
+      allocator}
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
@@ -168,12 +173,14 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr ev
     std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
-sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval)
-    : buffer{Blob{.header = Type::function,
-      .flags = Flag::none /* TODO */,
-      .pre = preZero,
-      .mid = {.nLogicalOrPhysicalChildren = 2},
-      .main = mainZero}}
+sym2::Expr::Expr(
+  std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval, allocator_type allocator)
+    : buffer{{Blob{.header = Type::function,
+               .flags = Flag::none /* TODO */,
+               .pre = preZero,
+               .mid = {.nLogicalOrPhysicalChildren = 2},
+               .main = mainZero}},
+      allocator}
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
@@ -188,34 +195,35 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, Bi
         std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
-sym2::Expr::Expr(ExprView<> e)
-    : buffer{e.begin(), e.end()}
+sym2::Expr::Expr(ExprView<> e, allocator_type allocator)
+    : buffer{e.begin(), e.end(), allocator}
 {}
 
-sym2::Expr::Expr(CompositeType composite, std::span<const Expr> ops)
-    : Expr{composite, ops.size()}
+sym2::Expr::Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator)
+    : Expr{composite, ops.size(), allocator}
 {
     appendOperands(composite, ops);
 }
 
-sym2::Expr::Expr(CompositeType composite, std::span<const ExprView<>> ops)
-    : Expr{composite, ops.size()}
+sym2::Expr::Expr(CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator)
+    : Expr{composite, ops.size(), allocator}
 {
     appendOperands(composite, ops);
 }
 
-sym2::Expr::Expr(CompositeType composite, std::initializer_list<ExprView<>> ops)
-    : Expr{composite, ops.size()}
+sym2::Expr::Expr(CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator)
+    : Expr{composite, ops.size(), allocator}
 {
     appendOperands(composite, ops);
 }
 
-sym2::Expr::Expr(CompositeType composite, std::size_t nOps)
-    : buffer{Blob{.header = toInternalType(composite),
-      .flags = Flag::none,
-      .pre = preZero,
-      .mid = {.nLogicalOrPhysicalChildren = static_cast<std::uint32_t>(nOps)},
-      .main = mainZero /* Number of child blobs to be determined. */}}
+sym2::Expr::Expr(CompositeType composite, std::size_t nOps, allocator_type allocator)
+    : buffer{{Blob{.header = toInternalType(composite),
+               .flags = Flag::none,
+               .pre = preZero,
+               .mid = {.nLogicalOrPhysicalChildren = static_cast<std::uint32_t>(nOps)},
+               .main = mainZero /* Number of child blobs to be determined. */}},
+      allocator}
 {}
 
 template <class Range>
@@ -334,13 +342,17 @@ void sym2::Expr::copyNameOrThrow(std::string_view name, std::uint8_t maxLength, 
     std::copy(name.cbegin(), name.cend(), dest);
 }
 
-sym2::Expr::Expr(const Expr& other) = default;
+sym2::Expr::Expr(const Expr& other, allocator_type allocator)
+    : buffer{other.buffer, allocator}
+{}
 
 sym2::Expr& sym2::Expr::operator=(const Expr& other) = default;
 
-sym2::Expr::Expr(Expr&& other) noexcept = default;
+sym2::Expr::Expr(Expr&& other, allocator_type allocator)
+    : buffer{std::move(other.buffer), allocator}
+{}
 
-sym2::Expr& sym2::Expr::operator=(Expr&& other) noexcept = default;
+sym2::Expr& sym2::Expr::operator=(Expr&& other) = default;
 
 sym2::Expr::~Expr() = default;
 

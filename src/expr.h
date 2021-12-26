@@ -29,26 +29,29 @@ namespace sym2 {
 
     class Expr {
       public:
-        Expr(std::int32_t n);
-        Expr(double n);
-        Expr(std::int32_t num, std::int32_t denom);
-        explicit Expr(LargeIntRef n);
-        explicit Expr(LargeRationalRef n);
-        explicit Expr(std::string_view symbol);
-        Expr(std::string_view symbol, SymbolFlag constraint);
-        Expr(std::string_view constant, double value); // Constructs a constant
-        Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval);
-        Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval);
-        explicit Expr(ExprView<> e);
-        Expr(CompositeType composite, std::span<const ExprView<>> ops);
-        Expr(CompositeType composite, std::span<const Expr> ops);
-        Expr(CompositeType composite, std::initializer_list<ExprView<>> ops);
+        using allocator_type = std::pmr::polymorphic_allocator<>;
+
+        Expr(std::int32_t n, allocator_type allocator = {});
+        Expr(double n, allocator_type allocator = {});
+        Expr(std::int32_t num, std::int32_t denom, allocator_type allocator = {});
+        explicit Expr(LargeIntRef n, allocator_type allocator = {});
+        explicit Expr(LargeRationalRef n, allocator_type allocator = {});
+        explicit Expr(std::string_view symbol, allocator_type allocator = {});
+        Expr(std::string_view symbol, SymbolFlag constraint, allocator_type allocator = {});
+        Expr(std::string_view constant, double value, allocator_type allocator = {}); // Constructs a constant
+        Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval, allocator_type allocator = {});
+        Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval,
+          allocator_type allocator = {});
+        explicit Expr(ExprView<> e, allocator_type allocator = {});
+        Expr(CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator = {});
+        Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator = {});
+        Expr(CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator = {});
 
         /* All = defaulted in the TU, which is required due to the shielded Blob definition: */
-        Expr(const Expr& other);
+        Expr(const Expr& other, allocator_type allocator = {});
         Expr& operator=(const Expr& other);
-        Expr(Expr&& other) noexcept;
-        Expr& operator=(Expr&& other) noexcept;
+        Expr(Expr&& other, allocator_type allocator = {}); // Can't be noexcept when allocators differ
+        Expr& operator=(Expr&& other); // Can't be noexcept when allocators differ
         ~Expr();
 
         /* Implicit conversions to any tag are indeed desired here: */
@@ -60,7 +63,7 @@ namespace sym2 {
 
       private:
         /* Used internally to avoid duplication. */
-        explicit Expr(CompositeType composite, std::size_t nOps);
+        explicit Expr(CompositeType composite, std::size_t nOps, allocator_type allocator = {});
 
         void appendSmallInt(std::int32_t n);
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
