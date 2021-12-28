@@ -10,7 +10,7 @@ sym2::NumberArithmetic::NumberArithmetic(std::pmr::memory_resource* buffer)
 sym2::Expr sym2::NumberArithmetic::multiply(ExprView<number> lhs, ExprView<number> rhs)
 {
     if (areAll<rational>(lhs, rhs))
-        return multiplyRationals(get<LargeRational>(lhs, buffer), get<LargeRational>(rhs, buffer));
+        return multiplyRationals(get<LargeRational>(lhs), get<LargeRational>(rhs));
 
     return 1_ex;
 }

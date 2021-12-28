@@ -3,7 +3,6 @@
 #include <cassert>
 #include <complex>
 #include <numeric>
-#include "allocator.h"
 #include "childiterator.h"
 #include "get.h"
 #include "query.h"
@@ -36,7 +35,6 @@ namespace sym2 {
     template <class LookupFct>
     double evalReal(ExprView<> e, LookupFct symbols)
     {
-        auto [_, buffer] = monotonicStackPmrResource<ByteSize{1 << 8}>();
         const auto recur = [&symbols](ExprView<> e) { return evalReal(e, symbols); };
 
         if (is<symbol>(e))
@@ -46,7 +44,7 @@ namespace sym2 {
         else if (is < small && (integer || rational) > (e))
             return get<double>(e);
         else if (is < large && integer > (e))
-            return static_cast<double>(get<LargeInt>(e, &buffer));
+            return static_cast<double>(get<LargeInt>(e));
         else if (is < large && rational > (e))
             return recur(numerator(e)) / recur(denominator(e));
         else if (is < complexDomain && number > (e))

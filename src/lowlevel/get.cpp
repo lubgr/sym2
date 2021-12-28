@@ -1,9 +1,9 @@
 
 #include "get.h"
 #include <cassert>
-#include "blob.h"
 #include "childiterator.h"
 #include "eval.h"
+#include "blob.h"
 #include "predicates.h"
 
 template <>
@@ -39,7 +39,7 @@ double sym2::get<double>(ExprView<> e)
 }
 
 template <>
-sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView<> e, std::pmr::memory_resource* buffer)
+sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView<> e)
 {
     assert((is<integer>(e)));
 
@@ -48,7 +48,7 @@ sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView<> e, std::pmr::memory_resource
 
     assert((is < large && integer > (e)));
 
-    LargeInt result{0, buffer};
+    LargeInt result;
 
     const auto* first = reinterpret_cast<const unsigned char*>(std::next(e.data()));
     const auto* last = std::next(first, nPhysicalChildren(e) * sizeof(Blob));
@@ -59,17 +59,17 @@ sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView<> e, std::pmr::memory_resource
 }
 
 template <>
-sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView<> e, std::pmr::memory_resource* buffer)
+sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView<> e)
 {
     assert((is<rational>(e)));
 
     if (is<integer>(e))
-        return LargeRational{get<LargeInt>(e, buffer)};
+        return LargeRational{get<LargeInt>(e)};
     else if (is < small && rational > (e)) {
         const auto value = get<SmallRational>(e);
         return LargeRational{value.num, value.denom};
     } else
-        return LargeRational{get<LargeInt>(numerator(e), buffer), get<LargeInt>(denominator(e), buffer)};
+        return LargeRational{get<LargeInt>(numerator(e)), get<LargeInt>(denominator(e))};
 }
 
 template <>

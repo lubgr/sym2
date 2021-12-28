@@ -6,9 +6,7 @@
 #include "allocator.h"
 
 namespace sym2 {
-    using LargeInt = boost::multiprecision::number<
-      boost::multiprecision::cpp_int_backend<128, 0, boost::multiprecision::signed_magnitude,
-        boost::multiprecision::unchecked, LargeIntAllocator<boost::multiprecision::limb_type>>>;
+    using LargeInt = boost::multiprecision::number<boost::multiprecision::cpp_int_backend<256>>;
 
     using boost::multiprecision::abs;
     using boost::multiprecision::gcd;

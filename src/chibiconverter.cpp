@@ -11,7 +11,6 @@
 #include <cassert>
 #include <cmath>
 #include <variant>
-#include "allocator.h"
 #include "get.h"
 #include "query.h"
 
@@ -332,18 +331,16 @@ sym2::PreservedSexp sym2::FromExprToChibi::chibiSymbolFromString(std::string_vie
 
 sexp sym2::FromExprToChibi::dispatchOver(ExprView<number> from)
 {
-    auto [_, buffer] = monotonicStackPmrResource<ByteSize{1 << 10}>();
-
     if (is < small && integer > (from))
         return sexp_make_fixnum(get<std::int32_t>(from));
     else if (is < large && integer > (from)) {
-        const auto n = get<LargeInt>(from, &buffer);
+        const auto n = get<LargeInt>(from);
         return serializeLargeInt(n).get();
     } else if (is < small && rational > (from)) {
         const auto [num, denom] = get<SmallRational>(from);
         return sexp_make_ratio(ctx, sexp_make_fixnum(num), sexp_make_fixnum(denom));
     } else if (is < large && rational > (from)) {
-        const LargeRational r = get<LargeRational>(from, &buffer);
+        const LargeRational r = get<LargeRational>(from);
         const LargeInt& num = numerator(r);
         const LargeInt& denom = denominator(r);
         const auto nonNormalized =

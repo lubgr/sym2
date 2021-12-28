@@ -44,7 +44,6 @@ target_include_directories(sym2lowlevel
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 add_library(sym2
-    allocator.cpp
     autosimpl.cpp
     functions.cpp
     logarithm.cpp
