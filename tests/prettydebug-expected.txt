@@ -1,15 +1,15 @@
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = 42
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = 7/11
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = Large int, blobs: 2
   [1] = (Large int blob)
   [2] = (Large int blob)
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = largeRational, size: 2/6 (flags: numericallyEvaluable)
   [1] = Large int, blobs: 2
   [2] = (Large int blob)
@@ -18,30 +18,30 @@
   [5] = (Large int blob)
   [6] = (Large int blob)
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = 9.876543
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = complexNumber, size: 2/2 (flags: numericallyEvaluable)
   [1] = 42
   [2] = 7/11
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = "pi": 3.142374
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = "abc"
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = "abc_{defy}^g"
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = sum, size: 3/3 (flags: none)
   [1] = 42
   [2] = "abc"
   [3] = "abc_{defy}^g"
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = product, size: 4/7 (flags: none)
   [1] = 42
   [2] = "abc"
@@ -51,7 +51,7 @@
   [6] = "abc"
   [7] = "abc_{defy}^g"
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = power, size: 2/11 (flags: none)
   [1] = product, size: 4/7 (flags: none)
   [2] = 42
@@ -65,12 +65,12 @@
   [10] = (Large int blob)
   [11] = (Large int blob)
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = function, size: 1/2 (flags: none)
   [1] = "sin" (libsystem_m.dylib`sin)
   [2] = "a"
 }
-(sym2::ExprView) e = {
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = function, size: 2/5 (flags: none)
   [1] = "atan2" (libsystem_m.dylib`atan2)
   [2] = "a"

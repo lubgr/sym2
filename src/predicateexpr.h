@@ -150,7 +150,7 @@ namespace sym2 {
      * type in question being at least forward-declared. Hence, we need another, unrelated type/flag that acts as a
      * replacement for the any-predicate. The machinery for determining explicitness of constructors doesn't account for
      * this type, so we have to filter it out beforehand. */
-    constexpr inline enum class AnyFlag { instance } any{AnyFlag::instance};
+    constexpr inline enum class AnyFlag { any } any{AnyFlag::any};
 
     template <class T>
     concept PredicateTag = PredicateOperand<T> || std::is_same_v<T, AnyFlag>;

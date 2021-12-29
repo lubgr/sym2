@@ -3,6 +3,12 @@
 #include "expr.h"
 #include "trigonometric.h"
 
+// Blob must be known in this executable for the pretty printers to work properly. If we don't include its definition,
+// there is no way for lldb to retrieve the info on type. While it works with the `expr` command, the pretty printer
+// implementations are restricted to the ordinary environment of a simple `frame variable` dump. Note that this probably
+// also means that using the pretty printers from an application that links against sym2 won't be straightforward.
+#include "lowlevel/blob.h"
+
 using namespace sym2;
 
 auto check(ExprView<> e)

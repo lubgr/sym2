@@ -129,7 +129,7 @@ def blobSummary(valobj, unused):
         return rep
 
 def __lldb_init_module(debugger, internalDict):
-    debugger.HandleCommand('type summary add -x "^sym2::ExprView$" -e -F pretty.exprViewSummary')
+    debugger.HandleCommand('type summary add -x "^sym2::ExprView<.+>$" -e -F pretty.exprViewSummary')
     debugger.HandleCommand('type summary add -x "^sym2::Expr$" -e -F pretty.exprSummary')
     debugger.HandleCommand('type summary add -x "^sym2::Blob$" -F pretty.blobSummary')
-    debugger.HandleCommand('type synthetic add -x "^sym2::ExprView$" -l pretty.ExprViewSynthProvider')
+    debugger.HandleCommand('type synthetic add -x "^sym2::ExprView<.+>$" -l pretty.ExprViewSynthProvider')

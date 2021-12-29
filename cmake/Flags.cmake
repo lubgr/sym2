@@ -24,5 +24,6 @@ add_library(flags
 target_compile_options(flags
     INTERFACE
     $<$<CXX_COMPILER_ID:GNU>:${gccFlags}>
+    $<$<CONFIG:DEBUG>:-gdwarf-4> # Necessary for gcc on MacOS for std:: prefixes
     $<$<OR:$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:${clangFlags}>
     $<$<AND:$<CONFIG:DEBUG>,$<OR:$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>>:${sanitizerCompilerFlags}>)
