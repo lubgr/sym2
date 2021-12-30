@@ -24,8 +24,8 @@ namespace sym2 {
     ExprView<> firstOperand(ExprView<composite> e);
     ExprView<> secondOperand(ExprView<composite> e);
 
-    ExprView<number> real(ExprView<complexDomain> c);
-    ExprView<number> imag(ExprView<complexDomain> c);
+    ExprView<number> real(ExprView<number> c);
+    ExprView<number> imag(ExprView<number> c);
     ExprView<integer> numerator(ExprView<rational> n);
     ExprView<integer> denominator(ExprView<rational> n);
 }

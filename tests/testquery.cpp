@@ -72,6 +72,21 @@ TEST_CASE("Physical and logical children queries")
 
         CHECK(real(cx) == 2_ex);
         CHECK(imag(cx) == 3_ex);
+
+        const LargeInt realPartInt{"1298374982734923434528973498279834827384284"};
+        const LargeRational imagPartRational{"87234728489237/2938749283749823423423468923428429238649826482"};
+        const Expr realPart{LargeIntRef{realPartInt}};
+        const Expr imagPart{LargeRationalRef{imagPartRational}};
+        const Expr largeCx = autoComplex(realPart, imagPart);
+
+        CHECK(real(largeCx) == realPart);
+        CHECK(imag(largeCx) == imagPart);
+    }
+
+    SUBCASE("Complex query for non-complex number")
+    {
+        CHECK(real(42_ex) == 42_ex);
+        CHECK(imag(42_ex) == 0_ex);
     }
 }
 

@@ -49,14 +49,22 @@ namespace sym2 {
     }
 }
 
-sym2::ExprView<sym2::number> sym2::real(ExprView<complexDomain> c)
+sym2::ExprView<sym2::number> sym2::real(ExprView<number> c)
 {
-    return nthPhysical(c, 1);
+    if (is<complexDomain>(c))
+        return nthPhysical(c, 1);
+    else
+        return c;
 }
 
-sym2::ExprView<sym2::number> sym2::imag(ExprView<complexDomain> c)
+sym2::ExprView<sym2::number> sym2::imag(ExprView<number> c)
 {
-    return nthPhysical(c, 2);
+    static const Expr zero{0};
+
+    if (is<complexDomain>(c))
+        return nthPhysical(c, 2);
+    else
+        return zero;
 }
 
 sym2::ExprView<sym2::integer> sym2::numerator(ExprView<rational> n)
