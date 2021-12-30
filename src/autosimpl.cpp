@@ -36,8 +36,8 @@ sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
     std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
     NumberArithmetic numerics{buffer};
     auto numericMultiply = std::bind_front(&NumberArithmetic::multiply, numerics);
-    ProductSimpl::Dependencies callbacks{
-      orderLessThan, autoPower, static_cast<Expr (*)(ExprView<>, ExprView<>)>(autoSum), numericMultiply};
+    auto binaryAutoSum = static_cast<Expr (*)(ExprView<>, ExprView<>)>(autoSum);
+    ProductSimpl::Dependencies callbacks{orderLessThan, autoPower, binaryAutoSum, numericMultiply};
     ProductSimpl simplifier{callbacks, buffer};
 
     return simplifier.autoSimplify(ops);
