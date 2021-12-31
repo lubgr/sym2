@@ -53,6 +53,7 @@ add_library(sym2
     powersimpl.cpp
     productsimpl.cpp
     query.cpp
+    sumsimpl.cpp
     trigonometric.cpp
     var.cpp
     violationhandler.cpp)

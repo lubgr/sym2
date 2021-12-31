@@ -15,11 +15,11 @@ TEST_CASE("Semantic traversal")
     const Expr p1 = autoProduct(2_ex, autoSum("a"_ex, "b"_ex));
     const Expr p2 = autoProduct("c"_ex, "d"_ex, "e"_ex, "f"_ex);
     const Expr fct = sym2::atan2("a"_ex, "b"_ex);
-    const Expr s = autoSum(li, p1, p2, fct);
+    const Expr s = autoSum(li, fct, p1, p2);
 
     SUBCASE("OperandsView")
     {
-        const std::vector<ExprView<>> expected{li, p1, p2, fct};
+        const std::vector<ExprView<>> expected{li, fct, p1, p2};
         std::vector<ExprView<>> actual;
 
         boost::copy(OperandsView::operandsOf(s), std::back_inserter(actual));
@@ -61,23 +61,23 @@ TEST_CASE("Semantic traversal")
         std::vector<ExprView<>> actual;
 
         boost::copy(orig.subview(0), std::back_inserter(actual));
-        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{li, p1, p2, fct}));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{li, fct, p1, p2}));
 
         actual.clear();
         boost::copy(orig.subview(1), std::back_inserter(actual));
-        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{p1, p2, fct}));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{fct, p1, p2}));
 
         actual.clear();
         boost::copy(orig.subview(2, 1), std::back_inserter(actual));
-        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{p2}));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{p1}));
 
         actual.clear();
         boost::copy(orig.subview(0, 4), std::back_inserter(actual));
-        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{li, p1, p2, fct}));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{li, fct, p1, p2}));
 
         actual.clear();
         boost::copy(orig.subview(3), std::back_inserter(actual));
-        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{fct}));
+        CHECK_RANGES_EQ(actual, (std::vector<ExprView<>>{p2}));
 
         actual.clear();
         boost::copy(orig.subview(4), std::back_inserter(actual));

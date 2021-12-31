@@ -78,21 +78,14 @@ sexp auto_plus(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
     assert(n == 1 && sexp_listp(ctx, args));
     assert(sexp_unbox_fixnum(sexp_length(ctx, args)) >= 2);
 
-    FromChibiToExpr conv{ctx};
-    std::vector<Expr> ops;
+    return wrappedTryCatch(ctx, self, [&]() {
+        const auto convertedArgs = convertList(ctx, args);
+        const auto views = expressionsToViews(convertedArgs);
+        const Expr result = autoSum(views);
 
-    try {
-        while (!sexp_nullp(args)) {
-            const sexp arg = sexp_car(args);
-            args = sexp_cdr(args);
+        return FromExprToChibi{ctx}.convert(result);
+    });
 
-            ops.push_back(conv.convert(arg));
-        }
-    } catch (const FailedConversionToExpr& error) {
-        return translate(ctx, self, error);
-    }
-
-    // TODO
     return SEXP_FALSE;
 }
 

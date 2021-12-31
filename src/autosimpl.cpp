@@ -13,15 +13,21 @@
 
 sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
 {
-    // TODO
-    std::array<ExprView<>, 2> ops{{lhs, rhs}};
+    const std::array<ExprView<>, 2> ops{{lhs, rhs}};
+
     return autoSum(ops);
 }
 
 sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
 {
-    // TODO
-    return Expr{CompositeType::sum, ops};
+    std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
+    NumberArithmetic numerics{buffer};
+    auto numericAdd = std::bind_front(&NumberArithmetic::add, numerics);
+    auto binaryAutoProduct = static_cast<Expr (*)(ExprView<>, ExprView<>)>(autoProduct);
+    SumSimpl::Dependencies callbacks{orderLessThan, binaryAutoProduct, numericAdd};
+    SumSimpl simplifier{callbacks, buffer};
+
+    return simplifier.autoSimplify(ops);
 }
 
 sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)

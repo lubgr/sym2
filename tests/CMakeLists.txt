@@ -56,7 +56,7 @@ add_scm_test(order.scm)
 add_scm_test(power.scm)
 add_scm_test(product.scm)
 add_scm_test(roundtrip.scm)
-
+add_scm_test(sum.scm)
 
 add_executable(pretty
     prettydebug.cpp)
