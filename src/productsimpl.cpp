@@ -54,18 +54,18 @@ sym2::ProductSimpl::ProductSimpl(Dependencies callbacks, std::pmr::memory_resour
 sym2::Expr sym2::ProductSimpl::autoSimplify(std::span<const ExprView<>> ops)
 {
     if (ops.size() == 1)
-        return Expr{ops.front()};
+        return Expr{ops.front(), buffer};
     else if (std::any_of(ops.begin(), ops.end(), isZero))
-        return 0_ex;
+        return Expr{0, buffer};
 
     const auto res = intermediateSimplify(ops);
 
     if (res.empty())
-        return 1_ex;
+        return Expr{1, buffer};
     else if (res.size() == 1)
-        return res.front();
+        return Expr{res.front(), buffer};
     else
-        return {CompositeType::product, res};
+        return {CompositeType::product, std::move(res), buffer};
 }
 
 std::pmr::vector<sym2::Expr> sym2::ProductSimpl::intermediateSimplify(std::span<const ExprView<>> ops)
@@ -90,7 +90,7 @@ std::pmr::vector<sym2::Expr> sym2::ProductSimpl::simplTwoFactors(ExprView<> lhs,
 
 std::pmr::vector<sym2::Expr> sym2::ProductSimpl::binaryProduct(ExprView<!product> lhs, ExprView<!product> rhs)
 {
-    std::pmr::vector<Expr> result;
+    std::pmr::vector<Expr> result{buffer};
 
     if (areAll<number>(lhs, rhs)) {
         Expr numProduct = callbacks.numericMultiply(lhs, rhs);
@@ -137,9 +137,9 @@ std::pmr::vector<sym2::Expr> sym2::ProductSimpl::merge(OperandsView p, View q)
     assert(!(p.empty() && q.empty()));
 
     if (p.empty())
-        return {constructIter(q.begin()), constructIter(q.end())};
+        return {constructIter(q.begin()), constructIter(q.end()), buffer};
     else if (q.empty())
-        return {constructIter(p.begin()), constructIter(p.end())};
+        return {constructIter(p.begin()), constructIter(p.end()), buffer};
     else
         return mergeNonEmpty(p, q);
 }
