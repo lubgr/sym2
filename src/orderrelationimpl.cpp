@@ -8,6 +8,7 @@
 #include <limits>
 #include <tuple>
 #include "eval.h"
+#include "expr.h"
 #include "get.h"
 #include "operandsview.h"
 #include "orderrelation.h"

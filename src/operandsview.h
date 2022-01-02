@@ -3,9 +3,7 @@
 #include <boost/stl_interfaces/iterator_interface.hpp>
 #include <boost/stl_interfaces/view_interface.hpp>
 #include <cstdint>
-#include <span>
 #include "childiterator.h"
-#include "expr.h"
 #include "view.h"
 
 namespace sym2 {

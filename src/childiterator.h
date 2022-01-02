@@ -1,8 +1,6 @@
 #pragma once
 
 #include <boost/stl_interfaces/iterator_interface.hpp>
-#include <span>
-#include "expr.h"
 #include "view.h"
 
 namespace sym2 {
