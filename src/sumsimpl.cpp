@@ -57,6 +57,12 @@ std::pmr::vector<sym2::Expr> sym2::SumSimpl::simplTwoFactors(ExprView<> lhs, Exp
 
 std::pmr::vector<sym2::Expr> sym2::SumSimpl::binarySum(ExprView<!sum> lhs, ExprView<!sum> rhs)
 {
+    const auto haveEqualNonConstTerm = [lhs, rhs]() {
+        if (isOneOf<number>(lhs, rhs))
+            return false;
+        else
+            return boost::equal(splitConstTerm(lhs).term, splitConstTerm(rhs).term);
+    };
     std::pmr::vector<Expr> result{buffer};
 
     if (lhs == 0_ex)
@@ -67,10 +73,20 @@ std::pmr::vector<sym2::Expr> sym2::SumSimpl::binarySum(ExprView<!sum> lhs, ExprV
         Expr numSum = callbacks.numericAdd(lhs, rhs);
         if (numSum != 0_ex)
             result.push_back(std::move(numSum));
-    }
-    // TODO
-    // 1. contract equal non-numeric terms, 2*a*b + 3*a*b = 5*a*b
-    else if (callbacks.orderLessThan(lhs, rhs)) {
+    } else if (haveEqualNonConstTerm()) {
+        // Contract equal non-numeric terms, e.g. 2*a*b + 3*a*b = 5*a*b
+        const ConstAndTerm lhsSplit = splitConstTerm(lhs);
+        const ConstAndTerm rhsSplit = splitConstTerm(rhs);
+        const std::array<ExprView<>, 2> constants{{lhsSplit.constant, rhsSplit.constant}};
+        const Expr factor = autoSimplify(constants);
+        const Expr product = callbacks.autoProduct(factor, lhsSplit.term);
+
+        assert(is<number>(factor));
+
+        // Check for zero summands, e.g. a + b - b = a + 0.
+        if (factor != 0_ex)
+            result.push_back(product);
+    } else if (callbacks.orderLessThan(lhs, rhs)) {
         result.emplace_back(lhs);
         result.emplace_back(rhs);
     } else {

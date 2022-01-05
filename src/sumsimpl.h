@@ -13,7 +13,7 @@ namespace sym2 {
       public:
         struct Dependencies {
             FunctionView<bool(ExprView<>, ExprView<>)> orderLessThan;
-            FunctionView<Expr(ExprView<>, ExprView<>)> autoProduct;
+            FunctionView<Expr(ExprView<number>, OperandsView)> autoProduct;
             FunctionView<Expr(ExprView<number>, ExprView<number>)> numericAdd;
         };
 

@@ -23,8 +23,12 @@ sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
 {
     std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
     NumberArithmetic numerics{buffer};
+    auto binaryAutoProduct = [&buffer](ExprView<number> n, OperandsView ops) {
+        std::pmr::vector<ExprView<>> allOperands{n};
+        allOperands.insert(allOperands.end(), ops.begin(), ops.end());
+        return autoProduct(allOperands);
+    };
     auto numericAdd = std::bind_front(&NumberArithmetic::add, numerics);
-    auto binaryAutoProduct = static_cast<Expr (*)(ExprView<>, ExprView<>)>(autoProduct);
     SumSimpl::Dependencies callbacks{orderLessThan, binaryAutoProduct, numericAdd};
     SumSimpl simplifier{callbacks, buffer};
 
