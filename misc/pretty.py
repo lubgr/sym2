@@ -59,8 +59,18 @@ def isLargeIntBlob(valobj, headerName, nOps, nChildBlobs):
     name2 = mid.GetChildMemberWithName('name')
     sign = mid.GetChildMemberWithName('largeIntSign').GetValueAsUnsigned(0)
     shouldHaveName = headerName in ['symbol', 'constant', 'functionId']
+    knownHeader = shouldHaveName or headerName in [ 'smallInt', 'smallRational', 'largeInt', 'largeRational',
+            'floatingPoint', 'complexNumber', 'sum', 'product', 'power', 'function' ]
 
-    if allZeroBytes(name1.GetData(), 2) and allZeroBytes(name2.GetData(), 4) and not shouldHaveName:
+    if allZeroBytes(valobj.GetData(), 2 + 2 + 4 + 1):
+        # Should have caught initial large int blobs with more zero padding than it appears in other blobs
+        return True
+    elif not knownHeader:
+        # The random bytes that make up a large int blob can accidentally produce a valid header name, so we can't
+        # assume that a known header is _not_ a large int blob. However, all blobs that aren't large int blobs must have
+        # a known/valid header, so it's safe to assume that this is a large int blob.
+        return True
+    elif allZeroBytes(name1.GetData(), 2) and allZeroBytes(name2.GetData(), 4) and not shouldHaveName:
         return False
     elif headerName in ['largeRational', 'power', 'complexNumber'] and nOps == 2:
         return False

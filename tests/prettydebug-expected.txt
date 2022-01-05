@@ -10,6 +10,11 @@
   [2] = (Large int blob)
 }
 (sym2::ExprView<sym2::AnyFlag::any>) e = {
+  [0] = Large int, blobs: 2
+  [1] = (Large int blob)
+  [2] = (Large int blob)
+}
+(sym2::ExprView<sym2::AnyFlag::any>) e = {
   [0] = largeRational, size: 2/6 (flags: numericallyEvaluable)
   [1] = Large int, blobs: 2
   [2] = (Large int blob)
