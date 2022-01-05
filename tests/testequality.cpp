@@ -6,35 +6,38 @@
 
 using namespace sym2;
 
-const Expr s = autoSum(42_ex, "a"_ex, "b"_ex);
-const Expr pr = autoProduct(42_ex, "a"_ex, "b"_ex);
-const Expr pw = autoPower(42_ex, "a"_ex);
-
-TEST_CASE("Identity equality")
+TEST_CASE("Equality")
 {
-    for (ExprView<> e : {42_ex, "a"_ex, pi, s, pr, pw})
-        CHECK(e == e);
-}
+    const Expr s = autoSum(42_ex, "a"_ex, "b"_ex);
+    const Expr pr = autoProduct(42_ex, "a"_ex, "b"_ex);
+    const Expr pw = autoPower(42_ex, "a"_ex);
 
-TEST_CASE("Scalar Equality by value")
-{
-    CHECK("a"_ex == "a"_ex);
-    CHECK(42_ex == 42_ex);
-    CHECK(0_ex == 0_ex);
-    CHECK(1_ex == 1_ex);
-}
+    SUBCASE("Identity equality")
+    {
+        for (ExprView<> e : {42_ex, "a"_ex, pi, s, pr, pw})
+            CHECK(e == e);
+    }
 
-TEST_CASE("Composite equality")
-{
-    CHECK(s == s);
-    CHECK(pr == pr);
-    CHECK(pw == pw);
+    SUBCASE("Scalar Equality by value")
+    {
+        CHECK("a"_ex == "a"_ex);
+        CHECK(42_ex == 42_ex);
+        CHECK(0_ex == 0_ex);
+        CHECK(1_ex == 1_ex);
+    }
 
-    // TODO complex cases
-}
+    SUBCASE("Composite equality")
+    {
+        CHECK(s == s);
+        CHECK(pr == pr);
+        CHECK(pw == pw);
 
-TEST_CASE("Scalar inequality")
-{
-    CHECK("a"_ex != "b"_ex);
-    CHECK(42_ex != 43_ex);
+        // TODO complex cases
+    }
+
+    SUBCASE("Scalar inequality")
+    {
+        CHECK("a"_ex != "b"_ex);
+        CHECK(42_ex != 43_ex);
+    }
 }
