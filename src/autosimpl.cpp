@@ -3,6 +3,7 @@
 #include <array>
 #include <functional>
 #include <memory_resource>
+#include <vector>
 #include "get.h"
 #include "numberarithmetic.h"
 #include "orderrelation.h"

@@ -31,9 +31,9 @@ namespace sym2 {
         std::pmr::vector<Expr> merge(OperandsView p, View q);
         template <class View>
         std::pmr::vector<Expr> mergeNonEmpty(OperandsView p, View q);
+        std::pmr::vector<Expr> prepend(ExprView<> first, std::pmr::vector<Expr>&& rest);
 
         Dependencies callbacks;
         std::pmr::memory_resource* buffer;
     };
-
 }

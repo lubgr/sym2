@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <span>
 #include <string_view>
 #include <utility>
 #include "operandsview.h"
@@ -8,6 +9,8 @@
 #include "view.h"
 
 namespace sym2 {
+    class Expr;
+
     struct BaseExp {
         ExprView<> base;
         ExprView<!power> exponent;
@@ -36,4 +39,8 @@ namespace sym2 {
     ExprView<number> imag(ExprView<number> c);
     ExprView<integer> numerator(ExprView<rational> n);
     ExprView<integer> denominator(ExprView<rational> n);
+
+    std::pair<ExprView<>, OperandsView> frontAndRest(OperandsView ops);
+    std::pair<ExprView<>, std::span<const Expr>> frontAndRest(std::span<const Expr> ops);
+    std::pair<ExprView<>, std::span<const ExprView<>>> frontAndRest(std::span<const ExprView<>> ops);
 }

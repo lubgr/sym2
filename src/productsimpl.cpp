@@ -6,43 +6,10 @@
 #include "query.h"
 
 namespace sym2 {
-    namespace {
-        std::pmr::vector<Expr> prepend(ExprView<> first, std::pmr::vector<Expr>&& rest)
-        {
-            std::pmr::vector<Expr> result;
-
-            result.reserve(rest.size() + 1);
-
-            result.emplace_back(first);
-            std::move(rest.begin(), rest.end(), std::back_inserter(result));
-
-            return result;
-        }
-
-        template <class Iter>
-        auto constructIter(Iter op)
-        {
-            return boost::make_transform_iterator(op, boost::hof::construct<Expr>());
-        }
-
-        auto frontAndRest(OperandsView ops)
-        {
-            assert(ops.size() >= 1);
-            return std::make_pair(ops.front(), ops.subview(1));
-        }
-
-        template <class T>
-        auto frontAndRest(std::span<T> ops)
-        {
-            assert(ops.size() >= 1);
-            return std::make_pair(std::ref(ops.front()), ops.subspan(1));
-        }
-
-        template <class Range>
-        auto frontAndRest(const Range& ops)
-        {
-            return frontAndRest(std::span{ops});
-        }
+    template <class Iter>
+    auto constructIter(Iter op)
+    {
+        return boost::make_transform_iterator(op, boost::hof::construct<Expr>());
     }
 }
 
@@ -123,7 +90,7 @@ std::pmr::vector<sym2::Expr> sym2::ProductSimpl::simplMoreThanTwoFactors(std::sp
     assert(ops.size() > 2);
 
     const auto [u1, rest] = frontAndRest(ops);
-    const auto simplifiedRest = intermediateSimplify(rest);
+    const std::pmr::vector<Expr> simplifiedRest = intermediateSimplify(rest);
 
     if (is<product>(u1))
         return merge(OperandsView::operandsOf(u1), simplifiedRest);
@@ -166,4 +133,16 @@ std::pmr::vector<sym2::Expr> sym2::ProductSimpl::mergeNonEmpty(OperandsView p, V
         return prepend(p1, merge(pRest, q));
     else
         return prepend(q1, merge(p, qRest));
+}
+
+std::pmr::vector<sym2::Expr> sym2::ProductSimpl::prepend(ExprView<> first, std::pmr::vector<Expr>&& rest)
+{
+    std::pmr::vector<Expr> result{buffer};
+
+    result.reserve(rest.size() + 1);
+
+    result.emplace_back(first);
+    std::move(rest.begin(), rest.end(), std::back_inserter(result));
+
+    return result;
 }

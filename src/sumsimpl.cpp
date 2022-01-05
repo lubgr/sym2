@@ -2,47 +2,16 @@
 #include "sumsimpl.h"
 #include <boost/hof/construct.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/range/algorithm/equal.hpp>
+#include <cassert>
 #include "predicates.h"
 #include "query.h"
 
 namespace sym2 {
-    namespace {
-        std::pmr::vector<Expr> prepend(ExprView<> first, std::pmr::vector<Expr>&& rest)
-        {
-            std::pmr::vector<Expr> result;
-
-            result.reserve(rest.size() + 1);
-
-            result.emplace_back(first);
-            std::move(rest.begin(), rest.end(), std::back_inserter(result));
-
-            return result;
-        }
-
-        template <class Iter>
-        auto constructIter(Iter op)
-        {
-            return boost::make_transform_iterator(op, boost::hof::construct<Expr>());
-        }
-
-        auto frontAndRest(OperandsView ops)
-        {
-            assert(ops.size() >= 1);
-            return std::make_pair(ops.front(), ops.subview(1));
-        }
-
-        template <class T>
-        auto frontAndRest(std::span<T> ops)
-        {
-            assert(ops.size() >= 1);
-            return std::make_pair(std::ref(ops.front()), ops.subspan(1));
-        }
-
-        template <class Range>
-        auto frontAndRest(const Range& ops)
-        {
-            return frontAndRest(std::span{ops});
-        }
+    template <class Iter>
+    auto constructIter(Iter op)
+    {
+        return boost::make_transform_iterator(op, boost::hof::construct<Expr>());
     }
 }
 
@@ -160,4 +129,16 @@ std::pmr::vector<sym2::Expr> sym2::SumSimpl::mergeNonEmpty(OperandsView p, View 
         return prepend(p1, merge(pRest, q));
     else
         return prepend(q1, merge(p, qRest));
+}
+
+std::pmr::vector<sym2::Expr> sym2::SumSimpl::prepend(ExprView<> first, std::pmr::vector<Expr>&& rest)
+{
+    std::pmr::vector<Expr> result{buffer};
+
+    result.reserve(rest.size() + 1);
+
+    result.emplace_back(first);
+    std::move(rest.begin(), rest.end(), std::back_inserter(result));
+
+    return result;
 }
