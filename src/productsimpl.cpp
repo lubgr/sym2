@@ -67,9 +67,9 @@ std::pmr::vector<sym2::Expr> sym2::ProductSimpl::binaryProduct(ExprView<!product
         result.emplace_back(rhs);
     else if (rhs == 1_ex)
         result.emplace_back(lhs);
-    else if (asPower(lhs).base == asPower(rhs).base) {
-        const auto [base, exp1] = asPower(lhs);
-        const ExprView<> exp2 = asPower(rhs).exponent;
+    else if (splitAsPower(lhs).base == splitAsPower(rhs).base) {
+        const auto [base, exp1] = splitAsPower(lhs);
+        const ExprView<> exp2 = splitAsPower(rhs).exponent;
         const Expr expSum = callbacks.autoSum(exp1, exp2);
 
         if (Expr power = callbacks.autoPower(base, expSum); power != 1_ex)

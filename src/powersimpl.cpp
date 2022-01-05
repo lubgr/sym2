@@ -15,7 +15,7 @@ sym2::Expr sym2::autoPowerImpl(ExprView<> base, ExprView<> exp)
     else if (is < realDomain && number > (base) && is < integer && small > (exp))
         return autoPowerImpl(base, get<std::int32_t>(exp));
     else if (is<power>(base) && is<integer>(exp)) {
-        const auto [_, origExp] = asPower(base);
+        const auto [_, origExp] = splitAsPower(base);
         return autoPowerImpl(base, autoProduct(exp, origExp));
     }
 

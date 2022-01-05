@@ -21,7 +21,7 @@ namespace sym2 {
         OperandsView term;
     };
 
-    BaseExp asPower(ExprView<> e);
+    BaseExp splitAsPower(ExprView<> e);
     ConstAndTerm splitConstTerm(ExprView<!number> e);
 
     std::size_t nOperands(ExprView<> e);

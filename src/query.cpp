@@ -7,7 +7,7 @@
 #include "predicates.h"
 #include "view.h"
 
-sym2::BaseExp sym2::asPower(ExprView<> e)
+sym2::BaseExp sym2::splitAsPower(ExprView<> e)
 {
     static const auto one = 1_ex;
 

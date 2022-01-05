@@ -100,7 +100,7 @@ TEST_CASE("Deconstruct as power")
     {
         SUBCASE("Untagged")
         {
-            const auto [base, exp] = asPower(pw);
+            const auto [base, exp] = splitAsPower(pw);
 
             CHECK(base == a);
             CHECK(exp == b);
@@ -108,7 +108,7 @@ TEST_CASE("Deconstruct as power")
 
         SUBCASE("Tagged")
         {
-            const auto [base, exp] = asPower(pw);
+            const auto [base, exp] = splitAsPower(pw);
 
             CHECK(base == a);
             CHECK(exp == b);
