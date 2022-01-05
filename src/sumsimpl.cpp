@@ -102,7 +102,7 @@ std::pmr::vector<sym2::Expr> sym2::SumSimpl::simplMoreThanTwoFactors(std::span<c
     assert(ops.size() > 2);
 
     const auto [u1, rest] = frontAndRest(ops);
-    const auto simplifiedRest = intermediateSimplify(rest);
+    const std::pmr::vector<Expr> simplifiedRest = intermediateSimplify(rest);
 
     if (is<sum>(u1))
         return merge(OperandsView::operandsOf(u1), simplifiedRest);
@@ -114,9 +114,9 @@ template <class View>
 std::pmr::vector<sym2::Expr> sym2::SumSimpl::merge(OperandsView p, View q)
 {
     if (p.empty())
-        return {constructIter(q.begin()), constructIter(q.end())};
+        return {constructIter(q.begin()), constructIter(q.end()), buffer};
     else if (q.empty())
-        return {constructIter(p.begin()), constructIter(p.end())};
+        return {constructIter(p.begin()), constructIter(p.end()), buffer};
     else
         return mergeNonEmpty(p, q);
 }
