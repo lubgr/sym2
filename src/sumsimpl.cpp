@@ -97,8 +97,6 @@ std::pmr::vector<sym2::Expr> sym2::SumSimpl::simplMoreThanTwoFactors(std::span<c
 template <class View>
 std::pmr::vector<sym2::Expr> sym2::SumSimpl::merge(OperandsView p, View q)
 {
-    assert(!(p.empty() && q.empty()));
-
     if (p.empty())
         return {constructIter(q.begin()), constructIter(q.end())};
     else if (q.empty())
