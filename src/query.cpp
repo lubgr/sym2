@@ -17,6 +17,25 @@ sym2::BaseExp sym2::asPower(ExprView<> e)
     return {e, one};
 }
 
+sym2::ConstAndTerm sym2::splitConstTerm(ExprView<!number> e)
+{
+    static const auto one = 1_ex;
+
+    if (is<product>(e)) {
+        const OperandsView ops = OperandsView::operandsOf(e);
+        const auto [first, rest] = frontAndRest(ops);
+
+        if (is<number>(first))
+            return {first, rest};
+        else
+            return {one, ops};
+    }
+
+    assert(is < symbol || constant || sum || power || function > (e));
+
+    return {one, OperandsView::singleOperand(e)};
+}
+
 sym2::ExprView<> sym2::nthOperand(ExprView<composite> e, std::uint32_t n)
 {
     auto operand = ChildIterator::logicalChildren(e);

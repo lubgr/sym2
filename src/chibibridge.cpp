@@ -6,6 +6,7 @@
 #include "autosimpl.h"
 #include "chibiconverter.h"
 #include "orderrelation.h"
+#include "query.h"
 
 using namespace sym2;
 
@@ -63,7 +64,7 @@ sexp auto_times(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
     assert(n == 1 && sexp_listp(ctx, args));
 
     return wrappedTryCatch(ctx, self, [&]() {
-        const auto convertedArgs = convertList(ctx, args);
+        const auto convertedArgs = convertFromList(ctx, args);
         const auto views = expressionsToViews(convertedArgs);
         const Expr result = autoProduct(views);
 
@@ -79,7 +80,7 @@ sexp auto_plus(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
     assert(sexp_unbox_fixnum(sexp_length(ctx, args)) >= 2);
 
     return wrappedTryCatch(ctx, self, [&]() {
-        const auto convertedArgs = convertList(ctx, args);
+        const auto convertedArgs = convertFromList(ctx, args);
         const auto views = expressionsToViews(convertedArgs);
         const Expr result = autoSum(views);
 
@@ -117,6 +118,25 @@ sexp order_less_than(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp l
     });
 }
 
+sexp const_and_term(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
+{
+    assert(n == 1);
+
+    if (sexp_numberp(arg))
+        return sexp_xtype_exception(ctx, self, "const/term is not defined for numbers", arg);
+
+    return wrappedTryCatch(ctx, self, [&]() {
+        FromChibiToExpr conv{ctx};
+        FromExprToChibi back{ctx};
+
+        const Expr toSplit = conv.convert(arg);
+        const ConstAndTerm result = splitConstTerm(toSplit);
+        const PreservedSexp term{ctx, convertToList(ctx, result.term)};
+        const PreservedSexp constant{ctx, back.convert(result.constant)};
+        return sexp_list2(ctx, constant.get(), term.get());
+    });
+}
+
 sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] sexp_sint_t n, sexp env,
   const char* version, const sexp_abi_identifier_t abi)
 {
@@ -128,6 +148,7 @@ sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] se
     sexp_define_foreign(ctx, env, "auto-times", 1, auto_times);
     sexp_define_foreign(ctx, env, "auto^", 2, auto_power);
     sexp_define_foreign(ctx, env, "order-lt", 2, order_less_than);
+    sexp_define_foreign(ctx, env, "split-const-term", 1, const_and_term);
 
     return SEXP_VOID;
 }

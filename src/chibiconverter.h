@@ -94,5 +94,6 @@ namespace sym2 {
         sexp ctx;
     };
 
-    std::vector<Expr> convertList(sexp ctx, sexp list);
+    std::vector<Expr> convertFromList(sexp ctx, sexp list);
+    sexp convertToList(sexp ctx, OperandsView operands);
 }

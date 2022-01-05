@@ -426,7 +426,7 @@ sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(ExprView<sum || produ
     return serializeListWithLeadingSymbol(symbol, OperandsView::operandsOf(composite));
 }
 
-std::vector<sym2::Expr> sym2::convertList(sexp ctx, sexp list)
+std::vector<sym2::Expr> sym2::convertFromList(sexp ctx, sexp list)
 {
     std::vector<Expr> result;
     FromChibiToExpr individual{ctx};
@@ -438,4 +438,17 @@ std::vector<sym2::Expr> sym2::convertList(sexp ctx, sexp list)
     }
 
     return result;
+}
+
+sexp sym2::convertToList(sexp ctx, OperandsView operands)
+{
+    FromExprToChibi individual{ctx};
+    PreservedSexp result{ctx, SEXP_NULL};
+
+    for (const ExprView<> operand : operands) {
+        const PreservedSexp op{ctx, individual.convert(operand)};
+        result = PreservedSexp{ctx, sexp_append2(ctx, result.get(), sexp_list1(ctx, op.get()))};
+    }
+
+    return result.get();
 }

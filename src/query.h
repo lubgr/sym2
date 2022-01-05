@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <string_view>
+#include <utility>
+#include "operandsview.h"
 #include "predicates.h"
 #include "view.h"
 
@@ -11,7 +13,13 @@ namespace sym2 {
         ExprView<!power> exponent;
     };
 
+    struct ConstAndTerm {
+        ExprView<number> constant;
+        OperandsView term;
+    };
+
     BaseExp asPower(ExprView<> e);
+    ConstAndTerm splitConstTerm(ExprView<!number> e);
 
     std::size_t nOperands(ExprView<> e);
     std::size_t nPhysicalChildren(ExprView<> e);
