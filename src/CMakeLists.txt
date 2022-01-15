@@ -45,15 +45,13 @@ target_include_directories(sym2lowlevel
 
 add_library(sym2
     autosimpl.cpp
+    cohenautosimpl.cpp
     functions.cpp
     logarithm.cpp
     numberarithmetic.cpp
     operandsview.cpp
     orderrelationimpl.cpp
-    powersimpl.cpp
-    productsimpl.cpp
     query.cpp
-    sumsimpl.cpp
     trigonometric.cpp
     var.cpp
     violationhandler.cpp)

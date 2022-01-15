@@ -4,13 +4,31 @@
 #include <functional>
 #include <memory_resource>
 #include <vector>
+#include "cohenautosimpl.h"
 #include "get.h"
 #include "numberarithmetic.h"
 #include "orderrelation.h"
-#include "powersimpl.h"
 #include "predicates.h"
-#include "productsimpl.h"
-#include "sumsimpl.h"
+
+namespace sym2 {
+    template <class NumericAddFct, class NumericMultiplyFct>
+    struct SimplificationBundle {
+        std::pmr::memory_resource* buffer;
+        NumericAddFct numericAdd;
+        NumericMultiplyFct numericMultiply;
+
+        CohenAutoSimpl::Dependencies callbacks{orderLessThan, numericAdd, numericMultiply};
+        CohenAutoSimpl simplifier{callbacks, buffer};
+    };
+
+    auto createSimplificationBundle(std::pmr::memory_resource* buffer)
+    {
+        NumberArithmetic numerics{buffer};
+
+        return SimplificationBundle{buffer, std::bind_front(&NumberArithmetic::add, numerics),
+          std::bind_front(&NumberArithmetic::multiply, numerics)};
+    }
+}
 
 sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
 {
@@ -22,17 +40,9 @@ sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
 sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
 {
     std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
-    NumberArithmetic numerics{buffer};
-    auto binaryAutoProduct = [&buffer](ExprView<number> n, OperandsView ops) {
-        std::pmr::vector<ExprView<>> allOperands{n};
-        allOperands.insert(allOperands.end(), ops.begin(), ops.end());
-        return autoProduct(allOperands);
-    };
-    auto numericAdd = std::bind_front(&NumberArithmetic::add, numerics);
-    SumSimpl::Dependencies callbacks{orderLessThan, binaryAutoProduct, numericAdd};
-    SumSimpl simplifier{callbacks, buffer};
+    auto bundle = createSimplificationBundle(buffer);
 
-    return simplifier.autoSimplify(ops);
+    return bundle.simplifier.simplifySum(ops);
 }
 
 sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
@@ -45,13 +55,9 @@ sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
 sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
 {
     std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
-    NumberArithmetic numerics{buffer};
-    auto numericMultiply = std::bind_front(&NumberArithmetic::multiply, numerics);
-    auto binaryAutoSum = static_cast<Expr (*)(ExprView<>, ExprView<>)>(autoSum);
-    ProductSimpl::Dependencies callbacks{orderLessThan, autoPower, binaryAutoSum, numericMultiply};
-    ProductSimpl simplifier{callbacks, buffer};
+    auto bundle = createSimplificationBundle(buffer);
 
-    return simplifier.autoSimplify(ops);
+    return bundle.simplifier.simplifyProduct(ops);
 }
 
 sym2::Expr sym2::autoMinus(ExprView<> arg)
@@ -63,7 +69,10 @@ sym2::Expr sym2::autoMinus(ExprView<> arg)
 
 sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
 {
-    return autoPowerImpl(base, exp);
+    std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
+    auto bundle = createSimplificationBundle(buffer);
+
+    return bundle.simplifier.simplifyPower(base, exp);
 }
 
 sym2::Expr sym2::autoOneOver(ExprView<> arg)
