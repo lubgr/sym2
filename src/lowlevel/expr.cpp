@@ -235,7 +235,7 @@ void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
 
     if (composite == CompositeType::complexNumber
       && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), is < number && realDomain >)))
-        throw std::invalid_argument("Complex numbers must be created with two non-complex arguments");
+        throw std::invalid_argument("Complex numbers must be created with two numeric real-valued arguments");
     else if (composite == CompositeType::power && ops.size() != 2)
         throw std::invalid_argument("Powers must be created with exactly two operands");
 
