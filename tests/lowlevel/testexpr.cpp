@@ -1,6 +1,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <string_view>
 #include "blob.h"
 #include "doctest/doctest.h"
@@ -78,6 +79,12 @@ TEST_CASE("Expr constructor")
     SUBCASE("Small rational normalization")
     {
         CHECK(isSmallRationalEqualTo(Expr{9, 6}, 3, 2));
+    }
+
+    SUBCASE("NaN floating point argument throws")
+    {
+        CHECK_THROWS(Expr{std::numeric_limits<double>::quiet_NaN()});
+        CHECK_THROWS(Expr{std::numeric_limits<double>::signaling_NaN()});
     }
 
     SUBCASE("Small rational throws if denom == 0")

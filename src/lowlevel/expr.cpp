@@ -72,7 +72,10 @@ sym2::Expr::Expr(double n, allocator_type allocator)
                .mid = midZero,
                .main = {.inexact = n}}},
       allocator}
-{}
+{
+    if (!std::isfinite(n))
+        throw std::domain_error("Floating point Expr must be of finite value");
+}
 
 sym2::Expr::Expr(std::int32_t num, std::int32_t denom, allocator_type allocator)
     : buffer{allocator}
