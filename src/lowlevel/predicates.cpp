@@ -3,6 +3,7 @@
 #include "access.h"
 #include "blob.h"
 #include "expr.h"
+#include "get.h"
 #include "query.h"
 
 bool sym2::isRealDomain(ExprView<> e)
@@ -140,17 +141,19 @@ bool sym2::isNumericallyEvaluable(ExprView<> e)
 
 bool sym2::isPositive(ExprView<> e)
 {
-    switch (type(e)) {
-        case Type::symbol:
-            return (flags(e) & Flag::positive) != Flag::none;
-        default:
-            // TODO
-            return true;
-    }
+    if (is<symbol>(e))
+        return (flags(e) & Flag::positive) != Flag::none;
+    else if (is < number && realDomain > (e))
+        return get<double>(e) >= 0.0;
+
+    // TODO
+    return true;
 }
 
-bool sym2::isNegative(ExprView<>)
+bool sym2::isNegative(ExprView<> e)
 {
+    if (is < number && realDomain > (e))
+        return get<double>(e) < 0.0;
     // TODO
     return false;
 }

@@ -43,10 +43,10 @@ namespace sym2 {
         std::pmr::vector<Expr> binaryProduct(ExprView<!product> lhs, ExprView<!product> rhs);
         std::pmr::vector<Expr> simplMoreThanTwoFactors(std::span<const ExprView<>> ops);
 
-        Expr floatingPointPower(double base, double exp);
         // The exponent must not be zero:
-        Expr simplPowerRealNumberBase(ExprView<number && realDomain> base, std::int32_t exp);
-        Expr computePower(ExprView<number && realDomain> base, std::uint32_t exp);
+        Expr computePowerRationalToInt(ExprView<rational> base, std::int32_t exp);
+        Expr computePowerRationalToUnsigned(ExprView<rational> base, std::uint32_t exp);
+        Expr simplPowerRationalToRational(ExprView<rational> base, ExprView<rational && !integer> exp);
 
         Dependencies callbacks;
         std::pmr::memory_resource* buffer;

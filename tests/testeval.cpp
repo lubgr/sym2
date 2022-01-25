@@ -173,23 +173,18 @@ TEST_CASE("Numeric power evaluation with complex/real distinction")
     const double base = -42.0;
     const double exp = 9.87654;
     const auto what = autoPower(Expr{base}, Expr{exp});
+    const auto expected = std::pow(std::complex<double>{base}, exp);
 
-    SUBCASE("Complex exponentiation is solvable")
+    SUBCASE("Complex exponentiation")
     {
-        const auto expected = std::pow(std::complex<double>{base}, exp);
-
         CHECK(evalComplex(what, lookupThrow).real() == doctest::Approx(expected.real()));
         CHECK(evalComplex(what, lookupThrow).imag() == doctest::Approx(expected.imag()));
     }
 
-    SUBCASE("Real exponentiation yields NaN")
+    SUBCASE("Real exponentiation yields real part")
     {
-        std::feclearexcept(FE_ALL_EXCEPT);
+        const auto expectedReal = std::real(expected);
 
-        const double probablyNan = evalReal(what, lookupThrow);
-
-        CHECK(std::fetestexcept(FE_INVALID));
-
-        (void) probablyNan;
+        CHECK(evalReal(what, lookupThrow) == doctest::Approx(expectedReal));
     }
 }
