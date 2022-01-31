@@ -21,31 +21,38 @@ with these trees are usually kept as generic as possible, and treating any kind 
 common interface helps with this.
 
 Such structure naturally lends itself to an OOP(-like) model, e.g. the composite design pattern or a
-similar variation of it. However, there are two shortcomings with such abstraction:
+variation of it. However, there are two shortcomings with such abstraction:
 
 - Leaky abstraction: most computer algebra algorithms do require dispatching on concrete node types
   in an expression tree (do this if it's a sum, do that for numbers, ...), which breaks the
   encapsulation that the abstraction intended to provide in the first place.
-- Suboptimal runtime performance: the memory layout usually works with nodes being individually
-  heap-allocated and often reference counted. This makes it possible to conveniently have composite
-  nodes store an arbitrary number of references/pointers to child nodes, but fails to account for
-  spatial locality of objects belonging to a single expression. This leads to more cache misses than
-  necessary. In addition, the numerous small-sized allocations for constructing expression trees can
-  further slow down the algorithms (e.g. when using default general-purpose allocators).
+- Suboptimal runtime performance: the memory layout for such design usually works with nodes being
+  individually heap-allocated and reference counted. This makes it possible to conveniently have
+  composite nodes store an arbitrary number of references/pointers to child nodes, but fails to
+  account for spatial locality of objects belonging to a single expression. This leads to more cache
+  misses than necessary. In addition, the numerous small-sized allocations for constructing
+  expression trees can further slow down the algorithms (e.g. when using default general-purpose
+  allocators).
 
 This library tries to address both issues.
 
 ## Basic types
 
-The single, central _public_ API type is `sym2::Var`. It is a very simple type that represents all
-expression types, without exposing much of the tree structure. It doesn't have many member functions
-- the majority of features provided as free functions. `sym2::Var` hides the actual internal
-  representation for library clients using a non-allocating Pimpl pattern.
+The single, central _public_ API type is `sym2::Var`. It represents and owns an expression, without
+exposing much of its tree structure. It doesn't have many member functions - the majority of
+features provided as free functions. `sym2::Var` hides the actual internal representation for
+library clients using a non-allocating Pimpl pattern.
 
 The internal data representation type is `sym2::Expr`. The main purpose of the `Expr` class is to
 own all its data. An `Expr` instance is immutable except assignment. It is also cheap to copy, given
 a reasonable polymorphic allocator is provided. The only complex part of its implementation is the
 constructor overload set.
+
+A similar internal type is `sym2::ExprLiteral`. It can represent builtin integer and floating point
+values and symbols (hence a subset of what `sym2::Expr` can represent). `sym2::ExprLiteral` is used
+when allocations are not desired, e.g. function-local constants of `static` storage duration. There
+is no real API around it - in order to use a `sym2::ExprLiteral`, convert it to `sym2::ExprView`
+(see below) or construct a `sym2::Expr`.
 
 Any query, access to operands etc. will be handled through a separate view over the expression data
 called `sym2::ExprView`. `sym2::ExprView` is a non-owning, immutable view or handle for the owning
