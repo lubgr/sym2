@@ -10,6 +10,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
+#include "access.h"
 #include "blob.h"
 #include "predicates.h"
 
@@ -60,6 +61,12 @@ namespace sym2 {
             }
         }
     }
+
+    template <class Number>
+    Flag negativePositeFlag(const Number& n)
+    {
+        return n >= Number{0} ? Flag::positive : Flag::negative;
+    }
 }
 
 sym2::Expr::Expr(std::int32_t n, allocator_type allocator)
@@ -109,7 +116,7 @@ sym2::Expr::Expr(LargeRationalRef n, allocator_type allocator)
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
     buffer.push_back(Blob{.header = Type::largeRational,
-      .flags = Flag::numericallyEvaluable,
+      .flags = Flag::numericallyEvaluable | negativePositeFlag(n.value),
       .pre = preZero,
       .mid = {.nLogicalOrPhysicalChildren = 2},
       .main = mainZero /* Number of child blobs to be determined. */});
@@ -142,7 +149,7 @@ sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint, allocator_type 
 
 sym2::Expr::Expr(std::string_view constant, double value, allocator_type allocator)
     : buffer{{Blob{.header = Type::constant,
-               .flags = Flag::numericallyEvaluable,
+               .flags = Flag::numericallyEvaluable | negativePositeFlag(value),
                .pre = preZero,
                .mid = midZero,
                .main = {.inexact = value}}},
@@ -276,6 +283,8 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
 {
     const auto divisor = std::gcd(num, denom);
 
+    assert(denom > 0);
+
     num /= divisor;
     denom /= divisor;
 
@@ -283,7 +292,7 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
         appendSmallInt(num);
     else
         buffer.push_back(Blob{.header = Type::smallRational,
-          .flags = Flag::numericallyEvaluable,
+          .flags = Flag::numericallyEvaluable | negativePositeFlag(num),
           .pre = preZero,
           .mid = midZero,
           .main = {.exact = {num, denom}}});
@@ -302,7 +311,7 @@ void sym2::Expr::appendLargeInt(const LargeInt& n)
     static constexpr auto opSize = sizeof(Blob);
 
     buffer.push_back(Blob{.header = Type::largeInt,
-      .flags = Flag::numericallyEvaluable,
+      .flags = Flag::numericallyEvaluable | negativePositeFlag(n),
       .pre = preZero,
       .mid = {.largeIntSign = n < 0 ? -1 : 1},
       .main = mainZero /* Number of child blobs to be determined. */});

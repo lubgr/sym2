@@ -15,7 +15,7 @@ using namespace std::literals::string_view_literals;
 
 bool numEvalAndSize1(ExprView<> e)
 {
-    return e.size() == 1 && e[0].flags == Flag::numericallyEvaluable;
+    return e.size() == 1 && (e[0].flags & Flag::numericallyEvaluable) != Flag::none;
 }
 
 bool isSmallIntEqualTo(ExprView<> e, int num)
@@ -34,12 +34,13 @@ bool hasLargeIntCharacteristics(ExprView<> e)
 {
     return e[0].header == Type::largeInt
       && static_cast<std::size_t>(e.size()) == e[0].main.nChildBlobs + 1
-      && e[0].flags == Flag::numericallyEvaluable;
+      && (e[0].flags & Flag::numericallyEvaluable) != Flag::none;
 }
 
 bool hasLargeRationalCharacteristics(ExprView<> e)
 {
-    return e[0].header == Type::largeRational && e[0].flags == Flag::numericallyEvaluable;
+    return e[0].header == Type::largeRational
+      && (e[0].flags & Flag::numericallyEvaluable) != Flag::none;
 }
 
 template <std::size_t N>
@@ -52,6 +53,13 @@ bool isShortSymbol(Blob what, std::string_view expectedName)
 {
     return what.header == Type::symbol && what.flags == Flag::none && what.pre.name == expectedName
       && allNullChars(what.main.name);
+}
+
+bool hasSignFlag(ExprView<> e)
+{
+    const Flag actual = e[0].flags;
+
+    return (actual & Flag::positive) != Flag::none || (actual & Flag::negative) != Flag::none;
 }
 
 TEST_CASE("Expr constructor")
@@ -175,6 +183,27 @@ TEST_CASE("Expr constructor")
         }
     }
 
+    SUBCASE("Sign flags")
+    {
+        CHECK(hasSignFlag(42_ex));
+        CHECK(hasSignFlag(Expr{-42}));
+        CHECK(hasSignFlag(Expr{2, 3}));
+        CHECK(hasSignFlag(1.23456_ex));
+
+        const LargeInt n1{"2893479827489234263426423649823478238570935809575903675026398235"};
+        const LargeInt n2{"283749237498273489274382709084938593857982374982729873"};
+        const LargeRational lr{n1, n2};
+
+        CHECK(hasSignFlag(Expr{LargeIntRef{n1}}));
+        CHECK(hasSignFlag(Expr{LargeRationalRef{lr}}));
+
+        CHECK(hasSignFlag(Expr{"a", SymbolFlag::positive}));
+        CHECK(hasSignFlag(Expr{"a", SymbolFlag::positiveReal}));
+
+        CHECK(hasSignFlag(Expr{"pi", 3.14}));
+        CHECK(hasSignFlag(Expr{"minpi", -3.14}));
+    }
+
     SUBCASE("Too long symbol name throws")
     {
         CHECK_THROWS(Expr{"12345678901234"});
@@ -204,7 +233,8 @@ TEST_CASE("Expr constructor")
         CHECK(e.size() == 1);
 
         CHECK(e[0].header == Type::constant);
-        CHECK(e[0].flags == Flag::numericallyEvaluable);
+        CHECK((e[0].flags & Flag::numericallyEvaluable) != Flag::none);
+        CHECK((e[0].flags & Flag::negative) != Flag::none);
         CHECK(e[0].pre.name == "test"sv);
         CHECK(e[0].main.inexact == doctest::Approx(value));
     }

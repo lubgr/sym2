@@ -43,6 +43,8 @@ namespace sym2 {
     constexpr inline auto power = predicate<isPower>();
     constexpr inline auto function = predicate<isFunction>();
     constexpr inline auto numericallyEvaluable = predicate<isNumericallyEvaluable>();
+    // The notion of 'positive' and 'negative' only refer to the real part of an expression that is
+    // potentially in the complex domain:
     constexpr inline auto positive = predicate<isPositive>();
     constexpr inline auto negative = predicate<isNegative>();
     constexpr inline auto zero = predicate<isZero>();

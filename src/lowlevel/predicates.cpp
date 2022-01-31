@@ -141,20 +141,21 @@ bool sym2::isNumericallyEvaluable(ExprView<> e)
 
 bool sym2::isPositive(ExprView<> e)
 {
-    if (is<symbol>(e))
-        return (flags(e) & Flag::positive) != Flag::none;
-    else if (is < number && realDomain > (e))
+    if ((flags(e) & Flag::positive) != Flag::none)
+        return true;
+    else if (isNumericallyEvaluable(e))
         return get<double>(e) >= 0.0;
 
-    // TODO
-    return true;
+    return false;
 }
 
 bool sym2::isNegative(ExprView<> e)
 {
-    if (is < number && realDomain > (e))
+    if ((flags(e) & Flag::negative) != Flag::none)
+        return true;
+    else if (isNumericallyEvaluable(e))
         return get<double>(e) < 0.0;
-    // TODO
+
     return false;
 }
 

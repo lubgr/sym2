@@ -29,7 +29,8 @@ namespace sym2 {
         none = 0b0,
         numericallyEvaluable = 0b1,
         positive = 0b10,
-        real = 0b100
+        negative = 0b100,
+        real = 0b1000
     };
 
     Flag operator|(Flag lhs, Flag rhs);
