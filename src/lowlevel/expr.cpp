@@ -346,7 +346,7 @@ void sym2::Expr::copyNameOrThrow(
     auto* dest = std::next(reinterpret_cast<char*>(&buffer[bufferIndex]), 2);
 
     if (name.length() > maxLength || name.empty())
-        throw std::invalid_argument("Names must be non-empty and < 13 characters long");
+        throw std::invalid_argument("Names must be non-empty not exceed a tight length limit");
 
     std::copy(name.cbegin(), name.cend(), dest);
 }
