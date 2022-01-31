@@ -298,6 +298,8 @@ sym2::Expr sym2::CohenAutoSimpl::simplifyPower(ExprView<> base, ExprView<> exp)
     // numbers into account and hence some more logic. Trivial cases first...
     if (base == 1_ex)
         return Expr{base, buffer};
+    else if (base == 0_ex && exp == 0_ex)
+        throw std::invalid_argument{"Invalid power with zero base and zero exponent"};
     else if (exp == 0_ex)
         return 1_ex;
     else if (exp == 1_ex)

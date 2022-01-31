@@ -7,8 +7,11 @@
 
   (test 0 (auto^ 0 'a))
   (test 0 (auto^ 0 '+a))
+  (test 0 (auto^ 0 1))
+
   (test-error (auto^ 0 -1))
   (test-error (auto^ 0 -2/3))
+  (test-error (auto^ 0 0))
 
   (test 1 (auto^ 1 42))
   (test 1 (auto^ 1 '(+ a b c)))
