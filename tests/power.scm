@@ -77,4 +77,9 @@
   (test 'a (auto^ '(^ a 1/3) 3))
 )
 
+(test-group "Positive base power simplifications"
+  (test '+a (auto^ '(^ +a 3) 1/3))
+  (test '+a (auto^ '(^ +a 2) 1/2))
+  (test '(+ +a +b +c) (auto^ '(^ (+ +a +b +c) 8) 1/8)))
+
 (test-exit)

@@ -137,10 +137,11 @@ sexp const_and_term(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp ar
     });
 }
 
-sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] sexp_sint_t n, sexp env,
-  const char* version, const sexp_abi_identifier_t abi)
+sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] sexp_sint_t n,
+  sexp env, const char* version, const sexp_abi_identifier_t abi)
 {
-    if (!(sexp_version_compatible(ctx, version, sexp_version) && sexp_abi_compatible(ctx, abi, SEXP_ABI_IDENTIFIER)))
+    if (!(sexp_version_compatible(ctx, version, sexp_version)
+          && sexp_abi_compatible(ctx, abi, SEXP_ABI_IDENTIFIER)))
         return SEXP_ABI_ERROR;
 
     sexp_define_foreign(ctx, env, "roundtrip", 1, roundtrip);

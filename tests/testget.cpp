@@ -67,7 +67,8 @@ TEST_CASE("Scalar retrieval")
     {
         CHECK(get<double>(42_ex) == doctest::Approx(42.0));
         CHECK(get<double>(Expr{7, 11}) == doctest::Approx(7.0 / 11.0));
-        CHECK(get<double>(Expr{LargeIntRef{largeInt}}) == doctest::Approx(static_cast<double>(largeInt)));
+        CHECK(get<double>(Expr{LargeIntRef{largeInt}})
+          == doctest::Approx(static_cast<double>(largeInt)));
 
         const LargeRational largeRational{LargeInt{123456789}, largeInt};
         const double expected = 123456789.0 / static_cast<double>(largeInt);

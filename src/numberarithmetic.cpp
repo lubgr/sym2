@@ -33,7 +33,8 @@ sym2::Expr sym2::NumberArithmetic::multiplyComplex(ExprView<number> lhs, ExprVie
 }
 
 template <class Operation>
-sym2::Expr sym2::NumberArithmetic::reduceViaLargeRational(Operation op, ExprView<number> lhs, ExprView<number> rhs)
+sym2::Expr sym2::NumberArithmetic::reduceViaLargeRational(
+  Operation op, ExprView<number> lhs, ExprView<number> rhs)
 {
     const LargeRational result = op(get<LargeRational>(lhs), get<LargeRational>(rhs));
 
@@ -41,7 +42,8 @@ sym2::Expr sym2::NumberArithmetic::reduceViaLargeRational(Operation op, ExprView
 }
 
 template <class Operation>
-sym2::Expr sym2::NumberArithmetic::reduceViaFloatingPoint(Operation op, ExprView<number> lhs, ExprView<number> rhs)
+sym2::Expr sym2::NumberArithmetic::reduceViaFloatingPoint(
+  Operation op, ExprView<number> lhs, ExprView<number> rhs)
 {
     const double result = op(get<double>(lhs), get<double>(rhs));
 
@@ -77,7 +79,8 @@ sym2::Expr sym2::NumberArithmetic::subtract(ExprView<number> lhs, ExprView<numbe
 
 sym2::Expr sym2::NumberArithmetic::subtractComplex(ExprView<number> lhs, ExprView<number> rhs)
 {
-    const std::array<Expr, 2> operands{{subtract(real(lhs), real(rhs)), subtract(imag(lhs), imag(rhs))}};
+    const std::array<Expr, 2> operands{
+      {subtract(real(lhs), real(rhs)), subtract(imag(lhs), imag(rhs))}};
 
     return Expr{CompositeType::complexNumber, operands, buffer};
 }

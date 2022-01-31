@@ -13,9 +13,10 @@ namespace sym2 {
 
     class ConstBlobIterator : public boost::stl_interfaces::iterator_interface<ConstBlobIterator,
                                 std::contiguous_iterator_tag, const Blob> {
-        /* Simple iterator based on the example in the STL interfaces library. While this could be a template, it won't
-         * be reused as anything else, so we prefer simplicity and nicer error messages. The only notable detail of this
-         * iterator is that it can't be used for mutable access - everything ist const. */
+        /* Simple iterator based on the example in the STL interfaces library. While this could be a
+         * template, it won't be reused as anything else, so we prefer simplicity and nicer error
+         * messages. The only notable detail of this iterator is that it can't be used for mutable
+         * access - everything ist const. */
       public:
         ConstBlobIterator() = default;
         explicit ConstBlobIterator(const Blob* b) noexcept;

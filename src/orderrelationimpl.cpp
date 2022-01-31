@@ -26,7 +26,8 @@ bool sym2::orderLessThan(ExprView<> lhs, ExprView<> rhs)
     else if (areAll<product>(lhs, rhs) || areAll<sum>(lhs, rhs))
         return productsOrSums(lhs, rhs);
     else if (areAll<constant>(lhs, rhs))
-        // This diverges from Cohen's algorithm, where constants are treated the same way as numbers:
+        // This diverges from Cohen's algorithm, where constants are treated the same way as
+        // numbers:
         return constants(lhs, rhs);
     else if (areAll<function>(lhs, rhs))
         return functions(lhs, rhs);
@@ -34,12 +35,12 @@ bool sym2::orderLessThan(ExprView<> lhs, ExprView<> rhs)
     if (is<number>(lhs))
         return true;
     else if (is<number>(rhs))
-        // This branch could be omitted since it's handled by the final recursive swap, but it simplifies the following
-        // condition for catching a constant.
+        // This branch could be omitted since it's handled by the final recursive swap, but it
+        // simplifies the following condition for catching a constant.
         return false;
     else if (is<constant>(lhs))
-        // Cohen's algorithm treats constants as numbers, hence this branch doesn't exist in his outline. We need it
-        // here since we don't treat constants as numbers.
+        // Cohen's algorithm treats constants as numbers, hence this branch doesn't exist in his
+        // outline. We need it here since we don't treat constants as numbers.
         return true;
     else if (is<product>(lhs) && is < power || sum || symbol || function > (rhs))
         return orderLessThan(OperandsView::operandsOf(lhs), OperandsView::singleOperand(rhs));
@@ -73,9 +74,10 @@ bool sym2::symbols(ExprView<symbol> lhs, ExprView<symbol> rhs)
 {
     const auto asTuple = [](ExprView<symbol> e) {
         return std::make_tuple(
-          /* We invert the booleans here to achieve R+ < + < R. The actual ordering this enforces is arbitrary, but it's
-           * important to implement a strict weak ordering. */
-          get<std::string_view>(e), !is < positive && realDomain > (e), !is<positive>(e), !is<realDomain>(e));
+          /* We invert the booleans here to achieve R+ < + < R. The actual ordering this enforces is
+           * arbitrary, but it's important to implement a strict weak ordering. */
+          get<std::string_view>(e),
+          !is < positive && realDomain > (e), !is<positive>(e), !is<realDomain>(e));
     };
 
     return asTuple(lhs) < asTuple(rhs);
@@ -99,11 +101,13 @@ bool sym2::powers(BaseExp lhs, BaseExp rhs)
 
 bool sym2::productsOrSums(ExprView<product || sum> lhs, ExprView<product || sum> rhs)
 {
-    /* Cohen's algorithm determines the order relation of two sums or products such that the order relation of their
-     * operands are compared, starting at the end, i.e., the last operand is the most significant one. When both last
-     * operands compare equal, the two next to last are evaluated and so on. This imposes a technical difficulty for
-     * handling the data layout of our composites: iterators over operands are only forward iterators, so we can't
-     * easily reverse a sequence of operands. See below for details. Examples of order relation of sum/product operands:
+    /* Cohen's algorithm determines the order relation of two sums or products such that the order
+     * relation of their operands are compared, starting at the end, i.e., the last operand is the
+     * most significant one. When both last operands compare equal, the two next to last are
+     * evaluated and so on. This imposes a technical difficulty for handling the data layout of our
+     * composites: iterators over operands are only forward iterators, so we can't easily reverse a
+     * sequence of operands. See below for details. Examples of order relation of sum/product
+     * operands:
      *
      * lhs: b c d              lhs: a b c             lhs: b c g h x
      * rhs: a c d              rhs: b c d             rhs: b c g h i
@@ -123,7 +127,8 @@ bool sym2::orderLessThan(OperandsView lhs, OperandsView rhs)
     const std::size_t maxSize = std::max(lhs.size(), rhs.size());
     const std::size_t lhsStart = maxSize - rhs.size();
     const std::size_t rhsStart = maxSize - lhs.size();
-    const boost::logic::tribool lessThan = orderLessThanOperandsReverse(lhs.subview(lhsStart), rhs.subview(rhsStart));
+    const boost::logic::tribool lessThan =
+      orderLessThanOperandsReverse(lhs.subview(lhsStart), rhs.subview(rhsStart));
 
     if (boost::logic::indeterminate(lessThan))
         return lhsStart < rhsStart;
@@ -133,15 +138,17 @@ bool sym2::orderLessThan(OperandsView lhs, OperandsView rhs)
 
 boost::logic::tribool sym2::orderLessThanOperandsReverse(OperandsView lhs, OperandsView rhs)
 {
-    /* This function deliberately avoids recursion (which allows for a much easier implementation) to not exhaust stack
-     * space. In particular, we want sanitizer builds to run as smoothly as non-sanitizer builds, and this imposes a
-     * strict recursion depth limit (can be somewhere around 250, depending on the platform). Instead, it uses an
-     * artificial, compile-time sized stack that is filled with the last parts of both function arguments while
-     * traversing them. We assume that most of the time, the first pass will either yield a result because two operands
-     * don't compare equal and their order relation can be evaluated, or the total number of operands comparing equal is
-     * within reasonable bounds. The latter assumption is important to not create a runtime performance bottleneck with
-     * the following iterations, which repeatedly traverse the operands (recall: only forward-iterators!) to compare and
-     * possibly evaluate an order relation. */
+    /* This function deliberately avoids recursion (which allows for a much easier implementation)
+     * to not exhaust stack space. In particular, we want sanitizer builds to run as smoothly as
+     * non-sanitizer builds, and this imposes a strict recursion depth limit (can be somewhere
+     * around 250, depending on the platform). Instead, it uses an artificial, compile-time sized
+     * stack that is filled with the last parts of both function arguments while traversing them. We
+     * assume that most of the time, the first pass will either yield a result because two operands
+     * don't compare equal and their order relation can be evaluated, or the total number of
+     * operands comparing equal is within reasonable bounds. The latter assumption is important to
+     * not create a runtime performance bottleneck with the following iterations, which repeatedly
+     * traverse the operands (recall: only forward-iterators!) to compare and possibly evaluate an
+     * order relation. */
     assert(lhs.size() == rhs.size() && !lhs.empty());
     assert(lhs.size() <= std::numeric_limits<std::int64_t>::max());
 
@@ -155,11 +162,13 @@ boost::logic::tribool sym2::orderLessThanOperandsReverse(OperandsView lhs, Opera
         return boost::container::static_vector<ExprView<>, stackSize>{first, last};
     };
 
-    for (std::int64_t offset = n > stackSize ? n - stackSize : 0; offset >= 0; offset -= stackSize) {
+    for (std::int64_t offset = n > stackSize ? n - stackSize : 0; offset >= 0;
+         offset -= stackSize) {
         const auto lastOpsLhs = collectOperands(lhs, offset);
         const auto lastOpsRhs = collectOperands(rhs, offset);
 
-        for (const auto& [lhsOp, rhsOp] : boost::combine(lastOpsLhs, lastOpsRhs) | boost::adaptors::reversed)
+        for (const auto& [lhsOp, rhsOp] :
+          boost::combine(lastOpsLhs, lastOpsRhs) | boost::adaptors::reversed)
             if (lhsOp != rhsOp)
                 return orderLessThan(lhsOp, rhsOp);
     }
@@ -170,8 +179,9 @@ boost::logic::tribool sym2::orderLessThanOperandsReverse(OperandsView lhs, Opera
 bool sym2::constants(ExprView<constant> lhs, ExprView<constant> rhs)
 {
     const auto asPair = [](ExprView<constant> e) {
-        // It's quite defensive to compare the floating point value here, too (if someone defines two constants with the
-        // same name but different values, we shouldn't expect much to function properly), but it doesn't hurt.
+        // It's quite defensive to compare the floating point value here, too (if someone defines
+        // two constants with the same name but different values, we shouldn't expect much to
+        // function properly), but it doesn't hurt.
         return std::make_pair(get<std::string_view>(e), get<double>(e));
     };
 

@@ -1,7 +1,9 @@
-/* Adjusted from LLVM, llvm/ADT/STLExtras.h, see the LICENSE file of sym2 for more details and a copy of the license.
+/* Adjusted from LLVM, llvm/ADT/STLExtras.h, see the LICENSE file of sym2 for more details and a
+ * copy of the license.
  *
- * Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions. See https://llvm.org/LICENSE.txt for
- * license information. SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception */
+ * Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions. See
+ * https://llvm.org/LICENSE.txt for license information. SPDX-License-Identifier: Apache-2.0 WITH
+ * LLVM-exception */
 
 #pragma once
 #include <cstdint>
@@ -16,7 +18,8 @@ namespace sym2 {
       public:
         template <typename Fct>
         FunctionView(Fct&& callable,
-          std::enable_if_t<!std::is_same_v<std::remove_cv_t<std::remove_reference_t<Fct>>, FunctionView>>* = nullptr)
+          std::enable_if_t<!std::is_same_v<std::remove_cv_t<std::remove_reference_t<Fct>>,
+            FunctionView>>* = nullptr)
             : callback(invoke<std::remove_reference_t<Fct>>)
             , callable(reinterpret_cast<void*>(&callable))
         {}

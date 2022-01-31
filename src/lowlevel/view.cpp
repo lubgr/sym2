@@ -23,7 +23,8 @@ sym2::ConstBlobIterator& sym2::ConstBlobIterator::operator+=(std::ptrdiff_t n) n
     return *this;
 }
 
-sym2::ConstBlobIterator::difference_type sym2::ConstBlobIterator::operator-(ConstBlobIterator other) const noexcept
+sym2::ConstBlobIterator::difference_type sym2::ConstBlobIterator::operator-(
+  ConstBlobIterator other) const noexcept
 {
     return b - other.b;
 }

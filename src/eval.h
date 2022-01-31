@@ -21,8 +21,8 @@ namespace sym2 {
         if (is < number && complexDomain > (e))
             return {recurReal(real(e)), recurReal(imag(e))};
         else if (is<sum>(e))
-            return std::transform_reduce(
-              ChildIterator::logicalChildren(e), ChildIterator{}, std::complex<double>{}, std::plus<>{}, recurComplex);
+            return std::transform_reduce(ChildIterator::logicalChildren(e), ChildIterator{},
+              std::complex<double>{}, std::plus<>{}, recurComplex);
         else if (is<product>(e))
             return std::transform_reduce(ChildIterator::logicalChildren(e), ChildIterator{},
               std::complex<double>{1.0, 0.0}, std::multiplies<>{}, recurComplex);
@@ -50,7 +50,8 @@ namespace sym2 {
         else if (is < complexDomain && number > (e))
             return recur(real(e));
         else if (is<sum>(e))
-            return std::transform_reduce(ChildIterator::logicalChildren(e), ChildIterator{}, 0.0, std::plus<>{}, recur);
+            return std::transform_reduce(
+              ChildIterator::logicalChildren(e), ChildIterator{}, 0.0, std::plus<>{}, recur);
         else if (is<product>(e))
             return std::transform_reduce(
               ChildIterator::logicalChildren(e), ChildIterator{}, 1.0, std::multiplies<>{}, recur);
@@ -58,8 +59,9 @@ namespace sym2 {
             return std::pow(recur(firstOperand(e)), recur(secondOperand(e)));
         else if (is<function>(e)) {
             assert(nOperands(e) == 1 || nOperands(e) == 2);
-            return nOperands(e) == 1 ? get<UnaryDoubleFctPtr>(e)(recur(firstOperand(e))) :
-                                       get<BinaryDoubleFctPtr>(e)(recur(firstOperand(e)), recur(secondOperand(e)));
+            return nOperands(e) == 1 ?
+              get<UnaryDoubleFctPtr>(e)(recur(firstOperand(e))) :
+              get<BinaryDoubleFctPtr>(e)(recur(firstOperand(e)), recur(secondOperand(e)));
         }
 
         assert(false);

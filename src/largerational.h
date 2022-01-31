@@ -3,8 +3,8 @@
 #include "largeint.h"
 
 namespace sym2 {
-    using LargeRational =
-      boost::multiprecision::number<boost::multiprecision::rational_adaptor<typename LargeInt::backend_type>>;
+    using LargeRational = boost::multiprecision::number<
+      boost::multiprecision::rational_adaptor<typename LargeInt::backend_type>>;
 
     using boost::multiprecision::denominator;
     using boost::multiprecision::numerator;

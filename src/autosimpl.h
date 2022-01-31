@@ -18,7 +18,8 @@ namespace sym2 {
     template <class... T>
     Expr autoProduct(ExprView<> first, ExprView<> second, ExprView<> third, const T&... args)
     {
-        return autoProduct(std::array<ExprView<>, 3 + sizeof...(T)>{{first, second, third, args...}});
+        return autoProduct(
+          std::array<ExprView<>, 3 + sizeof...(T)>{{first, second, third, args...}});
     }
     Expr autoMinus(ExprView<> arg);
 

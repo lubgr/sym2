@@ -18,7 +18,8 @@ namespace sym2 {
         Var(std::string_view symbol, SymbolFlag constraint);
         Var(std::string_view constant, double value);
         Var(std::string_view function, const Var& arg, double (*eval)(double));
-        Var(std::string_view function, const Var& arg1, const Var& arg2, double (*eval)(double, double));
+        Var(std::string_view function, const Var& arg1, const Var& arg2,
+          double (*eval)(double, double));
         Var(const Var& other);
         Var& operator=(const Var& other);
         Var(Var&& other) noexcept;

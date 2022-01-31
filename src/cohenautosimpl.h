@@ -46,7 +46,8 @@ namespace sym2 {
         // The exponent must not be zero:
         Expr computePowerRationalToInt(ExprView<rational> base, std::int32_t exp);
         Expr computePowerRationalToUnsigned(ExprView<rational> base, std::uint32_t exp);
-        Expr simplPowerRationalToRational(ExprView<rational> base, ExprView<rational && !integer> exp);
+        Expr simplPowerRationalToRational(
+          ExprView<rational> base, ExprView<rational && !integer> exp);
 
         Dependencies callbacks;
         std::pmr::memory_resource* buffer;

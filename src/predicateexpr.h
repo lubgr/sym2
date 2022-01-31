@@ -34,7 +34,8 @@ namespace sym2 {
         template <PredicateExprType OtherKind, class... S>
         constexpr auto operator&&(const PredicateExpr<OtherKind, S...>& rhs) const
         {
-            if constexpr (Kind == PredicateExprType::logicalAnd && OtherKind == PredicateExprType::logicalAnd) {
+            if constexpr (Kind == PredicateExprType::logicalAnd
+              && OtherKind == PredicateExprType::logicalAnd) {
                 const auto joined = boost::hana::concat(operands, rhs.operands);
                 return PredicateExpr<PredicateExprType::logicalAnd, T..., S...>{joined};
             } else
@@ -45,7 +46,8 @@ namespace sym2 {
         template <PredicateExprType OtherKind, class... S>
         constexpr auto operator||(const PredicateExpr<OtherKind, S...>& rhs) const
         {
-            if constexpr (Kind == PredicateExprType::logicalOr && OtherKind == PredicateExprType::logicalOr) {
+            if constexpr (Kind == PredicateExprType::logicalOr
+              && OtherKind == PredicateExprType::logicalOr) {
                 const auto joined = boost::hana::concat(operands, rhs.operands);
                 return PredicateExpr<PredicateExprType::logicalOr, T..., S...>{joined};
             } else
@@ -56,15 +58,15 @@ namespace sym2 {
         template <auto fct, class... Arg>
         constexpr auto operator&&(const Predicate<fct, Arg...>& rhs) const
         {
-            return PredicateExpr<PredicateExprType::logicalAnd, PredicateExpr<Kind, T...>, Predicate<fct, Arg...>>{
-              *this, rhs};
+            return PredicateExpr<PredicateExprType::logicalAnd, PredicateExpr<Kind, T...>,
+              Predicate<fct, Arg...>>{*this, rhs};
         }
 
         template <auto fct, class... Arg>
         constexpr auto operator||(const Predicate<fct, Arg...>& rhs) const
         {
-            return PredicateExpr<PredicateExprType::logicalOr, PredicateExpr<Kind, T...>, Predicate<fct, Arg...>>{
-              *this, rhs};
+            return PredicateExpr<PredicateExprType::logicalOr, PredicateExpr<Kind, T...>,
+              Predicate<fct, Arg...>>{*this, rhs};
         }
 
         constexpr auto operator!() const
@@ -135,8 +137,8 @@ namespace sym2 {
     constexpr auto predicate()
     {
         if constexpr (sizeof...(ExplicitArgs) == 0) {
-            using PredicateType =
-              typename detail::DeducePredicateType<fct, boost::callable_traits::args_t<decltype(fct)>>::Type;
+            using PredicateType = typename detail::DeducePredicateType<fct,
+              boost::callable_traits::args_t<decltype(fct)>>::Type;
 
             return PredicateType{};
         } else {
@@ -144,12 +146,13 @@ namespace sym2 {
         }
     }
 
-    /* We will need this for templates with default non-type template parameters. The default value is likely to be
-     * completely unconstrained w.r.t. what the default predicate implies. While it was more natural to have a
-     * any-Predicate instances as the default, this cannot work because this any-Predicate can't be declared without the
-     * type in question being at least forward-declared. Hence, we need another, unrelated type/flag that acts as a
-     * replacement for the any-predicate. The machinery for determining explicitness of constructors doesn't account for
-     * this type, so we have to filter it out beforehand. */
+    /* We will need this for templates with default non-type template parameters. The default value
+     * is likely to be completely unconstrained w.r.t. what the default predicate implies. While it
+     * was more natural to have a any-Predicate instances as the default, this cannot work because
+     * this any-Predicate can't be declared without the type in question being at least
+     * forward-declared. Hence, we need another, unrelated type/flag that acts as a replacement for
+     * the any-predicate. The machinery for determining explicitness of constructors doesn't account
+     * for this type, so we have to filter it out beforehand. */
     constexpr inline enum class AnyFlag { any } any{AnyFlag::any};
 
     template <class T>
@@ -167,22 +170,27 @@ namespace sym2 {
         auto invokeEval(const PredicateExpr<Kind, T...>& expr, Arg&&... arg)
         {
             if constexpr (Kind == PredicateExprType::leaf)
-                return invokeEval(boost::hana::at(expr.operands, boost::hana::int_c<0>), std::forward<Arg>(arg)...);
+                return invokeEval(
+                  boost::hana::at(expr.operands, boost::hana::int_c<0>), std::forward<Arg>(arg)...);
             else if constexpr (Kind == PredicateExprType::logicalNot)
-                return !invokeEval(boost::hana::at(expr.operands, boost::hana::int_c<0>), std::forward<Arg>(arg)...);
+                return !invokeEval(
+                  boost::hana::at(expr.operands, boost::hana::int_c<0>), std::forward<Arg>(arg)...);
             else if constexpr (Kind == PredicateExprType::logicalAnd)
-                return boost::hana::unpack(expr.operands,
-                  [&arg...](auto&&... op) { return (... && invokeEval(op, std::forward<Arg>(arg)...)); });
+                return boost::hana::unpack(expr.operands, [&arg...](auto&&... op) {
+                    return (... && invokeEval(op, std::forward<Arg>(arg)...));
+                });
             else if constexpr (Kind == PredicateExprType::logicalOr)
-                return boost::hana::unpack(expr.operands,
-                  [&arg...](auto&&... op) { return (... || invokeEval(op, std::forward<Arg>(arg)...)); });
+                return boost::hana::unpack(expr.operands, [&arg...](auto&&... op) {
+                    return (... || invokeEval(op, std::forward<Arg>(arg)...));
+                });
         }
 
         template <PredicateOperand auto what>
         struct IsInvoker {
-            /* This could be a function template, but it would be overly verbose to pass this as a higher order
-             * function, because all function parameters (...Arg) need to be specified. With the distinct type and an
-             * suitable variable template, this is easier to use and more concise. */
+            /* This could be a function template, but it would be overly verbose to pass this as a
+             * higher order function, because all function parameters (...Arg) need to be specified.
+             * With the distinct type and an suitable variable template, this is easier to use and
+             * more concise. */
             template <class... Arg>
             bool operator()(Arg&&... arg) const
             {
@@ -192,8 +200,8 @@ namespace sym2 {
 
         template <PredicateOperand auto what>
         struct AreAllInvoker {
-            /* Only works for predicate expressions with one single argument. With more arguments, it's
-             * unclear how to pass the function arguments. */
+            /* Only works for predicate expressions with one single argument. With more arguments,
+             * it's unclear how to pass the function arguments. */
             template <class... Arg>
             bool operator()(Arg&&... arg) const
             {

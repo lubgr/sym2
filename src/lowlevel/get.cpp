@@ -1,9 +1,9 @@
 
 #include "get.h"
 #include <cassert>
+#include "blob.h"
 #include "childiterator.h"
 #include "eval.h"
-#include "blob.h"
 #include "predicates.h"
 
 template <>

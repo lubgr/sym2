@@ -32,7 +32,8 @@ bool isSmallRationalEqualTo(ExprView<> e, int num, int denom)
 
 bool hasLargeIntCharacteristics(ExprView<> e)
 {
-    return e[0].header == Type::largeInt && static_cast<std::size_t>(e.size()) == e[0].main.nChildBlobs + 1
+    return e[0].header == Type::largeInt
+      && static_cast<std::size_t>(e.size()) == e[0].main.nChildBlobs + 1
       && e[0].flags == Flag::numericallyEvaluable;
 }
 

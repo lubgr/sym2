@@ -43,7 +43,8 @@ sym2::Var::Var(std::string_view function, const Var& arg, double (*eval)(double)
     initialize(function, arg.get(), eval);
 }
 
-sym2::Var::Var(std::string_view function, const Var& arg1, const Var& arg2, double (*eval)(double, double))
+sym2::Var::Var(
+  std::string_view function, const Var& arg1, const Var& arg2, double (*eval)(double, double))
 {
     initialize(function, arg1.get(), arg2.get(), eval);
 }

@@ -26,7 +26,8 @@ TEST_CASE("Basic ExprView behavior")
 
         boost::copy(sv, std::back_inserter(dest));
 
-        boost::equal(
-          sv, dest, [](const Blob& lhs, const Blob& rhs) { return std::memcmp(&lhs, &rhs, sizeof(Blob)) == 0; });
+        boost::equal(sv, dest, [](const Blob& lhs, const Blob& rhs) {
+            return std::memcmp(&lhs, &rhs, sizeof(Blob)) == 0;
+        });
     }
 }

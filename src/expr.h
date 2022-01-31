@@ -15,10 +15,10 @@
 namespace sym2 {
     struct Blob;
     struct LargeRationalRef {
-        // We need this little constructor helper for disabling Boost Multiprecision's attempt to turn an ExprView into
-        // a large int/rational (because it's a range - while the check correctly results in the inability to construct
-        // the large int/rational, it needs to know what a Blob is; but we want to hide its definition, so this can't
-        // compile).
+        // We need this little constructor helper for disabling Boost Multiprecision's attempt to
+        // turn an ExprView into a large int/rational (because it's a range - while the check
+        // correctly results in the inability to construct the large int/rational, it needs to know
+        // what a Blob is; but we want to hide its definition, so this can't compile).
         const LargeRational& value;
     };
     struct LargeIntRef {
@@ -39,20 +39,25 @@ namespace sym2 {
         explicit Expr(LargeRationalRef n, allocator_type allocator = {});
         explicit Expr(std::string_view symbol, allocator_type allocator = {});
         Expr(std::string_view symbol, SymbolFlag constraint, allocator_type allocator = {});
-        Expr(std::string_view constant, double value, allocator_type allocator = {}); // Constructs a constant
-        Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval, allocator_type allocator = {});
+        Expr(std::string_view constant, double value,
+          allocator_type allocator = {}); // Constructs a constant
+        Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval,
+          allocator_type allocator = {});
         Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval,
           allocator_type allocator = {});
         explicit Expr(ExprView<> e, allocator_type allocator = {});
-        Expr(CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator = {});
+        Expr(
+          CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator = {});
         Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator = {});
-        Expr(CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator = {});
+        Expr(CompositeType composite, std::initializer_list<ExprView<>> ops,
+          allocator_type allocator = {});
         Expr(ExprLiteral literal, allocator_type allocator = {});
 
         // All = defaulted in the TU, which is required due to the shielded Blob definition:
         Expr(const Expr& other, allocator_type allocator = {});
         Expr& operator=(const Expr& other);
-        Expr(Expr&& other, allocator_type allocator = {}); // Can't be noexcept when allocators differ
+        Expr(
+          Expr&& other, allocator_type allocator = {}); // Can't be noexcept when allocators differ
         Expr& operator=(Expr&& other); // Can't be noexcept when allocators differ
         ~Expr();
 
@@ -71,7 +76,8 @@ namespace sym2 {
         void appendSmallRationalOrInt(std::int32_t num, std::int32_t denom);
         void appendSmallOrLargeInt(const LargeInt& n);
         void appendLargeInt(const LargeInt& n);
-        void copyNameOrThrow(std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex = 0);
+        void copyNameOrThrow(
+          std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex = 0);
         template <class Range>
         void appendOperands(CompositeType composite, const Range& ops);
 

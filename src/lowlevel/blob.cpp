@@ -16,7 +16,8 @@ static_assert(std::is_trivially_destructible_v<sym2::Blob>);
 static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
-static constexpr std::size_t smallNameLength = sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
+static constexpr std::size_t smallNameLength =
+  sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
 static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Blob::Data8::name);
 
 sym2::Blob sym2::smallIntBlob(std::int32_t n)
@@ -39,7 +40,11 @@ sym2::Blob sym2::floatingPointBlob(double n)
 
 sym2::Blob sym2::symbolBlob(std::string_view symbol)
 {
-    Blob result{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = mainZero};
+    Blob result{.header = Type::symbol,
+      .flags = Flag::none,
+      .pre = preZero,
+      .mid = midZero,
+      .main = mainZero};
 
     auto* nameDest = std::next(reinterpret_cast<char*>(&result), 2);
 

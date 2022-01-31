@@ -1,8 +1,8 @@
 #pragma once
 
-#include "var.h"
 #include <string_view>
 #include <vector>
+#include "var.h"
 
 namespace sym2 {
     Var sqrt(const Var& base);

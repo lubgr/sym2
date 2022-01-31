@@ -16,13 +16,15 @@
 static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
 static constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
-static constexpr std::size_t smallNameLength = sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
+static constexpr std::size_t smallNameLength =
+  sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
 static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Blob::Data8::name);
 
 namespace sym2 {
     struct ChildBlobNumberGuard {
-        /* RAII class to make sure we don't forget to update the number of child blobs at the end of a ctor body.
-         * Shall guard against early returns. Exceptions aren't an issue (then the object has no lifetime anyhow).
+        /* RAII class to make sure we don't forget to update the number of child blobs at the end of
+         * a ctor body. Shall guard against early returns. Exceptions aren't an issue (then the
+         * object has no lifetime anyhow).
          * Instances should be declared at the beginning of a ctor, non-statically. */
         std::pmr::vector<Blob>& buffer;
         const std::size_t index;
@@ -30,7 +32,8 @@ namespace sym2 {
         ~ChildBlobNumberGuard()
         {
             if (std::uncaught_exceptions() != 0)
-                /* Make sure the assert below doesn't fire if stack unwinding is in process anyhow. */
+                /* Make sure the assert below doesn't fire if stack unwinding is in process anyhow.
+                 */
                 return;
 
             assert(buffer.size() > 1);
@@ -148,7 +151,8 @@ sym2::Expr::Expr(std::string_view constant, double value, allocator_type allocat
     copyNameOrThrow(constant, smallNameLength);
 }
 
-sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval, allocator_type allocator)
+sym2::Expr::Expr(
+  std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval, allocator_type allocator)
     : buffer{{Blob{.header = Type::function,
                .flags = Flag::none /* TODO */,
                .pre = preZero,
@@ -158,8 +162,11 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr ev
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
-    buffer.push_back(Blob{
-      .header = Type::functionId, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = {.unaryEval = eval}});
+    buffer.push_back(Blob{.header = Type::functionId,
+      .flags = Flag::none,
+      .pre = preZero,
+      .mid = midZero,
+      .main = {.unaryEval = eval}});
 
     copyNameOrThrow(function, smallNameLength, 1);
 
@@ -168,8 +175,8 @@ sym2::Expr::Expr(std::string_view function, ExprView<> arg, UnaryDoubleFctPtr ev
     std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
 }
 
-sym2::Expr::Expr(
-  std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval, allocator_type allocator)
+sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2,
+  BinaryDoubleFctPtr eval, allocator_type allocator)
     : buffer{{Blob{.header = Type::function,
                .flags = Flag::none /* TODO */,
                .pre = preZero,
@@ -179,8 +186,11 @@ sym2::Expr::Expr(
 {
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
-    buffer.push_back(Blob{
-      .header = Type::functionId, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = {.binaryEval = eval}});
+    buffer.push_back(Blob{.header = Type::functionId,
+      .flags = Flag::none,
+      .pre = preZero,
+      .mid = midZero,
+      .main = {.binaryEval = eval}});
 
     copyNameOrThrow(function, smallNameLength, 1);
 
@@ -206,7 +216,8 @@ sym2::Expr::Expr(CompositeType composite, std::span<const ExprView<>> ops, alloc
     appendOperands(composite, ops);
 }
 
-sym2::Expr::Expr(CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator)
+sym2::Expr::Expr(
+  CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator)
     : Expr{composite, ops.size(), allocator}
 {
     appendOperands(composite, ops);
@@ -234,7 +245,8 @@ void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
 
     if (composite == CompositeType::complexNumber
       && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), is < number && realDomain >)))
-        throw std::invalid_argument("Complex numbers must be created with two numeric real-valued arguments");
+        throw std::invalid_argument(
+          "Complex numbers must be created with two numeric real-valued arguments");
     else if (composite == CompositeType::power && ops.size() != 2)
         throw std::invalid_argument("Powers must be created with exactly two operands");
 
@@ -319,13 +331,15 @@ void sym2::Expr::appendLargeInt(const LargeInt& n)
     assert(buffer.size() > frontIdx + 1);
     const auto length = buffer.size() - frontIdx - 1;
 
-    /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits happens with the most
-     * significant bits first, leading zeros are dropped. This allows for an easier import, as the whole Blob span can
-     * be used as the bit source: */
-    std::rotate(aliased, aliased + length * opSize - (opSize - remainder), aliased + length * opSize);
+    /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits
+     * happens with the most significant bits first, leading zeros are dropped. This allows for an
+     * easier import, as the whole Blob span can be used as the bit source: */
+    std::rotate(
+      aliased, aliased + length * opSize - (opSize - remainder), aliased + length * opSize);
 }
 
-void sym2::Expr::copyNameOrThrow(std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex)
+void sym2::Expr::copyNameOrThrow(
+  std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex)
 {
     assert(buffer.size() >= bufferIndex + 1);
 

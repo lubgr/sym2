@@ -62,8 +62,10 @@ namespace sym2 {
         std::vector<PreservedSexp> collectItems(sexp list);
         Expr nonEmptyListToExpr(std::span<const PreservedSexp> from);
         Expr compositeToExpr(CompositeType kind, std::span<const PreservedSexp> operands);
-        Expr compositeToExpr(std::string_view name, UnaryDoubleFctPtr fct, std::span<const PreservedSexp> operands);
-        Expr compositeToExpr(std::string_view name, BinaryDoubleFctPtr fct, std::span<const PreservedSexp> operands);
+        Expr compositeToExpr(
+          std::string_view name, UnaryDoubleFctPtr fct, std::span<const PreservedSexp> operands);
+        Expr compositeToExpr(
+          std::string_view name, BinaryDoubleFctPtr fct, std::span<const PreservedSexp> operands);
         Expr attemptConstantToExpr(std::string_view name, std::span<const PreservedSexp> operands);
 
         Expr throwSexp(const char* msg, sexp irritant = nullptr);

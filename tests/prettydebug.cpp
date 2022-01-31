@@ -4,10 +4,11 @@
 #include "exprliteral.h"
 #include "trigonometric.h"
 
-// Blob must be known in this executable for the pretty printers to work properly. If we don't include its definition,
-// there is no way for lldb to retrieve the info on type. While it works with the `expr` command, the pretty printer
-// implementations are restricted to the ordinary environment of a simple `frame variable` dump. Note that this probably
-// also means that using the pretty printers from an application that links against sym2 won't be straightforward.
+// Blob must be known in this executable for the pretty printers to work properly. If we don't
+// include its definition, there is no way for lldb to retrieve the info on type. While it works
+// with the `expr` command, the pretty printer implementations are restricted to the ordinary
+// environment of a simple `frame variable` dump. Note that this probably also means that using the
+// pretty printers from an application that links against sym2 won't be straightforward.
 #include "lowlevel/blob.h"
 
 using namespace sym2;
@@ -21,10 +22,11 @@ int main(int, char**)
 {
     const Expr si{42};
     const Expr sr{7, 11};
-    const Expr li{LargeIntRef{LargeInt{"8233298749837489247029730960165010709217309487209740928934928"}}};
+    const Expr li{
+      LargeIntRef{LargeInt{"8233298749837489247029730960165010709217309487209740928934928"}}};
     const Expr otherLi{LargeIntRef{LargeInt{"2323498273984729837498234029380492839489234902384"}}};
-    const Expr lr{
-      LargeRationalRef{LargeRational{LargeInt{"28937984279872384729834729837498237489237498273489273984723897483"},
+    const Expr lr{LargeRationalRef{
+      LargeRational{LargeInt{"28937984279872384729834729837498237489237498273489273984723897483"},
         LargeInt{"823329874983748924702973096016501070921730948720974092893492817"}}}};
     const Expr fp{9.876543212345};
     const Expr cst{"pi", 3.142373847234};

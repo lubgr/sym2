@@ -1,7 +1,7 @@
 
 #include "childiterator.h"
-#include "blob.h"
 #include "access.h"
+#include "blob.h"
 #include "query.h"
 
 sym2::ChildIterator::ChildIterator(const Blob* op, std::size_t n)

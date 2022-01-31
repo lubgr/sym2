@@ -15,7 +15,8 @@ TEST_CASE("Counters")
     const Expr sr{7, 11};
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
     const Expr li{LargeIntRef{largeInt}};
-    const Expr lr{LargeRationalRef{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}}};
+    const Expr lr{
+      LargeRationalRef{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}}};
     const Expr cx = autoComplex(2_ex, 3_ex);
     const Expr s = autoSum(42_ex, "a"_ex, "b"_ex);
     const Expr pr = autoProduct(42_ex, "a"_ex, "b"_ex);
@@ -75,7 +76,8 @@ TEST_CASE("Physical and logical children queries")
         CHECK(imag(cx) == 3_ex);
 
         const LargeInt realPartInt{"1298374982734923434528973498279834827384284"};
-        const LargeRational imagPartRational{"87234728489237/2938749283749823423423468923428429238649826482"};
+        const LargeRational imagPartRational{
+          "87234728489237/2938749283749823423423468923428429238649826482"};
         const Expr realPart{LargeIntRef{realPartInt}};
         const Expr imagPart{LargeRationalRef{imagPartRational}};
         const Expr largeCx = autoComplex(realPart, imagPart);

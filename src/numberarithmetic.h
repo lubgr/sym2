@@ -11,8 +11,8 @@ namespace sym2 {
 
     class NumberArithmetic {
       public:
-        // The memory resource is currently unused. This might change in the future though, so we keep the parameter for
-        // now.
+        // The memory resource is currently unused. This might change in the future though, so we
+        // keep the parameter for now.
         explicit NumberArithmetic(std::pmr::memory_resource* buffer);
 
         Expr multiply(ExprView<number> lhs, ExprView<number> rhs);

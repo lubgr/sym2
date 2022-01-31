@@ -84,7 +84,8 @@ TEST_CASE("Numeric evaluation of composites without lookup")
 
     SUBCASE("1 + Pi + sqrt(2) + sqrt(3)*4^(1/17)")
     {
-        const double expected = 1.0 + M_PI + std::sqrt(2.0) + std::sqrt(3.0) * std::pow(4.0, 1.0 / 17.0);
+        const double expected =
+          1.0 + M_PI + std::sqrt(2.0) + std::sqrt(3.0) * std::pow(4.0, 1.0 / 17.0);
         const Expr p = autoProduct(sqrtThree, autoPower(4_ex, Expr{1, 17}));
         const Expr what = autoSum(1_ex, pi, sqrtTwo, p);
 

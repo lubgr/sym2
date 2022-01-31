@@ -103,13 +103,15 @@ std::pair<sym2::ExprView<>, sym2::OperandsView> sym2::frontAndRest(OperandsView 
     return std::make_pair(ops.front(), ops.subview(1));
 }
 
-std::pair<sym2::ExprView<>, std::span<const sym2::Expr>> sym2::frontAndRest(std::span<const Expr> ops)
+std::pair<sym2::ExprView<>, std::span<const sym2::Expr>> sym2::frontAndRest(
+  std::span<const Expr> ops)
 {
     assert(ops.size() >= 1);
     return std::make_pair(std::ref(ops.front()), ops.subspan(1));
 }
 
-std::pair<sym2::ExprView<>, std::span<const sym2::ExprView<>>> sym2::frontAndRest(std::span<const ExprView<>> ops)
+std::pair<sym2::ExprView<>, std::span<const sym2::ExprView<>>> sym2::frontAndRest(
+  std::span<const ExprView<>> ops)
 {
     assert(ops.size() >= 1);
     return std::make_pair(ops.front(), ops.subspan(1));

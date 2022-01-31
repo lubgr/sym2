@@ -13,7 +13,8 @@ namespace sym2 {
         smallInt,
         smallRational,
         largeInt,
-        /* A large rational can still have one small/inplace integer (either numerator or denominator): */
+        /* A large rational can still have one small/inplace integer (either numerator or
+           denominator): */
         largeRational,
         floatingPoint,
         complexNumber,
@@ -24,7 +25,12 @@ namespace sym2 {
         functionId
     };
 
-    enum class Flag : std::uint8_t { none = 0b0, numericallyEvaluable = 0b1, positive = 0b10, real = 0b100 };
+    enum class Flag : std::uint8_t {
+        none = 0b0,
+        numericallyEvaluable = 0b1,
+        positive = 0b10,
+        real = 0b100
+    };
 
     Flag operator|(Flag lhs, Flag rhs);
     Flag& operator|=(Flag& lhs, Flag rhs);
@@ -55,8 +61,8 @@ namespace sym2 {
         } main;
     };
 
-    // These are used from both Expr and ExprLiteral. All other manual Blob initialisation is done from within the Expr
-    // constructors.
+    // These are used from both Expr and ExprLiteral. All other manual Blob initialisation is done
+    // from within the Expr constructors.
     Blob smallIntBlob(std::int32_t n);
     Blob floatingPointBlob(double n);
     Blob symbolBlob(std::string_view symbol);

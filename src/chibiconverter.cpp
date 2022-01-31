@@ -138,15 +138,16 @@ sym2::Expr sym2::FromChibiToExpr::numberToExpr(sexp from)
     assert(sexp_numberp(from));
 
     if (sexp_flonump(from))
-        /* This must come before the integer branch, as floating point numbers that truncate to integers without
-         * loss also qualify as integers. */
+        /* This must come before the integer branch, as floating point numbers that truncate to
+         * integers without loss also qualify as integers. */
         return Expr{sexp_flonum_value(from)};
     else if (sexp_exact_integerp(from))
         return Expr{LargeIntRef{extractSmallOrLargeInt(from)}};
     else if (sexp_ratiop(from)) {
         const auto num = preserve(sexp_ratio_numerator(from));
         const auto denom = preserve(sexp_ratio_denominator(from));
-        const LargeRational n{extractSmallOrLargeInt(num.get()), extractSmallOrLargeInt(denom.get())};
+        const LargeRational n{
+          extractSmallOrLargeInt(num.get()), extractSmallOrLargeInt(denom.get())};
 
         return Expr{LargeRationalRef{n}};
     } else if (sexp_complexp(from)) {
@@ -227,8 +228,9 @@ sym2::Expr sym2::FromChibiToExpr::nonEmptyListToExpr(std::span<const PreservedSe
     const auto str = preserve(sexp_symbol_to_string(ctx, type.get()));
     const std::string_view name{sexp_string_data(str.get()), sexp_string_size(str.get())};
     const auto& lookup = knownCompositeOperators();
-    const auto dispatch = overloaded{[&ops, this](CompositeType kind) { return compositeToExpr(kind, ops); },
-      [&ops, &name, this](auto fct) { return compositeToExpr(name, fct, ops); }};
+    const auto dispatch =
+      overloaded{[&ops, this](CompositeType kind) { return compositeToExpr(kind, ops); },
+        [&ops, &name, this](auto fct) { return compositeToExpr(name, fct, ops); }};
 
     if (lookup.contains(name))
         return std::visit(dispatch, lookup.at(name));
@@ -236,7 +238,8 @@ sym2::Expr sym2::FromChibiToExpr::nonEmptyListToExpr(std::span<const PreservedSe
         return attemptConstantToExpr(name, ops);
 }
 
-sym2::Expr sym2::FromChibiToExpr::compositeToExpr(CompositeType kind, std::span<const PreservedSexp> operands)
+sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
+  CompositeType kind, std::span<const PreservedSexp> operands)
 {
     std::vector<Expr> converted;
 
@@ -266,7 +269,8 @@ sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
     return Expr{name, convert(operands.front()), convert(operands.back()), fct};
 }
 
-sym2::Expr sym2::FromChibiToExpr::attemptConstantToExpr(std::string_view name, std::span<const PreservedSexp> operands)
+sym2::Expr sym2::FromChibiToExpr::attemptConstantToExpr(
+  std::string_view name, std::span<const PreservedSexp> operands)
 {
     if (operands.size() != 1)
         throwSexp("Can't convert expression");
@@ -343,8 +347,8 @@ sexp sym2::FromExprToChibi::dispatchOver(ExprView<number> from)
         const LargeRational r = get<LargeRational>(from);
         const LargeInt& num = numerator(r);
         const LargeInt& denom = denominator(r);
-        const auto nonNormalized =
-          preserve(sexp_make_ratio(ctx, serializeLargeInt(num).get(), serializeLargeInt(denom).get()));
+        const auto nonNormalized = preserve(
+          sexp_make_ratio(ctx, serializeLargeInt(num).get(), serializeLargeInt(denom).get()));
 
         return sexp_ratio_normalize(ctx, nonNormalized.get(), SEXP_VOID);
     } else if (is<floatingPoint>(from))
@@ -386,7 +390,8 @@ sexp sym2::FromExprToChibi::compositeFromFunction(ExprView<function> fct)
     return serializeListWithLeadingSymbol(symbol, OperandsView::operandsOf(fct));
 }
 
-sexp sym2::FromExprToChibi::serializeListWithLeadingSymbol(const PreservedSexp& identifier, OperandsView rest)
+sexp sym2::FromExprToChibi::serializeListWithLeadingSymbol(
+  const PreservedSexp& identifier, OperandsView rest)
 {
     PreservedSexp result = preserve(sexp_list1(ctx, identifier.get()));
 
@@ -398,7 +403,8 @@ sexp sym2::FromExprToChibi::serializeListWithLeadingSymbol(const PreservedSexp& 
     return result.get();
 }
 
-sym2::PreservedSexp sym2::FromExprToChibi::leadingSymbolForComposite(ExprView<sum || product || power> composite)
+sym2::PreservedSexp sym2::FromExprToChibi::leadingSymbolForComposite(
+  ExprView<sum || product || power> composite)
 {
     const auto& lookup = knownCompositeOperators();
     const auto compositeType = [](ExprView<sum || product || power> composite) {
@@ -419,7 +425,8 @@ sym2::PreservedSexp sym2::FromExprToChibi::leadingSymbolForComposite(ExprView<su
     throw FailedConversionToSexp{"Unknown composite type", Expr{composite}};
 }
 
-sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(ExprView<sum || product || power> composite)
+sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(
+  ExprView<sum || product || power> composite)
 {
     const auto symbol = leadingSymbolForComposite(composite);
 
