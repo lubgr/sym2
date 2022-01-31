@@ -6,6 +6,7 @@
 #include "blob.h"
 #include "doctest/doctest.h"
 #include "expr.h"
+#include "exprliteral.h"
 #include "query.h"
 #include "testutils.h"
 

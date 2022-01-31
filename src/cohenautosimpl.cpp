@@ -9,6 +9,7 @@
 #include <complex>
 #include <optional>
 #include <stdexcept>
+#include "exprliteral.h"
 #include "get.h"
 #include "query.h"
 

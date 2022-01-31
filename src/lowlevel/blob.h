@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string_view>
 #include "doublefctptr.h"
 #include "smallrational.h"
 
@@ -40,7 +41,7 @@ namespace sym2 {
 
         union Data4 {
             char name[4];
-            std::int32_t largeIntSign; /* Could be smaller, but same size is less error prone. */
+            std::int32_t largeIntSign; // Could be smaller, but same size is less error prone.
             std::uint32_t nLogicalOrPhysicalChildren;
         } mid;
 
@@ -53,4 +54,10 @@ namespace sym2 {
             BinaryDoubleFctPtr binaryEval;
         } main;
     };
+
+    // These are used from both Expr and ExprLiteral. All other manual Blob initialisation is done from within the Expr
+    // constructors.
+    Blob smallIntBlob(std::int32_t n);
+    Blob floatingPointBlob(double n);
+    Blob symbolBlob(std::string_view symbol);
 }

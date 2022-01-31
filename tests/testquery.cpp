@@ -2,6 +2,7 @@
 #include "autosimpl.h"
 #include "constants.h"
 #include "doctest/doctest.h"
+#include "exprliteral.h"
 #include "predicates.h"
 #include "query.h"
 #include "trigonometric.h"
@@ -24,7 +25,7 @@ TEST_CASE("Counters")
 
     SUBCASE("Number of operands")
     {
-        for (ExprView<> e : {"a"_ex, 42_ex, fp, sr, pi, euler, lr})
+        for (ExprView<> e : {Expr{"a"}, Expr{42}, fp, sr, pi, euler, lr})
             CHECK(nOperands(e) == 0);
 
         CHECK(nOperands(cx) == 2);
@@ -39,7 +40,7 @@ TEST_CASE("Counters")
     {
         const auto composite = autoSum(sinA, autoProduct(pw, s), pr, cx, lr, atan2Ab);
 
-        for (ExprView<> e : {"a"_ex, 42_ex, fp, sr, pi, euler, li, lr, cx})
+        for (ExprView<> e : {Expr{"a"}, Expr{42}, fp, sr, pi, euler, li, lr, cx})
             CHECK(nPhysicalChildren(e) == e.size() - 1);
     }
 }

@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "doctest/doctest.h"
 #include "expr.h"
+#include "exprliteral.h"
 #include "get.h"
 
 using namespace sym2;

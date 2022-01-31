@@ -2,6 +2,7 @@
 #include <boost/range/algorithm.hpp>
 #include "autosimpl.h"
 #include "doctest/doctest.h"
+#include "exprliteral.h"
 #include "operandsview.h"
 #include "testutils.h"
 #include "trigonometric.h"

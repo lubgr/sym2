@@ -1,6 +1,7 @@
 
 #include <cmath>
 #include "expr.h"
+#include "exprliteral.h"
 #include "trigonometric.h"
 
 // Blob must be known in this executable for the pretty printers to work properly. If we don't include its definition,

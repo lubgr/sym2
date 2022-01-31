@@ -9,6 +9,7 @@
 #include "constants.h"
 #include "doctest/doctest.h"
 #include "eval.h"
+#include "exprliteral.h"
 #include "trigonometric.h"
 
 using namespace sym2;

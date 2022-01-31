@@ -3,6 +3,7 @@
 #include <cassert>
 #include "childiterator.h"
 #include "expr.h"
+#include "exprliteral.h"
 #include "get.h"
 #include "predicates.h"
 #include "view.h"
@@ -14,7 +15,7 @@ sym2::BaseExp sym2::splitAsPower(ExprView<> e)
     if (is<power>(e))
         return {firstOperand(e), secondOperand(e)};
 
-    return {e, one};
+    return {e, one.view()};
 }
 
 sym2::ConstAndTerm sym2::splitConstTerm(ExprView<!number> e)
@@ -28,12 +29,12 @@ sym2::ConstAndTerm sym2::splitConstTerm(ExprView<!number> e)
         if (is<number>(first))
             return {first, rest};
         else
-            return {one, ops};
+            return {one.view(), ops};
     }
 
     assert(is < symbol || constant || sum || power || function > (e));
 
-    return {one, OperandsView::singleOperand(e)};
+    return {one.view(), OperandsView::singleOperand(e)};
 }
 
 sym2::ExprView<> sym2::nthOperand(ExprView<composite> e, std::uint32_t n)

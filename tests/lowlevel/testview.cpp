@@ -3,6 +3,7 @@
 #include "autosimpl.h"
 #include "blob.h"
 #include "doctest/doctest.h"
+#include "exprliteral.h"
 #include "predicates.h"
 #include "testutils.h"
 #include "view.h"

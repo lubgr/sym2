@@ -9,6 +9,7 @@
 #include <tuple>
 #include "eval.h"
 #include "expr.h"
+#include "exprliteral.h"
 #include "get.h"
 #include "operandsview.h"
 #include "orderrelation.h"
@@ -43,7 +44,7 @@ bool sym2::orderLessThan(ExprView<> lhs, ExprView<> rhs)
     else if (is<product>(lhs) && is < power || sum || symbol || function > (rhs))
         return orderLessThan(OperandsView::operandsOf(lhs), OperandsView::singleOperand(rhs));
     else if (is<power>(lhs) && is < sum || symbol || function > (rhs))
-        return powers(splitAsPower(lhs), {rhs, 1_ex});
+        return powers(splitAsPower(lhs), {rhs, (1_ex).view()});
     else if (is<sum>(lhs) && is < symbol || function > (rhs))
         return orderLessThan(OperandsView::operandsOf(lhs), OperandsView::singleOperand(rhs));
     else if (is<function>(lhs) && is<symbol>(rhs))

@@ -7,6 +7,7 @@
 #include <string_view>
 #include <vector>
 #include "doublefctptr.h"
+#include "exprliteral.h"
 #include "largerational.h"
 #include "sym2/symbolflag.h"
 #include "view.h"
@@ -46,15 +47,16 @@ namespace sym2 {
         Expr(CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator = {});
         Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator = {});
         Expr(CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator = {});
+        Expr(ExprLiteral literal, allocator_type allocator = {});
 
-        /* All = defaulted in the TU, which is required due to the shielded Blob definition: */
+        // All = defaulted in the TU, which is required due to the shielded Blob definition:
         Expr(const Expr& other, allocator_type allocator = {});
         Expr& operator=(const Expr& other);
         Expr(Expr&& other, allocator_type allocator = {}); // Can't be noexcept when allocators differ
         Expr& operator=(Expr&& other); // Can't be noexcept when allocators differ
         ~Expr();
 
-        /* Implicit conversions to any tag are indeed desired here: */
+        // Implicit conversions to any tag are indeed desired here:
         template <PredicateTag auto tag>
         operator ExprView<tag>() const
         {
@@ -62,7 +64,7 @@ namespace sym2 {
         }
 
       private:
-        /* Used internally to avoid duplication. */
+        // Used internally to avoid duplication.
         explicit Expr(CompositeType composite, std::size_t nOps, allocator_type allocator = {});
 
         void appendSmallInt(std::int32_t n);
@@ -77,8 +79,4 @@ namespace sym2 {
 
         std::pmr::vector<Blob> buffer;
     };
-
-    Expr operator"" _ex(const char* str, std::size_t);
-    Expr operator"" _ex(unsigned long long n);
-    Expr operator"" _ex(long double);
 }

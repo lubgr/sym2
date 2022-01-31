@@ -68,6 +68,7 @@ namespace sym2 {
 
       private:
         friend class Expr;
+        friend class ExprLiteral;
         friend class ChildIterator;
         template <PredicateTag auto fromTag>
         friend class ExprView;

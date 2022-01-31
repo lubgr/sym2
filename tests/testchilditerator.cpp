@@ -2,6 +2,7 @@
 #include "autosimpl.h"
 #include "childiterator.h"
 #include "doctest/doctest.h"
+#include "exprliteral.h"
 #include "testutils.h"
 #include "trigonometric.h"
 

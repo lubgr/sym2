@@ -66,12 +66,7 @@ sym2::Expr::Expr(std::int32_t n, allocator_type allocator)
 }
 
 sym2::Expr::Expr(double n, allocator_type allocator)
-    : buffer{{Blob{.header = Type::floatingPoint,
-               .flags = Flag::numericallyEvaluable,
-               .pre = preZero,
-               .mid = midZero,
-               .main = {.inexact = n}}},
-      allocator}
+    : buffer{{floatingPointBlob(n)}, allocator}
 {
     if (!std::isfinite(n))
         throw std::domain_error("Floating point Expr must be of finite value");
@@ -121,11 +116,8 @@ sym2::Expr::Expr(LargeRationalRef n, allocator_type allocator)
 }
 
 sym2::Expr::Expr(std::string_view symbol, allocator_type allocator)
-    : buffer{
-      {Blob{.header = Type::symbol, .flags = Flag::none, .pre = preZero, .mid = midZero, .main = mainZero}}, allocator}
-{
-    copyNameOrThrow(symbol, largeNameLength);
-}
+    : buffer{{symbolBlob(symbol)}, allocator}
+{}
 
 sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint, allocator_type allocator)
     : Expr{symbol, allocator}
@@ -220,6 +212,10 @@ sym2::Expr::Expr(CompositeType composite, std::initializer_list<ExprView<>> ops,
     appendOperands(composite, ops);
 }
 
+sym2::Expr::Expr(ExprLiteral literal, allocator_type allocator)
+    : Expr{static_cast<ExprView<>>(literal), allocator}
+{}
+
 sym2::Expr::Expr(CompositeType composite, std::size_t nOps, allocator_type allocator)
     : buffer{{Blob{.header = toInternalType(composite),
                .flags = Flag::none,
@@ -258,11 +254,7 @@ void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
 {
-    buffer.push_back(Blob{.header = Type::smallInt,
-      .flags = Flag::numericallyEvaluable,
-      .pre = preZero,
-      .mid = midZero,
-      .main = {.exact = {n, 1}}});
+    buffer.push_back(smallIntBlob(n));
 }
 
 void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
@@ -362,22 +354,4 @@ sym2::Expr::~Expr() = default;
 sym2::ExprView<> sym2::Expr::view() const
 {
     return ExprView<>{buffer.data(), buffer.size()};
-}
-
-sym2::Expr sym2::operator"" _ex(const char* str, std::size_t)
-{
-    return Expr{str};
-}
-
-sym2::Expr sym2::operator"" _ex(unsigned long long n)
-{
-    if (n > std::numeric_limits<std::int32_t>::max())
-        throw std::domain_error("Integral Expr literals must fit into an 32bit int");
-
-    return Expr{static_cast<std::int32_t>(n)};
-}
-
-sym2::Expr sym2::operator"" _ex(long double n)
-{
-    return Expr{static_cast<double>(n)};
 }

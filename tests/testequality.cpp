@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "doctest/doctest.h"
 #include "expr.h"
+#include "exprliteral.h"
 
 using namespace sym2;
 
@@ -14,16 +15,16 @@ TEST_CASE("Equality")
 
     SUBCASE("Identity equality")
     {
-        for (ExprView<> e : {42_ex, "a"_ex, pi, s, pr, pw})
+        for (ExprView<> e : {Expr{42}, Expr{"a"}, pi, s, pr, pw})
             CHECK(e == e);
     }
 
     SUBCASE("Scalar Equality by value")
     {
-        CHECK("a"_ex == "a"_ex);
-        CHECK(42_ex == 42_ex);
-        CHECK(0_ex == 0_ex);
-        CHECK(1_ex == 1_ex);
+        CHECK(Expr{"a"} == "a"_ex);
+        CHECK(Expr{42} == 42_ex);
+        CHECK(Expr{0} == 0_ex);
+        CHECK(Expr{1} == 1_ex);
     }
 
     SUBCASE("Composite equality")
@@ -37,7 +38,7 @@ TEST_CASE("Equality")
 
     SUBCASE("Scalar inequality")
     {
-        CHECK("a"_ex != "b"_ex);
-        CHECK(42_ex != 43_ex);
+        CHECK(Expr{"a"} != "b"_ex);
+        CHECK(Expr{42} != 43_ex);
     }
 }

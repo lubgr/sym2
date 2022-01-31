@@ -22,6 +22,7 @@ add_library(sym2lowlevel
     lowlevel/blob.cpp
     lowlevel/childiterator.cpp
     lowlevel/expr.cpp
+    lowlevel/exprliteral.cpp
     lowlevel/get.cpp
     lowlevel/predicates.cpp
     lowlevel/query.cpp
