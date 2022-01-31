@@ -234,7 +234,10 @@ sym2::Expr::Expr(CompositeType composite, std::size_t nOps, allocator_type alloc
                .mid = {.nLogicalOrPhysicalChildren = static_cast<std::uint32_t>(nOps)},
                .main = mainZero /* Number of child blobs to be determined. */}},
       allocator}
-{}
+{
+    // This constructor doesn't do anything apart from the initialization above since it's only used
+    // as a delegate constructor from other constructors.
+}
 
 template <class Range>
 void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
