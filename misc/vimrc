@@ -1,5 +1,5 @@
 
-set tw=120
+set tw=100
 
 function! s:insertTestHeader()
     execute "normal! i\n#include \"\"\n#include \"doctest/doctest.h\""
