@@ -37,7 +37,7 @@ def enumMemberString(valobj, memberName):
     value = valobj.GetChildMemberWithName(memberName)
     # It would be cleaner to retrieve the value as an integer and then index into GetType().GetEnumMembers(),
     # but that doesn't work with bitfields, hence the stringification:
-    return str(value).split()[-1]
+    return str(value).split("=")[-1].strip()
 
 def allZeroBytes(data, n):
     err = lldb.SBError()

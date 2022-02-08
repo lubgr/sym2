@@ -38,8 +38,9 @@ int main(int, char**)
     const Expr pw{CompositeType::power, {pro, li}};
     const Expr f1 = sym2::sin("a"_ex);
     const Expr f2 = sym2::atan2("a"_ex, li);
+    const Expr f3 = sym2::sin(sr);
 
-    for (ExprView<> v : {si, sr, li, otherLi, lr, fp, cx, cst, ss, ls, sum, pro, pw, f1, f2})
+    for (ExprView<> v : {si, sr, li, otherLi, lr, fp, cx, cst, ss, ls, sum, pro, pw, f1, f2, f3})
         check(v);
 
     return 0;
