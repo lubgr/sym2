@@ -4,9 +4,6 @@
 [submodule "lib/cmake-modules"]
 	path = lib/cmake-modules
 	url = https://github.com/bilke/cmake-modules
-[submodule "lib/lldb-formatters"]
-	path = lib/lldb-formatters
-	url = https://git.sr.ht/~lubgr/lldb-formatters
 [submodule "lib/linenoise"]
 	path = lib/linenoise
 	url = https://github.com/antirez/linenoise.git

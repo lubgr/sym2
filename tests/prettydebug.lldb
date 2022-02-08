@@ -1,6 +1,5 @@
 
 command script import ./misc/pretty.py
-command script import ./lib/lldb-formatters/stl.py
 
 command script add frametofile
     import sys
