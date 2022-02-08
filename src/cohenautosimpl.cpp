@@ -340,6 +340,15 @@ sym2::Expr sym2::CohenAutoSimpl::simplifyPower(ExprView<> base, ExprView<> exp)
     // ... catch rational powers that might have a simpler representation, e.g. sqrt(1/4) = 1/2...
     else if (is<rational>(base) && is < rational && !integer > (exp))
         return simplPowerRationalToRational(base, exp);
+    // ... transform (a^b)^c into a^(b*c) when a is positive and real...
+    else if (is<power>(base)) {
+        const auto [baseOfBase, expOfBase] = splitAsPower(base);
+
+        if (is < realDomain && positive > (baseOfBase))
+            return simplifyPower(baseOfBase, simplifyProduct(expOfBase, exp));
+        else
+            return Expr{CompositeType::power, {base, exp}, buffer};
+    }
     // ... and finally don't simplify anything.
     else
         return Expr{CompositeType::power, {base, exp}, buffer};
