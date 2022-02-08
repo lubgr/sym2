@@ -4,12 +4,6 @@
 [submodule "lib/cmake-modules"]
 	path = lib/cmake-modules
 	url = https://github.com/bilke/cmake-modules
-[submodule "lib/linenoise"]
-	path = lib/linenoise
-	url = https://github.com/antirez/linenoise.git
-[submodule "lib/s7"]
-	path = lib/s7
-	url = https://cm-gitlab.stanford.edu/bil/s7.git
 [submodule "lib/chibi-scheme"]
 	path = lib/chibi-scheme
 	url = https://github.com/ashinn/chibi-scheme.git
