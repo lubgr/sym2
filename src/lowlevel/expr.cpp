@@ -116,7 +116,7 @@ sym2::Expr::Expr(LargeRationalRef n, allocator_type allocator)
     const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
 
     buffer.push_back(Blob{.header = Type::largeRational,
-      .flags = Flag::numericallyEvaluable | negativePositeFlag(n.value),
+      .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(n.value),
       .pre = preZero,
       .mid = {.nLogicalOrPhysicalChildren = 2},
       .main = mainZero /* Number of child blobs to be determined. */});
@@ -149,7 +149,7 @@ sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint, allocator_type 
 
 sym2::Expr::Expr(std::string_view constant, double value, allocator_type allocator)
     : buffer{{Blob{.header = Type::constant,
-               .flags = Flag::numericallyEvaluable | negativePositeFlag(value),
+               .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(value),
                .pre = preZero,
                .mid = midZero,
                .main = {.inexact = value}}},
@@ -161,7 +161,9 @@ sym2::Expr::Expr(std::string_view constant, double value, allocator_type allocat
 sym2::Expr::Expr(
   std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval, allocator_type allocator)
     : buffer{{Blob{.header = Type::function,
-               .flags = Flag::none /* TODO */,
+               // When the argument is numerically evaluable or real, propagate these flags:
+               .flags = (is<numericallyEvaluable>(arg) ? Flag::numericallyEvaluable : Flag::none)
+                 | (is<realDomain>(arg) ? Flag::real : Flag::none),
                .pre = preZero,
                .mid = {.nLogicalOrPhysicalChildren = 1},
                .main = mainZero}},
@@ -185,7 +187,10 @@ sym2::Expr::Expr(
 sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2,
   BinaryDoubleFctPtr eval, allocator_type allocator)
     : buffer{{Blob{.header = Type::function,
-               .flags = Flag::none /* TODO */,
+               // When both arguments are numerically evaluable or real, propagate these flags:
+               .flags = (areAll<numericallyEvaluable>(arg1, arg2) ? Flag::numericallyEvaluable :
+                                                                    Flag::none)
+                 | (areAll<realDomain>(arg1, arg2) ? Flag::real : Flag::none),
                .pre = preZero,
                .mid = {.nLogicalOrPhysicalChildren = 2},
                .main = mainZero}},
@@ -249,8 +254,6 @@ sym2::Expr::Expr(CompositeType composite, std::size_t nOps, allocator_type alloc
 template <class Range>
 void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
 {
-    const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
-
     assert(ops.size() <= std::numeric_limits<std::uint32_t>::max());
 
     if (composite == CompositeType::complexNumber
@@ -260,18 +263,29 @@ void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
     else if (composite == CompositeType::power && ops.size() != 2)
         throw std::invalid_argument("Powers must be created with exactly two operands");
 
-    /* Likely to be more, but we also don't premature allocation if it might just fit in-place: */
+    // Likely to be more, but we also don't premature allocation if it might just fit in-place:
     buffer.reserve(ops.size());
 
     bool numEval = true;
+    bool allRealDomain = composite != CompositeType::complexNumber;
 
-    for (ExprView<> ev : ops) {
-        numEval = numEval && is<numericallyEvaluable>(ev);
-        buffer.insert(buffer.end(), ev.begin(), ev.end());
+    {
+        const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
+
+        for (ExprView<> ev : ops) {
+            numEval = numEval && is<numericallyEvaluable>(ev);
+            allRealDomain = allRealDomain && is<realDomain>(ev);
+            buffer.insert(buffer.end(), ev.begin(), ev.end());
+        }
     }
 
     if (numEval)
-        buffer.front().flags = Flag::numericallyEvaluable;
+        buffer.front().flags |= Flag::numericallyEvaluable;
+
+    if (allRealDomain)
+        buffer.front().flags |= Flag::real;
+
+    assert(!(is<positive>(view()) && is<negative>(view())));
 }
 
 void sym2::Expr::appendSmallInt(std::int32_t n)
@@ -292,7 +306,7 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
         appendSmallInt(num);
     else
         buffer.push_back(Blob{.header = Type::smallRational,
-          .flags = Flag::numericallyEvaluable | negativePositeFlag(num),
+          .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(num),
           .pre = preZero,
           .mid = midZero,
           .main = {.exact = {num, denom}}});
@@ -311,7 +325,7 @@ void sym2::Expr::appendLargeInt(const LargeInt& n)
     static constexpr auto opSize = sizeof(Blob);
 
     buffer.push_back(Blob{.header = Type::largeInt,
-      .flags = Flag::numericallyEvaluable | negativePositeFlag(n),
+      .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(n),
       .pre = preZero,
       .mid = {.largeIntSign = n < 0 ? -1 : 1},
       .main = mainZero /* Number of child blobs to be determined. */});

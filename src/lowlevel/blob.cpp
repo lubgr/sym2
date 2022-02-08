@@ -23,7 +23,7 @@ static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Bl
 sym2::Blob sym2::smallIntBlob(std::int32_t n)
 {
     return Blob{.header = Type::smallInt,
-      .flags = Flag::numericallyEvaluable | (n >= 0 ? Flag::positive : Flag::negative),
+      .flags = Flag::numericallyEvaluable | Flag::real | (n >= 0 ? Flag::positive : Flag::negative),
       .pre = preZero,
       .mid = midZero,
       .main = {.exact = {n, 1}}};
@@ -32,7 +32,8 @@ sym2::Blob sym2::smallIntBlob(std::int32_t n)
 sym2::Blob sym2::floatingPointBlob(double n)
 {
     return Blob{.header = Type::floatingPoint,
-      .flags = Flag::numericallyEvaluable | (n >= 0.0 ? Flag::positive : Flag::negative),
+      .flags =
+        Flag::numericallyEvaluable | Flag::real | (n >= 0.0 ? Flag::positive : Flag::negative),
       .pre = preZero,
       .mid = midZero,
       .main = {.inexact = n}};

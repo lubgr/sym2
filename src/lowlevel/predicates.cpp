@@ -8,18 +8,7 @@
 
 bool sym2::isRealDomain(ExprView<> e)
 {
-    switch (type(e)) {
-        case Type::smallInt:
-        case Type::smallRational:
-        case Type::floatingPoint:
-        case Type::largeInt:
-        case Type::largeRational:
-            return true;
-        case Type::symbol:
-            return (flags(e) & Flag::real) != Flag::none;
-        default:
-            return false;
-    }
+    return (flags(e) & Flag::real) != Flag::none;
 }
 
 bool sym2::isComplexDomain(ExprView<> e)
