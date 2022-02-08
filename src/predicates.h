@@ -44,7 +44,8 @@ namespace sym2 {
     constexpr inline auto function = predicate<isFunction>();
     constexpr inline auto numericallyEvaluable = predicate<isNumericallyEvaluable>();
     // The notion of 'positive' and 'negative' only refer to the real part of an expression that is
-    // potentially in the complex domain:
+    // potentially in the complex domain. Also, can only deliver meaningful results for functions
+    // that are numerically evaluable.
     constexpr inline auto positive = predicate<isPositive>();
     constexpr inline auto negative = predicate<isNegative>();
     constexpr inline auto zero = predicate<isZero>();

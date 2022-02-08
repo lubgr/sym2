@@ -1,10 +1,76 @@
 
 #include "predicates.h"
+#include <functional>
 #include "access.h"
 #include "blob.h"
 #include "expr.h"
 #include "get.h"
+#include "operandsview.h"
 #include "query.h"
+
+namespace sym2 {
+    enum class NonNumericSign { positive, negative, unknown, onlyNumeric };
+
+    namespace {
+        template <class ReductionOp>
+        double reduceNumericallyEvaluable(ExprView<> e, ReductionOp reduce, const double init)
+        {
+            double result = init;
+
+            for (const ExprView<> op : OperandsView::operandsOf(e)) {
+                if (isNumericallyEvaluable(op))
+                    result = reduce(result, get<double>(op));
+            }
+
+            return result;
+        }
+
+        NonNumericSign signOfNonNumericallyEvaluable(ExprView<sum> e)
+        {
+            bool foundPositive = false;
+            bool foundNegative = false;
+
+            for (const ExprView<> op : OperandsView::operandsOf(e)) {
+                if (isNumericallyEvaluable(op))
+                    continue;
+                else if (isPositive(op))
+                    foundPositive = true;
+                else if (isNegative(op))
+                    foundNegative = true;
+                else
+                    return NonNumericSign::unknown;
+
+                if (foundPositive && foundNegative)
+                    return NonNumericSign::unknown;
+            }
+
+            // Should have bailed out early
+            assert(!(foundPositive && foundNegative));
+
+            if (!foundPositive && !foundNegative)
+                return NonNumericSign::onlyNumeric;
+
+            assert(foundPositive || foundNegative);
+
+            return foundPositive ? NonNumericSign::positive : NonNumericSign::negative;
+        }
+
+        short signOfProduct(ExprView<product> e)
+        {
+            short result = 1;
+
+            for (const ExprView<!product> factor : OperandsView::operandsOf(e))
+                if (isPositive(factor))
+                    continue;
+                else if (isNegative(factor))
+                    result *= -1;
+                else
+                    return 0;
+
+            return result;
+        }
+    }
+}
 
 bool sym2::isRealDomain(ExprView<> e)
 {
@@ -134,6 +200,25 @@ bool sym2::isPositive(ExprView<> e)
         return true;
     else if (isNumericallyEvaluable(e))
         return get<double>(e) >= 0.0;
+    else if (isSum(e)) {
+        const NonNumericSign sign = signOfNonNumericallyEvaluable(e);
+
+        if (sign == NonNumericSign::positive || sign == NonNumericSign::onlyNumeric)
+            return reduceNumericallyEvaluable(e, std::plus<>{}, 0.0) >= 0.0;
+    } else if (isProduct(e)) {
+        return signOfProduct(e) == 1;
+    } else if (isPower(e)) {
+        const auto [base, exp] = splitAsPower(e);
+
+        if (!is<realDomain>(base))
+            return false;
+        else if (is<positive>(base))
+            return is<realDomain>(exp);
+        else if (is < small && rational > (exp))
+            return get<SmallRational>(exp).num % 2 == 0;
+        else if (is < large && rational > (exp))
+            return numerator(get<LargeRational>(exp)) % 2 == 0;
+    }
 
     return false;
 }
@@ -144,6 +229,14 @@ bool sym2::isNegative(ExprView<> e)
         return true;
     else if (isNumericallyEvaluable(e))
         return get<double>(e) < 0.0;
+    else if (isSum(e)) {
+        const NonNumericSign sign = signOfNonNumericallyEvaluable(e);
+        if (sign == NonNumericSign::onlyNumeric)
+            return reduceNumericallyEvaluable(e, std::plus<>{}, 0.0) < 0.0;
+        else if (sign == NonNumericSign::negative)
+            return reduceNumericallyEvaluable(e, std::plus<>{}, 0.0) <= 0.0;
+    } else if (isProduct(e))
+        return signOfProduct(e) == -1;
 
     return false;
 }

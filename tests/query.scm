@@ -16,3 +16,54 @@
   (test-error (split-const-term 42/43))
   (test-error (split-const-term 42i))
   (test-error (split-const-term 3.14)))
+
+(test-group "Sign"
+  (test 1 (sign 42))
+  (test 1 (sign 3/7))
+  (test -1 (sign -42))
+  (test -1 (sign -3/7))
+  (test 1 (sign 3.14))
+  (test -1 (sign -3.14))
+  (let ((large-int 98238975982759238528759827952085702973597250927935709235))
+    (test 1 (sign large-int))
+    (test -1 (sign (- large-int))))
+  (let ((large-rational
+          8934798745051763784578587416987315971397135871375349/79823475828592837569273754239572837869785627382893798235))
+    (test 1 (sign large-rational))
+    (test -1 (sign (- large-rational))))
+
+  (test 1 (sign 'a:+))
+  (test 1 (sign 'a:r+))
+  (test-not (sign 'a))
+
+  (test -1 (sign '(* -1 a:+)))
+  (test 1 (sign '(+ 1 a:+ b:+)))
+
+  (test -1 (sign '(* -2/3 (+ a:+ b:+))))
+  (test #f (sign '(* -2/3 (+ a:+ b))))
+  (test 1 (sign '(* -2/3 (sin -1) (+ a:+ b:+))))
+
+  (test #f (sign '(^ a b)))
+  (test #f (sign '(^ a 2)))
+  (test #f (sign '(^ a 2/3)))
+  (test #f (sign '(^ a -2/3)))
+  (test #f (sign '(^ a b:r+)))
+  (test #f (sign '(^ a:r+ 2+3i)))
+
+  ; Can't be determined, since numeric part is < 0 and rest is > 0:
+  (test #f (sign '(+ -1 (sin 2) a:+ b:+ c:+)))
+  ; Numeric part is > 0, and so is non-numeric part:
+  (test 1 (sign '(+ 1 (* -1 (sin 2)) a:+ b:+ c:+)))
+  (test -1 (sign '(+ -1 (sin 2))))
+
+  ; Numeric part evaluates to zero:
+  (test 1 (sign `(+ ,(sin 2.0) (sin 2) a:+)))
+  (test #f (sign `(+ ,(sin 2.0) (sin 2) a)))
+  (test -1 (sign `(+ ,(- (sin 2.0)) (sin 2) (* -1 a:+))))
+
+  ; 2*a + b*c + b^(2*c + pi) + 0.12345*c^2 is positive when all symbols are real and positive:
+  (test 1 (sign '(+ (* 2 a:r+) (* b:r+ c:r+) (^ b:r+ (+ (* 2 c:r+) (pi 3.14))) (* 0.12345 (^ c:r+ 2)))))
+
+  ; (-pi)^2 > 0
+  (test 1 (sign '(^ (* -1 (pi 3.14)) 2)))
+)
