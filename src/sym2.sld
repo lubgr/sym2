@@ -7,6 +7,7 @@
     auto*
     auto^
     order-lt
+    sign
     split-const-term)
   (include "sym2chibi.scm")
   (include-shared "sym2chibi"))

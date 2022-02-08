@@ -2,6 +2,7 @@
 #include <cassert>
 #include <chibi/sexp.h>
 #include <exception>
+#include <stdexcept>
 #include <vector>
 #include "autosimpl.h"
 #include "chibiconverter.h"
@@ -137,6 +138,26 @@ sexp const_and_term(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp ar
     });
 }
 
+sexp sign(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
+{
+    assert(n == 1);
+
+    return wrappedTryCatch(ctx, self, [&]() {
+        FromChibiToExpr conv{ctx};
+        const Expr expr = conv.convert(arg);
+
+        if (is < positive && negative > (expr))
+            throw std::runtime_error{
+              "Sym2 internal error: expression can't be both positive and negative"};
+        else if (is<positive>(expr))
+            return SEXP_ONE;
+        else if (is<negative>(expr))
+            return SEXP_NEG_ONE;
+        else
+            return SEXP_FALSE;
+    });
+}
+
 sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] sexp_sint_t n,
   sexp env, const char* version, const sexp_abi_identifier_t abi)
 {
@@ -150,6 +171,7 @@ sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] se
     sexp_define_foreign(ctx, env, "auto^", 2, auto_power);
     sexp_define_foreign(ctx, env, "order-lt", 2, order_less_than);
     sexp_define_foreign(ctx, env, "split-const-term", 1, const_and_term);
+    sexp_define_foreign(ctx, env, "sign", 1, sign);
 
     return SEXP_VOID;
 }
