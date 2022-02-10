@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.20)
 project(sym2 VERSION 0.0.0 DESCRIPTION "Tiny symbolic library" LANGUAGES C CXX)
 
 option(BUILD_TESTING "Compile unit tests" ON)
