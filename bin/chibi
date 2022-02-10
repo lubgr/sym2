@@ -10,7 +10,7 @@ else
     preload="LD_PRELOAD"
 fi
 
-libraries=`ls -1t build*/src/sym2chibi.${libSuffix} 2>/dev/null`
+libraries=`ls -1t build*/lib/sym2chibi.${libSuffix} 2>/dev/null`
 
 if [ -z "${libraries}" ]; then
     echo "No chibi-scheme bindings found"
@@ -19,15 +19,16 @@ fi
 
 latest=`echo "${libraries}" | sed '1q'`
 builddir=`echo "${latest}" | cut -d'/' -f1`
-chibi="${builddir}/lib/chibi-scheme/chibi-scheme"
-libsym2="${builddir}/src/libsym2.${libSuffix}"
+chibi="${builddir}/scheme/bin/chibi-scheme"
+libsym2="${builddir}/lib/libsym2.${libSuffix}"
 libasan=`${lddTool} "${libsym2}" | grep 'lib.*asan' | awk '{ print $1 }'`
 
-chibilibs="lib/chibi-scheme/lib"
-paths="-I ${chibilibs} -I ${builddir}/${chibilibs} -I ${builddir}/src -I src"
+chibilibs="${builddir}/scheme/lib"
+paths="-I ${chibilibs} -I ${builddir}/lib -I src"
 
 export "${preload}=${libasan}"
+export LD_LIBRARY_PATH="${chibilibs}"
 
 echo "Running chibi-scheme from ${builddir}..."
 
-${chibi} -i "${builddir}/lib/chibi-scheme/chibi.img" ${paths} -m sym2 $@
+${chibi} -i "${builddir}/scheme/share/chibi/chibi.img" ${paths} -m sym2 $@

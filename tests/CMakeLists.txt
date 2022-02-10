@@ -45,11 +45,33 @@ target_link_libraries(unit-tests
 add_test(NAME sym2.unittests COMMAND unit-tests)
 
 
+if (WITH_SANITIZER)
+    set(libasan "libasan")
+    if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(libasan "libclang_rt.asan_osx_dynamic")
+    endif()
+
+    execute_process(COMMAND
+        ${CMAKE_CXX_COMPILER} -print-file-name=${libasan}${CMAKE_SHARED_LIBRARY_SUFFIX}
+        OUTPUT_VARIABLE libasanpath
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    set(asanPreload "DYLD_INSERT_LIBRARIES=${libasanpath}")
+endif()
+
 function(add_scm_test source)
-    get_filename_component(name ${source} NAME_WLE)
+    cmake_path(GET source STEM LAST_ONLY name)
+
     add_test(NAME "sym2.${name}"
-        WORKING_DIRECTORY ${chibiExecWorkingDir}
-        COMMAND ${chibiExecutable} ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+        COMMAND
+        ${sym2_BINARY_DIR}/scheme/bin/chibi-scheme
+        -i ${sym2_BINARY_DIR}/scheme/share/chibi/chibi.img
+        -I ${sym2_SOURCE_DIR}/src
+        -I ${sym2_BINARY_DIR}/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    set_tests_properties("sym2.${name}" PROPERTIES
+        ENVIRONMENT
+        "LD_LIBRARY_PATH=${sym2_BINARY_DIR}/scheme/lib:$ENV{LD_LIBRARY_PATH};${asanPreload}")
 endfunction()
 
 add_scm_test(order.scm)
