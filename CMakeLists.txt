@@ -2,6 +2,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(sym2 VERSION 0.0.0 DESCRIPTION "Tiny symbolic library" LANGUAGES C CXX)
 
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_TESTING "Compile unit tests" ON)
 option(WITH_COVERAGE "Enable test coverage flags/generation" OFF)
 option(WITH_SANITIZER "Enable UB and address sanitizer" OFF)
