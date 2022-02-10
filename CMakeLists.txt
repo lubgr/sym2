@@ -9,7 +9,7 @@ option(WITH_SANITIZER "Enable UB and address sanitizer" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Boost 1.77 REQUIRED)
+find_package(Boost 1.78 REQUIRED)
 include(cmake/Flags.cmake)
 include(cmake/Sanitizer.cmake)
 
