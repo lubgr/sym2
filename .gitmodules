@@ -4,6 +4,3 @@
 [submodule "lib/cmake-modules"]
 	path = lib/cmake-modules
 	url = https://github.com/bilke/cmake-modules
-[submodule "lib/chibi-scheme"]
-	path = lib/chibi-scheme
-	url = https://github.com/ashinn/chibi-scheme.git
