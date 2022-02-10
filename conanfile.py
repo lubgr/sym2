@@ -16,6 +16,7 @@ class Sym2Conan(ConanFile):
 
     def requirements(self):
         self.requires("chibi-scheme/0.10-e4766f8c")
+        self.requires("boost-headers/1.78.0")
 
     def source(self):
         git = tools.Git("src")

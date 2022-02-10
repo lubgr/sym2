@@ -1,12 +1,13 @@
 
 cmake_minimum_required(VERSION 3.20)
-project(sym2 VERSION 0.0.0 DESCRIPTION "Tiny symbolic library" LANGUAGES C CXX)
+project(sym2 VERSION 0.0.0 DESCRIPTION "Fast, tiny symbolic library" LANGUAGES CXX)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 # This will change the bin/ and lib/ output directories for this project to ${CMAKE_BINARY_DIR}/bin
 # and ${CMAKE_BINARY_DIR}/lib. We can pass NO_OUTPUT_DIRS to prevent that, but I find the build tree
 # layout desirable.
 conan_basic_setup(TARGETS KEEP_RPATHS)
+set(Boost_INCLUDE_DIRS ${CONAN_INCLUDE_DIRS_BOOST-HEADERS})
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_TESTING "Compile unit tests" ON)
@@ -15,7 +16,6 @@ option(WITH_SANITIZER "Enable UB and address sanitizer" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Boost 1.78 REQUIRED)
 include(cmake/Flags.cmake)
 include(cmake/Sanitizer.cmake)
 
