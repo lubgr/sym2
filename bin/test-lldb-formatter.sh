@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ $# -ne 1 ]; then
-    echo "Usage: $0 path/to/test-executable"
+    echo "Usage: $0 path/to/pretty-printer-tests"
     exit 1
 fi
 

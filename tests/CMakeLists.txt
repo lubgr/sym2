@@ -59,23 +59,26 @@ add_scm_test(query.scm)
 add_scm_test(roundtrip.scm)
 add_scm_test(sum.scm)
 
-add_executable(pretty
-    prettydebug.cpp)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_executable(pretty-printer-tests
+        prettydebug.cpp)
 
-target_include_directories(pretty
-    PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/sym2
-    ${PROJECT_SOURCE_DIR}/src)
+    target_include_directories(pretty-printer-tests
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include/sym2
+        ${PROJECT_SOURCE_DIR}/src)
 
-target_include_directories(pretty
-    SYSTEM
-    PRIVATE
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+    target_include_directories(pretty-printer-tests
+        SYSTEM
+        PRIVATE
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
 
-target_link_libraries(pretty
-    PRIVATE
-    sym2)
+    target_link_libraries(pretty-printer-tests
+        PRIVATE
+        sym2)
 
-add_test(NAME sym2.pretty
-    COMMAND ${PROJECT_SOURCE_DIR}/bin/test-lldb-formatter.sh ${CMAKE_CURRENT_BINARY_DIR}/pretty
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+    add_test(NAME sym2.pretty-printer-tests
+        COMMAND
+        ${PROJECT_SOURCE_DIR}/bin/test-lldb-formatter.sh $<TARGET_FILE:pretty-printer-tests>
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+endif()
