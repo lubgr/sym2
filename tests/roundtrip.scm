@@ -1,5 +1,6 @@
 
-(import (sym2)
+(import (scheme base)
+        (sym2)
         (chibi test))
 
 (define-syntax test-roundtrip
