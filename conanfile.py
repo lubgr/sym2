@@ -15,8 +15,10 @@ class Sym2Conan(ConanFile):
     generators = "cmake"
 
     def requirements(self):
-        self.requires("chibi-scheme/0.10-e4766f8c")
-        self.requires("boost-headers/1.78.0")
+        self.requires("chibi-scheme/0.10-e4766f8c@sym2/develop")
+        self.requires("boost-headers/1.78.0@sym2/stable")
+        self.requires("doctest/2.4.8@sym2/stable")
+        self.requires("benchmark/1.6.0")
 
     def source(self):
         git = tools.Git("src")
