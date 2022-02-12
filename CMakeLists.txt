@@ -8,6 +8,7 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 # layout desirable.
 conan_basic_setup(TARGETS KEEP_RPATHS)
 set(Boost_INCLUDE_DIRS ${CONAN_INCLUDE_DIRS_BOOST-HEADERS})
+set(CMakeCoverage ${CONAN_CMAKE-COVERAGE_ROOT}/CodeCoverage.cmake)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_TESTING "Compile unit tests" ON)
@@ -20,7 +21,7 @@ include(cmake/Flags.cmake)
 include(cmake/Sanitizer.cmake)
 
 if(${WITH_COVERAGE})
-    include(lib/cmake-modules/CodeCoverage.cmake)
+    include(${CMakeCoverage})
     append_coverage_compiler_flags()
 endif()
 
@@ -35,7 +36,8 @@ if(${BUILD_TESTING} AND (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR}))
 
     if(${WITH_COVERAGE})
         setup_target_for_coverage_lcov(NAME coverage
-            EXECUTABLE unit-tests
+            EXECUTABLE ctest
+            NO_DEMANGLE
             EXCLUDE tests/* lib/* /usr/* /Library*)
     endif()
 endif()

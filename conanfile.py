@@ -18,6 +18,7 @@ class Sym2Conan(ConanFile):
         self.requires("chibi-scheme/0.10-e4766f8c@sym2/develop")
         self.requires("boost-headers/1.78.0@sym2/stable")
         self.requires("doctest/2.4.8@sym2/stable")
+        self.requires("cmake-coverage/770145a@sym2/develop")
         self.requires("benchmark/1.6.0")
 
     def source(self):
