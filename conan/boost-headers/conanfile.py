@@ -8,9 +8,13 @@ class BoostHeadersConan(ConanFile):
     url = "https://www.boost.org"
     description = "Boost provides free peer-reviewed portable C++ source libraries"
     topics = ("c++", "boost", "header-only")
-    settings = ()
-    options = {}
-    generators = "cmake"
+    no_copy_source = True
+
+    # This recipe is currently meant for consumption by sym2 only,
+    # so hard-wire (and also override externally specified) user/channel:
+    user = "sym2"
+    channel = "stable"
+
     # Actively used libraries, i.e., only those with an actual #include in our sources:
     selected = [
             "callable_traits",
@@ -71,9 +75,6 @@ class BoostHeadersConan(ConanFile):
         url = f"{base}/{self.version}/source/boost_{underscored}.tar.bz2"
         tools.get(url)
 
-    def build(self):
-        pass
-
     def package(self):
         underscored = self.version.replace(".", "_")
         for library in self.selected + self.transitive:
@@ -81,4 +82,4 @@ class BoostHeadersConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ["boost-headers"]
-
+        self.info.header_only()
