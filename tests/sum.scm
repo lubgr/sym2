@@ -44,4 +44,7 @@
   (test '(+ a b) (auto+ 'b 'a))
   (test '(+ a b c d e f g h) (auto+ 'h 'b 'a 'c 'e 'g 'f 'd)))
 
+(test-group "Larger sum simplification"
+  (test '(+ 246 (* 3 a) (* 2 b) (* 3 c) (* 2 d) e) (auto+ '(+ a b c) '(+ b c d) '(+ 123 a c) '(+ 123 a d e))))
+
 (test-exit)

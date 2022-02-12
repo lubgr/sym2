@@ -38,6 +38,7 @@
   (test '(* a b c d e f g h) (auto* 'h 'b 'a 'c 'e 'g 'f 'd)))
 
 (test-group "Larger product simplifications"
+  (test '(* 15129 (^ a 3) (^ b 2) (^ c 3) (^ d 2) e) (auto* '(* a b c) '(* b c d) '(* 123 a c) '(* 123 a d e)))
   (test '(* 464472.1368 (^ a 2) (^ b 4) c y z)
         (auto* 'b  42 'a 'z 6.1234 'y 'a 'b 43 'b 'b 'c 42)))
 
