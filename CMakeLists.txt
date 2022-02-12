@@ -28,7 +28,6 @@ add_subdirectory(src)
 
 if(${BUILD_TESTING} AND (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR}))
     enable_testing()
-    add_subdirectory(lib/doctest)
 
     set(chibiExecutable ${sym2_SOURCE_DIR}/bin/chibi)
     set(chibiExecWorkingDir ${sym2_SOURCE_DIR})

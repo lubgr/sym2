@@ -1,6 +1,3 @@
-[submodule "lib/doctest"]
-	path = lib/doctest
-	url = https://github.com/onqtam/doctest
 [submodule "lib/cmake-modules"]
 	path = lib/cmake-modules
 	url = https://github.com/bilke/cmake-modules
