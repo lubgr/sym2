@@ -15,9 +15,10 @@ class ChibiSchemeConan(ConanFile):
     default_options = {"shared": True, "fPIC": True}
     generators = "cmake"
 
-    def config_options(self):
-        if self.settings.os == "Windows":
-            del self.options.fPIC
+    # This recipe is currently meant for consumption by sym2 only,
+    # so hard-wire (and also override externally specified) user/channel:
+    user = "sym2"
+    channel = "develop"
 
     def source(self):
         git = tools.Git("src")
