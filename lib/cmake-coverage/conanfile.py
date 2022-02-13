@@ -2,7 +2,7 @@
 from conans import ConanFile, tools, CMake
 import os
 
-class DoctestConan(ConanFile):
+class CmakeCoverageConan(ConanFile):
     name = "cmake-coverage"
     url = "https://github.com/bilke/cmake-modules"
     version = "770145a"
