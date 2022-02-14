@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory_resource>
 #include <vector>
+#include "allocator.h"
 #include "cohenautosimpl.h"
 #include "get.h"
 #include "numberarithmetic.h"
@@ -39,10 +40,11 @@ sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
 
 sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
 {
-    std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
-    auto bundle = createSimplificationBundle(buffer);
+    auto [_, buffer] = monotonicStackPmrResource<ByteSize{1000}>();
+    auto bundle = createSimplificationBundle(&buffer);
+    const Expr result = bundle.simplifier.simplifySum(ops);
 
-    return bundle.simplifier.simplifySum(ops);
+    return Expr{result};
 }
 
 sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
@@ -54,10 +56,11 @@ sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
 
 sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
 {
-    std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
-    auto bundle = createSimplificationBundle(buffer);
+    auto [_, buffer] = monotonicStackPmrResource<ByteSize{1000}>();
+    auto bundle = createSimplificationBundle(&buffer);
+    const Expr result = bundle.simplifier.simplifyProduct(ops);
 
-    return bundle.simplifier.simplifyProduct(ops);
+    return Expr{result};
 }
 
 sym2::Expr sym2::autoMinus(ExprView<> arg)
@@ -69,10 +72,11 @@ sym2::Expr sym2::autoMinus(ExprView<> arg)
 
 sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
 {
-    std::pmr::memory_resource* const buffer = std::pmr::get_default_resource();
-    auto bundle = createSimplificationBundle(buffer);
+    auto [_, buffer] = monotonicStackPmrResource<ByteSize{1000}>();
+    auto bundle = createSimplificationBundle(&buffer);
+    const Expr result = bundle.simplifier.simplifyPower(base, exp);
 
-    return bundle.simplifier.simplifyPower(base, exp);
+    return Expr{result};
 }
 
 sym2::Expr sym2::autoOneOver(ExprView<> arg)
