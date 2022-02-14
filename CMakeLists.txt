@@ -30,9 +30,6 @@ add_subdirectory(src)
 
 if(${BUILD_TESTING} AND (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR}))
     enable_testing()
-
-    set(chibiExecutable ${sym2_SOURCE_DIR}/bin/chibi)
-    set(chibiExecWorkingDir ${sym2_SOURCE_DIR})
     add_subdirectory(tests)
 
     if(${WITH_COVERAGE})
