@@ -14,12 +14,13 @@ class Sym2Conan(ConanFile):
     default_options = {"shared": False, "fPIC": True}
     generators = "cmake"
 
-    def requirements(self):
-        self.requires("chibi-scheme/0.10-e4766f8c@sym2/develop")
-        self.requires("boost-headers/1.78.0@sym2/stable")
-        self.requires("doctest/2.4.8@sym2/stable")
-        self.requires("cmake-coverage/770145a@sym2/develop")
-        self.requires("benchmark/1.6.0")
+    def build_requirements(self):
+        self.build_requires("chibi-scheme/0.10-e4766f8c@sym2/develop")
+        self.build_requires("boost-headers/1.78.0@sym2/stable")
+        self.build_requires("doctest/2.4.8@sym2/stable")
+        self.build_requires("cmake-coverage/770145a@sym2/develop")
+        self.build_requires("benchmark/1.6.1@sym2/stable")
+        self.build_requires("ginac/1.8.2@sym2/stable")
 
     def source(self):
         git = tools.Git("src")
