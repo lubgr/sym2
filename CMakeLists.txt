@@ -14,6 +14,7 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_TESTING "Compile unit tests" ON)
 option(WITH_COVERAGE "Enable test coverage flags/generation" OFF)
 option(WITH_SANITIZER "Enable UB and address sanitizer" OFF)
+option(WITH_BENCHMARKS "Compile comparative benchmarks" ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -40,4 +41,8 @@ if(${BUILD_TESTING} AND (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR}))
             NO_DEMANGLE
             EXCLUDE tests/* lib/* /usr/* /Library*)
     endif()
+endif()
+
+if(${WITH_BENCHMARKS} AND (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR}))
+    add_subdirectory(benchmarks)
 endif()
