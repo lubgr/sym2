@@ -45,7 +45,6 @@ class BoostHeadersConan(ConanFile):
             "cstdint",
             "detail",
             "exception",
-            "fusion",
             "integer",
             "intrusive",
             "lexical_cast",

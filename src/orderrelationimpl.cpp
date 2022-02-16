@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <boost/container/static_vector.hpp>
 #include <boost/logic/tribool.hpp>
-#include <boost/range/adaptor/reversed.hpp>
-#include <boost/range/combine.hpp>
 #include <limits>
 #include <tuple>
 #include "eval.h"
@@ -167,10 +165,15 @@ boost::logic::tribool sym2::orderLessThanOperandsReverse(OperandsView lhs, Opera
         const auto lastOpsLhs = collectOperands(lhs, offset);
         const auto lastOpsRhs = collectOperands(rhs, offset);
 
-        for (const auto& [lhsOp, rhsOp] :
-          boost::combine(lastOpsLhs, lastOpsRhs) | boost::adaptors::reversed)
+        // This can be implemented more elegantly with boost::combine and a reverse adaptor.
+        // However, this ends up pulling boost fusion in. We prefer the manual solution to avoid
+        // dependency over-use and keep compile times reasonable.
+        for (std::size_t i = lastOpsLhs.size(); i > 0; --i) {
+            const ExprView<> lhsOp = lastOpsLhs[i - 1];
+            const ExprView<> rhsOp = lastOpsRhs[i - 1];
             if (lhsOp != rhsOp)
                 return orderLessThan(lhsOp, rhsOp);
+        }
     }
 
     return boost::logic::indeterminate;
@@ -212,9 +215,13 @@ boost::logic::tribool sym2::orderLessThanOperands(OperandsView lhs, OperandsView
     const OperandsView lhsRelevantOps = lhs.subview(0, minSize);
     const OperandsView rhsRelevantOps = rhs.subview(0, minSize);
 
-    for (const auto& [lhsOp, rhsOp] : boost::combine(lhsRelevantOps, rhsRelevantOps))
-        if (lhsOp != rhsOp)
-            return orderLessThan(lhsOp, rhsOp);
+    // This can be implemented more elegantly with boost::combine. However, this ends up pulling
+    // boost fusion in. We prefer the manual solution to avoid dependency over-use and keep compile
+    // times reasonable.
+    for (auto lhsOp = lhsRelevantOps.begin(), rhsOp = rhsRelevantOps.begin();
+         lhsOp != lhsRelevantOps.end(); ++lhsOp, ++rhsOp)
+        if (*lhsOp != *rhsOp)
+            return orderLessThan(*lhsOp, *rhsOp);
 
     return boost::logic::indeterminate;
 }
