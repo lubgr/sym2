@@ -15,6 +15,7 @@ option(BUILD_TESTING "Compile unit tests" ON)
 option(WITH_COVERAGE "Enable test coverage flags/generation" OFF)
 option(WITH_SANITIZER "Enable UB and address sanitizer" OFF)
 option(WITH_BENCHMARKS "Compile comparative benchmarks" ON)
+option(WITH_UNITY_BUILD "Compile library with a single TU" OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

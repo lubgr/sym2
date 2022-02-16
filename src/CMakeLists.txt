@@ -16,46 +16,58 @@ target_compile_features(sym2common
     INTERFACE
     cxx_std_20)
 
-add_library(sym2lowlevel
-    OBJECT
-    lowlevel/access.cpp
-    lowlevel/blob.cpp
-    lowlevel/childiterator.cpp
-    lowlevel/expr.cpp
-    lowlevel/exprliteral.cpp
-    lowlevel/get.cpp
-    lowlevel/predicates.cpp
-    lowlevel/query.cpp
-    lowlevel/view.cpp)
+if (WITH_UNITY_BUILD)
+    add_library(sym2
+        unity.cpp)
 
-set_property(TARGET sym2lowlevel
-    PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
+    target_include_directories(sym2
+        PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-target_link_libraries(sym2lowlevel
-    PRIVATE
-    sym2common)
+    add_library(sym2lowlevel INTERFACE)
+else()
+    add_library(sym2lowlevel
+        OBJECT
+        lowlevel/access.cpp
+        lowlevel/blob.cpp
+        lowlevel/childiterator.cpp
+        lowlevel/expr.cpp
+        lowlevel/exprliteral.cpp
+        lowlevel/get.cpp
+        lowlevel/predicates.cpp
+        lowlevel/query.cpp
+        lowlevel/view.cpp)
 
-target_include_directories(sym2lowlevel
-    SYSTEM
-    PUBLIC
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+    set_property(TARGET sym2lowlevel
+        PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
 
-target_include_directories(sym2lowlevel
-    PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+    target_link_libraries(sym2lowlevel
+        PRIVATE
+        sym2common)
 
-add_library(sym2
-    autosimpl.cpp
-    cohenautosimpl.cpp
-    functions.cpp
-    logarithm.cpp
-    numberarithmetic.cpp
-    operandsview.cpp
-    orderrelationimpl.cpp
-    query.cpp
-    trigonometric.cpp
-    var.cpp
-    violationhandler.cpp)
+    target_include_directories(sym2lowlevel
+        SYSTEM
+        PUBLIC
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+
+    target_include_directories(sym2lowlevel
+        PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+    add_library(sym2
+        autosimpl.cpp
+        cohenautosimpl.cpp
+        functions.cpp
+        logarithm.cpp
+        numberarithmetic.cpp
+        operandsview.cpp
+        orderrelationimpl.cpp
+        query.cpp
+        trigonometric.cpp
+        var.cpp
+        violationhandler.cpp)
+
+endif()
 
 target_link_libraries(sym2
     PUBLIC

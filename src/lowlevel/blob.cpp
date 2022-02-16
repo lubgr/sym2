@@ -13,13 +13,6 @@ static_assert(std::is_trivially_move_assignable_v<sym2::Blob>);
 static_assert(std::is_trivially_move_constructible_v<sym2::Blob>);
 static_assert(std::is_trivially_destructible_v<sym2::Blob>);
 
-static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
-static constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
-static constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
-static constexpr std::size_t smallNameLength =
-  sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
-static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Blob::Data8::name);
-
 sym2::Blob sym2::smallIntBlob(std::int32_t n)
 {
     return Blob{.header = Type::smallInt,

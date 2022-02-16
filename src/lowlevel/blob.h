@@ -67,4 +67,15 @@ namespace sym2 {
     Blob smallIntBlob(std::int32_t n);
     Blob floatingPointBlob(double n);
     Blob symbolBlob(std::string_view symbol);
+
+    // Helpers for the manual initialization. As long as this is shared across TUs, it should be
+    // kept in the header (we accept the leaky nature of this, since this is a "private" header that
+    // is only exposed to the lowlevel bits).
+    inline constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
+    inline constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
+    inline constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
+    inline constexpr std::size_t smallNameLength =
+      sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
+    inline constexpr std::size_t largeNameLength =
+      smallNameLength + sizeof(sym2::Blob::Data8::name);
 }

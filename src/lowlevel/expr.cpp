@@ -14,13 +14,6 @@
 #include "blob.h"
 #include "predicates.h"
 
-static constexpr sym2::Blob::Data2 preZero = {.name = {'\0'}};
-static constexpr sym2::Blob::Data4 midZero = {.name = {'\0'}};
-static constexpr sym2::Blob::Data8 mainZero = {.name = {'\0'}};
-static constexpr std::size_t smallNameLength =
-  sizeof(sym2::Blob::Data2::name) + sizeof(sym2::Blob::Data4::name) - 1;
-static constexpr std::size_t largeNameLength = smallNameLength + sizeof(sym2::Blob::Data8::name);
-
 namespace sym2 {
     struct ChildBlobNumberGuard {
         /* RAII class to make sure we don't forget to update the number of child blobs at the end of
