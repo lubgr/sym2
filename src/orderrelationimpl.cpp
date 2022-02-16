@@ -76,8 +76,8 @@ bool sym2::symbols(ExprView<symbol> lhs, ExprView<symbol> rhs)
         return std::make_tuple(
           /* We invert the booleans here to achieve R+ < + < R. The actual ordering this enforces is
            * arbitrary, but it's important to implement a strict weak ordering. */
-          get<std::string_view>(e),
-          !is < positive && realDomain > (e), !is<positive>(e), !is<realDomain>(e));
+          get<std::string_view>(e), !is < positive && realDomain > (e), !is<positive>(e),
+          !is<realDomain>(e));
     };
 
     return asTuple(lhs) < asTuple(rhs);
