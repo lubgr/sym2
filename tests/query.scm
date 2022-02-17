@@ -1,5 +1,6 @@
 
 (import (scheme base)
+        (scheme inexact)
         (sym2)
         (chibi test))
 
@@ -37,6 +38,9 @@
   (test 1 (sign 'a:r+))
   (test-not (sign 'a))
 
+  (test 1 (sign '(pi 3.14)))
+  (test -1 (sign '(const -2.345)))
+
   (test -1 (sign '(* -1 a:+)))
   (test 1 (sign '(+ 1 a:+ b:+)))
 
@@ -68,3 +72,5 @@
   ; (-pi)^2 > 0
   (test 1 (sign '(^ (* -1 (pi 3.14)) 2)))
 )
+
+(test-exit)
