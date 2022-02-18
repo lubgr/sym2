@@ -65,9 +65,7 @@ sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
 
 sym2::Expr sym2::autoMinus(ExprView<> arg)
 {
-    static const Expr minusOne{-1};
-
-    return autoProduct(minusOne, arg);
+    return autoProduct(ExprLiteral{-1}, arg);
 }
 
 sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
@@ -81,9 +79,7 @@ sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
 
 sym2::Expr sym2::autoOneOver(ExprView<> arg)
 {
-    static const Expr minusOne{-1};
-
-    return autoPower(arg, minusOne);
+    return autoPower(arg, ExprLiteral{-1});
 }
 
 sym2::Expr sym2::autoComplex(ExprView<> real, ExprView<> imag)
