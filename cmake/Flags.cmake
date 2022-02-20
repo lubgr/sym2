@@ -1,20 +1,18 @@
 
 set(gccFlags -pedantic-errors -Wall -Wextra -pedantic -Wwrite-strings -Wpointer-arith -Wcast-qual
-    -Wformat=2 -Wmissing-include-dirs -Wcast-align -Wnon-virtual-dtor -Wctor-dtor-privacy -Wdisabled-optimization
-    -Winvalid-pch -Wconversion -Wno-ctor-dtor-privacy -Wno-format-nonliteral -Wno-shadow -Wno-cast-function-type)
+    -Wformat=2 -Wmissing-include-dirs -Wcast-align -Wnon-virtual-dtor -Wctor-dtor-privacy
+    -Wdisabled-optimization -Winvalid-pch -Wconversion -Wno-ctor-dtor-privacy -Wno-format-nonliteral
+    -Wno-shadow -Wno-cast-function-type -Wno-dangling-else -Wno-unused-local-typedefs
+    -Wdouble-promotion -Wtrampolines -Wzero-as-null-pointer-constant -Wvector-operation-performance
+    -Wsized-deallocation -Wshift-overflow=2 -Wnull-dereference -Wduplicated-cond)
 
 set(clangFlags -Wall -Wextra -pedantic -Wconversion -Wno-sign-conversion -Wno-c99-extensions)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 4.6)
-        set(gccFlags ${gccFlags} -Wno-dangling-else -Wno-unused-local-typedefs)
-    endif()
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 5.0)
-        set(gccFlags ${gccFlags} -Wdouble-promotion -Wtrampolines -Wzero-as-null-pointer-constant
-            -Wvector-operation-performance -Wsized-deallocation)
-    endif()
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 6.0)
-        set(gccFlags ${gccFlags} -Wshift-overflow=2 -Wnull-dereference -Wduplicated-cond)
+if (COLORED_OUTPUT)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        set(gccFlags ${gccFlags} -fdiagnostics-color=always)
+   elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+       set(clangFlags ${clangFlags} -fcolor-diagnostics)
     endif()
 endif()
 
