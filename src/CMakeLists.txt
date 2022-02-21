@@ -62,6 +62,8 @@ else()
         numberarithmetic.cpp
         operandsview.cpp
         orderrelationimpl.cpp
+        plaintextprintengine.cpp
+        prettyprinter.cpp
         query.cpp
         trigonometric.cpp
         var.cpp

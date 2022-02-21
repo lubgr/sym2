@@ -76,6 +76,7 @@ endfunction()
 
 add_scm_test(order.scm)
 add_scm_test(power.scm)
+add_scm_test(printer.scm)
 add_scm_test(product.scm)
 add_scm_test(query.scm)
 add_scm_test(roundtrip.scm)

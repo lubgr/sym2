@@ -2,12 +2,15 @@
 #include <cassert>
 #include <chibi/sexp.h>
 #include <exception>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 #include "autosimpl.h"
 #include "chibiconverter.h"
 #include "orderrelation.h"
+#include "prettyprinter.h"
 #include "query.h"
+#include "sym2/printengine.h"
 
 using namespace sym2;
 
@@ -158,6 +161,24 @@ sexp sign(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
     });
 }
 
+sexp to_string(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
+{
+    assert(n == 1);
+
+    return wrappedTryCatch(ctx, self, [&]() {
+        std::ostringstream output;
+        PlaintextPrintEngine engine{output};
+
+        FromChibiToExpr conv{ctx};
+
+        PrettyPrinter printer{engine, PrettyPrinter::PowerAsFraction::asFraction};
+
+        printer.print(conv.convert(arg));
+
+        return sexp_c_string(ctx, output.str().c_str(), -1);
+    });
+}
+
 sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] sexp_sint_t n,
   sexp env, const char* version, const sexp_abi_identifier_t abi)
 {
@@ -172,6 +193,7 @@ sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] se
     sexp_define_foreign(ctx, env, "order-lt", 2, order_less_than);
     sexp_define_foreign(ctx, env, "split-const-term", 1, const_and_term);
     sexp_define_foreign(ctx, env, "sign", 1, sign);
+    sexp_define_foreign(ctx, env, "expr->string", 1, to_string);
 
     return SEXP_VOID;
 }
