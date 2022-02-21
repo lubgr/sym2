@@ -6,10 +6,10 @@
 #include "view.h"
 
 namespace sym2 {
-    // Stores small integers, floating points or symbol names as one single blob. Doesn't have a
-    // usable interface on its own, but offers implicit conversion to ExprView<...>. The main
-    // purpose of ExprLiteral instances is to be independent of the allocators and their buffer
-    // lifetimes that Expr uses.
+    // Stores small integers, small rationals, floating points or symbol names as one single blob.
+    // Doesn't have a usable interface on its own, but offers implicit conversion to ExprView<...>.
+    // The main purpose of ExprLiteral instances is to be independent of the allocators and their
+    // buffer lifetimes that Expr uses.
     //
     // An ExprLiteral allows short literal-like leaf expressions to be used without the need to
     // allocate a buffer of size 1, which happens when constructing an Expr. ExprView instantiations
@@ -26,6 +26,7 @@ namespace sym2 {
       public:
         explicit ExprLiteral(std::string_view symbol);
         explicit ExprLiteral(std::int32_t n);
+        ExprLiteral(std::int32_t num, std::int32_t denom);
         explicit ExprLiteral(double n);
 
         // Implicit conversions to any tag are indeed desired here:

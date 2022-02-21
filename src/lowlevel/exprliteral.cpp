@@ -14,6 +14,11 @@ sym2::ExprLiteral::ExprLiteral(std::int32_t n)
     reinterpret_cast<Blob&>(*blob.data()) = smallIntBlob(n);
 }
 
+sym2::ExprLiteral::ExprLiteral(std::int32_t num, std::int32_t denom)
+{
+    reinterpret_cast<Blob&>(*blob.data()) = smallRationalBlob(num, denom);
+}
+
 sym2::ExprLiteral::ExprLiteral(double n)
 {
     reinterpret_cast<Blob&>(*blob.data()) = floatingPointBlob(n);

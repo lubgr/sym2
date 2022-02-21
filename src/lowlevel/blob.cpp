@@ -22,6 +22,16 @@ sym2::Blob sym2::smallIntBlob(std::int32_t n)
       .main = {.exact = {n, 1}}};
 }
 
+sym2::Blob sym2::smallRationalBlob(std::int32_t num, std::int32_t denom)
+{
+    return Blob{.header = Type::smallRational,
+      .flags =
+        Flag::numericallyEvaluable | Flag::real | (num >= 0 ? Flag::positive : Flag::negative),
+      .pre = preZero,
+      .mid = midZero,
+      .main = {.exact = {num, denom}}};
+}
+
 sym2::Blob sym2::floatingPointBlob(double n)
 {
     return Blob{.header = Type::floatingPoint,

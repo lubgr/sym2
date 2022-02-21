@@ -298,11 +298,7 @@ void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
     if (denom == 1)
         appendSmallInt(num);
     else
-        buffer.push_back(Blob{.header = Type::smallRational,
-          .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(num),
-          .pre = preZero,
-          .mid = midZero,
-          .main = {.exact = {num, denom}}});
+        buffer.push_back(smallRationalBlob(num, denom));
 }
 
 void sym2::Expr::appendSmallOrLargeInt(const LargeInt& n)

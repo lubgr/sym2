@@ -65,6 +65,7 @@ namespace sym2 {
     // These are used from both Expr and ExprLiteral. All other manual Blob initialisation is done
     // from within the Expr constructors.
     Blob smallIntBlob(std::int32_t n);
+    Blob smallRationalBlob(std::int32_t num, std::int32_t denom);
     Blob floatingPointBlob(double n);
     Blob symbolBlob(std::string_view symbol);
 
