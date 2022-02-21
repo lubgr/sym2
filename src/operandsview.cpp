@@ -1,5 +1,6 @@
 
 #include "operandsview.h"
+#include <boost/range/algorithm/equal.hpp>
 #include <cassert>
 #include "query.h"
 
@@ -44,4 +45,16 @@ sym2::OperandsView sym2::OperandsView::subview(std::size_t offset, std::size_t c
     result.sentinel = count == npos ? sentinel : std::next(result.first, count);
 
     return result;
+}
+
+bool sym2::OperandsView::operator==(OperandsView rhs) const noexcept
+{
+    // TODO when this class saves the number of physical blobs upon construction, we can turn this
+    // into a memcmp:
+    return boost::equal(*this, rhs);
+}
+
+bool sym2::OperandsView::operator!=(OperandsView rhs) const noexcept
+{
+    return !(*this == rhs);
 }

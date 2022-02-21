@@ -3,7 +3,6 @@
 #include <array>
 #include <boost/hof/construct.hpp>
 #include <boost/iterator/transform_iterator.hpp>
-#include <boost/range/algorithm/equal.hpp>
 #include <cassert>
 #include <cmath>
 #include <complex>
@@ -86,7 +85,7 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::binarySum(ExprView<!sum> lhs,
         if (isOneOf<number>(lhs, rhs))
             return false;
         else
-            return boost::equal(splitConstTerm(lhs).term, splitConstTerm(rhs).term);
+            return splitConstTerm(lhs).term == splitConstTerm(rhs).term;
     };
     std::pmr::vector<Expr> result{buffer};
 

@@ -84,4 +84,10 @@ TEST_CASE("Semantic traversal")
         boost::copy(orig.subview(4), std::back_inserter(actual));
         CHECK(actual.empty());
     }
+
+    SUBCASE("Equality comparison")
+    {
+        CHECK(OperandsView::operandsOf(s) == OperandsView::operandsOf(s));
+        CHECK(OperandsView::operandsOf(s) != OperandsView::operandsOf(s).subview(0, 3));
+    }
 }

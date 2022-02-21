@@ -25,6 +25,9 @@ namespace sym2 {
         /* UB if the requested subview is out-of-range. */
         OperandsView subview(std::size_t offset, std::size_t count = -1) const noexcept;
 
+        bool operator==(OperandsView rhs) const noexcept;
+        bool operator!=(OperandsView rhs) const noexcept;
+
       private:
         explicit OperandsView(ChildIterator first) noexcept;
 
