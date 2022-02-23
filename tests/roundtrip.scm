@@ -44,7 +44,7 @@
     (test-roundtrip -2/3-3i)
     (test-roundtrip -2/7-3/4i)
     (test-roundtrip (+ 123 42/43i))
-    (test-roundtrip (- 1.23456789 42/43i))
+    (test-roundtrip 1.23456789-42/43i)
     (test-roundtrip (+ 1e6 10092342803984029834092809384098283489284i)))
 
   (test-group "Symbols"

@@ -15,7 +15,7 @@ class Sym2Conan(ConanFile):
     generators = "cmake"
 
     def build_requirements(self):
-        self.build_requires("chibi-scheme/0.10-e4766f8c@sym2/develop")
+        self.build_requires("chibi-scheme/0.10-e587881@sym2/develop")
         self.build_requires("boost-headers/1.78.0@sym2/stable")
         self.build_requires("doctest/2.4.8@sym2/stable")
         self.build_requires("cmake-coverage/770145a@sym2/develop")

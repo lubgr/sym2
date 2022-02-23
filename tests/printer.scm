@@ -35,9 +35,8 @@
   (pt "-2 + 3i" -2+3i)
   (pt "2 - 3/4i" 2-3/4i)
   (pt "-9.876 + 1.2345i" -9.876+1.2345i)
-
-  ; We need to work around a bug in chibi here, see https://github.com/ashinn/chibi-scheme/issues/815
-  (pt "-2/3 - 3i" (* -1 2/3+3i))
+  (pt "-2/3 + 3i" -2/3+3i)
+  (pt "-2/3 - 3i" (- 2/3+3i))
 
   ; The assertion is sensitive to precision. This works for now, but when it fails, we should change
   ; the assertion to checking if the result begins with "1.234[...]" rather than equality.

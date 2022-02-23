@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class ChibiSchemeConan(ConanFile):
     name = "chibi-scheme"
-    commit = "e4766f8c"
+    commit = "e587881"
     version = f"0.10-{commit}"
     license = "BSD-3-Clause"
     author = "Alex Shinn <alexshinn@gmail.com>"
