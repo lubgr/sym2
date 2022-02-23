@@ -37,6 +37,14 @@
   (test '(* a b) (auto* 'b 'a))
   (test '(* a b c d e f g h) (auto* 'h 'b 'a 'c 'e 'g 'f 'd)))
 
+(test-group "Usual product cases"
+  (test '(^ (+ a b) 4) (auto* '(^ (+ a b) 3) '(+ a b)))
+  ; This was different tsym, where 2*(a + b) would be expanded into 2*a + 2*b. GiNaC and Sympy also
+  ; expand these, however, Maxima doesn't and Cohen's simplification algorithm does neither. For
+  ; now, we stick with the latter.
+  (test '(* 2 (+ a b)) (auto* 2 '(+ a b)))
+ )
+
 (test-group "Larger product simplifications"
   (test '(* 15129 (^ a 3) (^ b 2) (^ c 3) (^ d 2) e) (auto* '(* a b c) '(* b c d) '(* 123 a c) '(* 123 a d e)))
   (test '(* 464472.1368 (^ a 2) (^ b 4) c y z)
