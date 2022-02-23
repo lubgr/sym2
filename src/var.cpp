@@ -1,8 +1,10 @@
 
 #include <limits>
 #include <stdexcept>
+#include "allocator.h"
 #include "autosimpl.h"
 #include "expr.h"
+#include "prettyprinter.h"
 #include "sym2/sym2.h"
 
 sym2::Var::Var()
@@ -203,4 +205,15 @@ sym2::Var sym2::literals::operator"" _v(unsigned long long n)
 sym2::Var sym2::literals::operator"" _v(long double n)
 {
     return Var{static_cast<double>(n)};
+}
+
+std::ostream& sym2::operator<<(std::ostream& os, const Var& rhs)
+{
+    PlaintextPrintEngine engine{os};
+    auto [_, resource] = monotonicStackPmrResource<ByteSize{200}>();
+    PrettyPrinter printer{engine, PrettyPrinter::PowerAsFraction::asFraction, &resource};
+
+    printer.print(rhs.get());
+
+    return os;
 }

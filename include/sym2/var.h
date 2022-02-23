@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iosfwd>
 #include <string_view>
 #include <type_traits>
 #include "symbolflag.h"
@@ -63,4 +64,6 @@ namespace sym2 {
     Var operator-(Var lhs, const Var& rhs);
     Var operator*(Var lhs, const Var& rhs);
     Var operator/(Var lhs, const Var& rhs);
+
+    std::ostream& operator<<(std::ostream& os, const Var& rhs);
 }
