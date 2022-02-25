@@ -40,7 +40,14 @@
 
   ; The assertion is sensitive to precision. This works for now, but when it fails, we should change
   ; the assertion to checking if the result begins with "1.234[...]" rather than equality.
-  (pt "1.23456" 1.23456))
+  (pt "1.23456" 1.23456)
+
+  (pt "0 - i" 0-i)
+  (pt "0 + i" 0+i)
+  (pt "0 - 2i" 0-2i)
+  (pt "0 - 2/7i" 0-2/7i)
+  (pt "0 - 1.2345i" 0-1.2345i)
+  (pt "0 + 2i" 0+2i))
 
 (test-group "Plaintext sums"
   (pt "a + b + c + d" '(+ a b c d))

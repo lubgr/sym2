@@ -108,16 +108,22 @@ void sym2::PrettyPrinter::printNumber(ExprView<number> e)
         print(denominator(e));
         engine.closeDenominator(denominatorIsScalar);
     } else if (is<complexDomain>(e)) {
-        engine.startComplexNumber();
         printNumber(real(e));
+
         Expr imaginaryPart{imag(e), resource};
+
         if (is<negative>(imag(e))) {
             engine.minusSign();
             imaginaryPart = autoMinus(imaginaryPart);
         } else
             engine.plusSign();
-        printNumber(imaginaryPart);
-        engine.imaginaryI().endComplexNumber();
+
+        if (imaginaryPart == 1_ex)
+            engine.singleImaginaryI();
+        else {
+            printNumber(imaginaryPart);
+            engine.timesImaginayI();
+        }
     }
 }
 

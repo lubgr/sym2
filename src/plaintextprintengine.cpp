@@ -118,20 +118,15 @@ sym2::PrintEngine& sym2::PlaintextPrintEngine::closeDenominator(bool denominator
     return *this;
 }
 
-sym2::PrintEngine& sym2::PlaintextPrintEngine::startComplexNumber()
+sym2::PrintEngine& sym2::PlaintextPrintEngine::timesImaginayI()
 {
-    return *this;
+    return singleImaginaryI();
 }
 
-sym2::PrintEngine& sym2::PlaintextPrintEngine::imaginaryI()
+sym2::PrintEngine& sym2::PlaintextPrintEngine::singleImaginaryI()
 {
     out << "i";
 
-    return *this;
-}
-
-sym2::PrintEngine& sym2::PlaintextPrintEngine::endComplexNumber()
-{
     return *this;
 }
 

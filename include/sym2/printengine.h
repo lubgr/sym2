@@ -28,9 +28,9 @@ namespace sym2 {
         virtual PrintEngine& closeNumerator(bool numeratorWasSum = false) = 0;
         virtual PrintEngine& openDenominator(bool denominatorIsScalar = false) = 0;
         virtual PrintEngine& closeDenominator(bool denominatorWasScalar = false) = 0;
-        virtual PrintEngine& startComplexNumber() = 0;
-        virtual PrintEngine& imaginaryI() = 0;
-        virtual PrintEngine& endComplexNumber() = 0;
+
+        virtual PrintEngine& timesImaginayI() = 0;
+        virtual PrintEngine& singleImaginaryI() = 0;
 
         virtual PrintEngine& openScalarExponent() = 0;
         virtual PrintEngine& closeScalarExponent() = 0;
@@ -66,9 +66,9 @@ namespace sym2 {
         PrintEngine& closeNumerator(bool numeratorWasSum = false) override;
         PrintEngine& openDenominator(bool denominatorIsScalar = false) override;
         PrintEngine& closeDenominator(bool denominatorWasScalar = false) override;
-        PrintEngine& startComplexNumber() override;
-        PrintEngine& imaginaryI() override;
-        PrintEngine& endComplexNumber() override;
+
+        PrintEngine& timesImaginayI() override;
+        PrintEngine& singleImaginaryI() override;
 
         PrintEngine& openScalarExponent() override;
         PrintEngine& closeScalarExponent() override;
