@@ -26,3 +26,5 @@
     (test-error (poly-min-degree '(sin a) 'a))
   )
 )
+
+(test-exit)
