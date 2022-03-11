@@ -11,14 +11,15 @@ using namespace sym2;
 
 TEST_CASE("Type queries for untagged types")
 {
-    const Expr fp{3.14};
-    const Expr sr{7, 11};
-    const Expr a = "a"_ex;
-    const Expr n = 42_ex;
-    const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr li{LargeIntRef{largeInt}};
+    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
+    const Expr fp{3.14, mr};
+    const Expr sr{7, 11, mr};
+    const Expr a{"a"_ex, mr};
+    const Expr n{42_ex, mr};
+    const LargeInt largeInt{"2323498273984729837498234029380492839489234902384", mr};
+    const Expr li{LargeIntRef{largeInt}, mr};
     const Expr lr{
-      LargeRationalRef{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}}};
+      LargeRationalRef{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}}, mr};
     const Expr cx = autoComplex(2_ex, 3_ex);
     const Expr s = autoSum(n, a, "b"_ex);
     const Expr pr = autoProduct(n, a, "b"_ex);
@@ -62,7 +63,7 @@ TEST_CASE("Type queries for untagged types")
 
     SUBCASE("Scalar")
     {
-        for (ExprView<> e : {n, cx, Expr{"d"}, Expr{"a"}, Expr{"b"}, euler, pi}) {
+        for (ExprView<> e : {n, cx, Expr{"d", mr}, Expr{"a", mr}, Expr{"b", mr}, euler, pi}) {
             CHECK(is<scalar>(e));
             CHECK(is<!composite>(e));
         }
@@ -84,7 +85,7 @@ TEST_CASE("Type queries for untagged types")
 
     SUBCASE("Integer")
     {
-        for (ExprView<> number : {n, Expr{li}})
+        for (ExprView<> number : {n, Expr{li, mr}})
             CHECK(is<integer>(number));
 
         for (ExprView<> e : {pi, euler, a, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
@@ -102,7 +103,7 @@ TEST_CASE("Type queries for untagged types")
 
     SUBCASE("Symbol")
     {
-        for (ExprView<> e : {Expr{"a"}, Expr{"b"}, Expr{"c"}})
+        for (ExprView<> e : {Expr{"a", mr}, Expr{"b", mr}, Expr{"c", mr}})
             CHECK(is<symbol>(e));
 
         for (ExprView<> e : {n, fp, sr, lr, cx, pi, euler, s, pr, pw, sinA, atan2Ab})
@@ -155,7 +156,7 @@ TEST_CASE("Type queries for untagged types")
 
 TEST_CASE("Type queries for tagged types")
 {
-    const Expr n = 42_ex;
+    const ExprLiteral n = 42_ex;
 
     CHECK(is<number>(ExprView < number && positive && realDomain > {n}));
     CHECK(is<small>(ExprView<number>{n}));
