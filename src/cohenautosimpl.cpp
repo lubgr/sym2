@@ -300,7 +300,7 @@ sym2::Expr sym2::CohenAutoSimpl::simplifyPower(ExprView<> base, ExprView<> exp)
     else if (base == 0_ex && exp == 0_ex)
         throw std::invalid_argument{"Invalid power with zero base and zero exponent"};
     else if (exp == 0_ex)
-        return 1_ex;
+        return Expr{1_ex, buffer};
     else if (exp == 1_ex)
         return Expr{base, buffer};
     // ... now error our on division by zero ...
@@ -424,7 +424,7 @@ sym2::Expr sym2::CohenAutoSimpl::simplPowerRationalToRational(
         // doesn't have to be the case, e.g. for sqrt(-1/3) we will have evaluated sqrt(1/3) which
         // is not simplified. In this case, we return sqrt(-1/3) as it is.
         if (is<rational>(result)) {
-            const std::array<Expr, 2> realAndImag{{0_ex, result}};
+            const std::array<Expr, 2> realAndImag{{{0_ex, buffer}, result}};
             return Expr{CompositeType::complexNumber, realAndImag, buffer};
         }
 
