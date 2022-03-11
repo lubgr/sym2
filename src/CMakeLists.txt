@@ -63,6 +63,7 @@ else()
         operandsview.cpp
         orderrelationimpl.cpp
         plaintextprintengine.cpp
+        polynomial.cpp
         prettyprinter.cpp
         query.cpp
         trigonometric.cpp

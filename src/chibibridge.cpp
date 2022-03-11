@@ -8,6 +8,7 @@
 #include "autosimpl.h"
 #include "chibiconverter.h"
 #include "orderrelation.h"
+#include "polynomial.h"
 #include "prettyprinter.h"
 #include "query.h"
 #include "sym2/printengine.h"
@@ -179,6 +180,23 @@ sexp to_string(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
     });
 }
 
+sexp poly_min_degree(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp of, sexp variable)
+{
+    assert(n == 2);
+
+    return wrappedTryCatch(ctx, self, [&]() {
+        FromChibiToExpr conv{ctx};
+
+        if (!sexp_symbolp(variable))
+            return sexp_xtype_exception(
+              ctx, self, "Min. polynomial degree must be queried w.r.t. a symbol", variable);
+
+        const int result = polyMinDegree(conv.convert(of), conv.convert(variable));
+
+        return sexp_make_fixnum(result);
+    });
+}
+
 sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] sexp_sint_t n,
   sexp env, const char* version, const sexp_abi_identifier_t abi)
 {
@@ -194,6 +212,7 @@ sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] se
     sexp_define_foreign(ctx, env, "split-const-term", 1, const_and_term);
     sexp_define_foreign(ctx, env, "sign", 1, sign);
     sexp_define_foreign(ctx, env, "expr->string", 1, to_string);
+    sexp_define_foreign(ctx, env, "poly-min-degree", 2, poly_min_degree);
 
     return SEXP_VOID;
 }

@@ -7,6 +7,7 @@
     auto*
     auto^
     order-lt
+    poly-min-degree
     roundtrip
     sign
     split-const-term)

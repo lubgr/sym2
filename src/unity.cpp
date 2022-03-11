@@ -18,6 +18,7 @@
 #include "operandsview.cpp"
 #include "orderrelationimpl.cpp"
 #include "plaintextprintengine.cpp"
+#include "polynomial.cpp"
 #include "prettyprinter.cpp"
 #include "query.cpp"
 #include "trigonometric.cpp"
