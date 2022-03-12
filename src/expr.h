@@ -49,15 +49,14 @@ namespace sym2 {
         Expr(
           CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator = {});
         Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator = {});
-        Expr(CompositeType composite, std::initializer_list<ExprView<>> ops,
-          allocator_type allocator = {});
-        Expr(ExprLiteral literal, allocator_type allocator = {});
+        Expr(
+          CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator);
+        Expr(ExprLiteral literal, allocator_type allocator);
 
         // All = defaulted in the TU, which is required due to the shielded Blob definition:
         Expr(const Expr& other, allocator_type allocator = {});
         Expr& operator=(const Expr& other);
-        Expr(
-          Expr&& other, allocator_type allocator = {}); // Can't be noexcept when allocators differ
+        Expr(Expr&& other, allocator_type allocator); // Can't be noexcept when allocators differ
         Expr& operator=(Expr&& other); // Can't be noexcept when allocators differ
         ~Expr();
 

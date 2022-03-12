@@ -85,5 +85,5 @@ sym2::Expr sym2::autoOneOver(ExprView<> arg)
 sym2::Expr sym2::autoComplex(ExprView<> real, ExprView<> imag)
 {
     // TODO
-    return Expr{CompositeType::complexNumber, {real, imag}};
+    return Expr{CompositeType::complexNumber, {real, imag}, {}};
 }

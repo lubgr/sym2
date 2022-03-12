@@ -1,5 +1,6 @@
 
 #include <cmath>
+#include <memory_resource>
 #include "expr.h"
 #include "exprliteral.h"
 #include "trigonometric.h"
@@ -20,22 +21,25 @@ auto check(ExprView<> e)
 
 int main(int, char**)
 {
-    const Expr si{42};
-    const Expr sr{7, 11};
+    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
+    const Expr si{42, mr};
+    const Expr sr{7, 11, mr};
     const Expr li{
-      LargeIntRef{LargeInt{"8233298749837489247029730960165010709217309487209740928934928"}}};
-    const Expr otherLi{LargeIntRef{LargeInt{"2323498273984729837498234029380492839489234902384"}}};
-    const Expr lr{LargeRationalRef{
-      LargeRational{LargeInt{"28937984279872384729834729837498237489237498273489273984723897483"},
-        LargeInt{"823329874983748924702973096016501070921730948720974092893492817"}}}};
-    const Expr fp{9.876543212345};
-    const Expr cst{"pi", 3.142373847234};
-    const Expr ss{"abc"};
-    const Expr ls{"abc_{defy}^g"};
-    const Expr cx{CompositeType::complexNumber, {si, sr}};
-    const Expr sum{CompositeType::sum, {si, ss, ls}};
-    const Expr pro{CompositeType::product, {si, ss, ls, sum}};
-    const Expr pw{CompositeType::power, {pro, li}};
+      LargeIntRef{LargeInt{"8233298749837489247029730960165010709217309487209740928934928"}}, mr};
+    const Expr otherLi{
+      LargeIntRef{LargeInt{"2323498273984729837498234029380492839489234902384"}}, mr};
+    const Expr lr{LargeRationalRef{LargeRational{
+                    LargeInt{"28937984279872384729834729837498237489237498273489273984723897483"},
+                    LargeInt{"823329874983748924702973096016501070921730948720974092893492817"}}},
+      mr};
+    const Expr fp{9.876543212345, mr};
+    const Expr cst{"pi", 3.142373847234, mr};
+    const Expr ss{"abc", mr};
+    const Expr ls{"abc_{defy}^g", mr};
+    const Expr cx{CompositeType::complexNumber, {si, sr}, mr};
+    const Expr sum{CompositeType::sum, {si, ss, ls}, mr};
+    const Expr pro{CompositeType::product, {si, ss, ls, sum}, mr};
+    const Expr pw{CompositeType::power, {pro, li}, mr};
     const Expr f1 = sym2::sin("a"_ex);
     const Expr f2 = sym2::atan2("a"_ex, li);
     const Expr f3 = sym2::sin(sr);
