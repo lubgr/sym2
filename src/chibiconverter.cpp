@@ -93,8 +93,9 @@ const sexp& sym2::PreservedSexp::get() const
     return handle->preserved;
 }
 
-sym2::FromChibiToExpr::FromChibiToExpr(sexp ctx)
+sym2::FromChibiToExpr::FromChibiToExpr(sexp ctx, std::pmr::polymorphic_allocator<> allocator)
     : ctx{ctx}
+    , alloc{allocator}
 {}
 
 sym2::Expr sym2::FromChibiToExpr::convert(sexp from)
@@ -140,22 +141,22 @@ sym2::Expr sym2::FromChibiToExpr::numberToExpr(sexp from)
     if (sexp_flonump(from))
         /* This must come before the integer branch, as floating point numbers that truncate to
          * integers without loss also qualify as integers. */
-        return Expr{sexp_flonum_value(from)};
+        return Expr{sexp_flonum_value(from), alloc};
     else if (sexp_exact_integerp(from))
-        return Expr{LargeIntRef{extractSmallOrLargeInt(from)}};
+        return Expr{LargeIntRef{extractSmallOrLargeInt(from)}, alloc};
     else if (sexp_ratiop(from)) {
         const auto num = preserve(sexp_ratio_numerator(from));
         const auto denom = preserve(sexp_ratio_denominator(from));
         const LargeRational n{
           extractSmallOrLargeInt(num.get()), extractSmallOrLargeInt(denom.get())};
 
-        return Expr{LargeRationalRef{n}};
+        return Expr{LargeRationalRef{n}, alloc};
     } else if (sexp_complexp(from)) {
         const auto realPart = preserve(sexp_complex_real(from));
         const auto imagPart = preserve(sexp_complex_imag(from));
         const std::array<Expr, 2> operands{{convert(realPart), convert(imagPart)}};
 
-        return Expr{CompositeType::complexNumber, operands};
+        return Expr{CompositeType::complexNumber, operands, alloc};
     }
 
     return throwSexp("Can't convert number to a numeric Expr", from);
@@ -181,10 +182,10 @@ sym2::Expr sym2::FromChibiToExpr::symbolFromString(sexp str)
     const std::size_t colon = name.find(':');
 
     if (colon == std::string_view::npos)
-        return Expr{name};
+        return Expr{name, alloc};
 
     const SymbolFlag flag = symbolConstraintsOrThrow(name.substr(colon + 1));
-    return Expr{name.substr(0, colon), flag};
+    return Expr{name.substr(0, colon), flag, alloc};
 }
 
 sym2::SymbolFlag sym2::FromChibiToExpr::symbolConstraintsOrThrow(std::string_view flags)
@@ -248,7 +249,7 @@ sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
     std::transform(operands.begin(), operands.end(), std::back_inserter(converted),
       [this](const PreservedSexp& expr) { return convert(expr); });
 
-    return Expr{kind, converted};
+    return Expr{kind, converted, alloc};
 }
 
 sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
@@ -257,7 +258,7 @@ sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
     if (operands.size() != 1)
         throwSexp("Unary functions must have exactly one operand");
 
-    return Expr{name, convert(operands.front()), fct};
+    return Expr{name, convert(operands.front()), fct, alloc};
 }
 
 sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
@@ -266,7 +267,7 @@ sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
     if (operands.size() != 2)
         throwSexp("Binary functions must have exactly two operands");
 
-    return Expr{name, convert(operands.front()), convert(operands.back()), fct};
+    return Expr{name, convert(operands.front()), convert(operands.back()), fct, alloc};
 }
 
 sym2::Expr sym2::FromChibiToExpr::attemptConstantToExpr(
@@ -279,11 +280,12 @@ sym2::Expr sym2::FromChibiToExpr::attemptConstantToExpr(
 
     const double value = sexp_flonum_value(operands.front().get());
 
-    return Expr{name, value};
+    return Expr{name, value, alloc};
 }
 
-sym2::FromExprToChibi::FromExprToChibi(sexp ctx)
+sym2::FromExprToChibi::FromExprToChibi(sexp ctx, std::pmr::polymorphic_allocator<> allocator)
     : ctx{ctx}
+    , alloc{allocator}
 {}
 
 sexp sym2::FromExprToChibi::convert(ExprView<> from)
@@ -299,7 +301,7 @@ sexp sym2::FromExprToChibi::convert(ExprView<> from)
     else
         return compositeFromSumProductOrPower(from);
 
-    throw FailedConversionToSexp{"Can't convert to chibi type", Expr{from}};
+    throw FailedConversionToSexp{"Can't convert to chibi type", Expr{from, alloc}};
 }
 
 sym2::PreservedSexp sym2::FromExprToChibi::preserve(sexp what)
@@ -360,7 +362,7 @@ sexp sym2::FromExprToChibi::dispatchOver(ExprView<number> from)
         return sexp_make_complex(ctx, realPart.get(), imagPart.get());
     }
 
-    throw FailedConversionToSexp{"Unknown numeric type", Expr{from}};
+    throw FailedConversionToSexp{"Unknown numeric type", Expr{from, alloc}};
 }
 
 sym2::PreservedSexp sym2::FromExprToChibi::serializeLargeInt(const LargeInt& n)
@@ -422,7 +424,7 @@ sym2::PreservedSexp sym2::FromExprToChibi::leadingSymbolForComposite(
             return chibiSymbolFromString(identifier);
         }
 
-    throw FailedConversionToSexp{"Unknown composite type", Expr{composite}};
+    throw FailedConversionToSexp{"Unknown composite type", Expr{composite, alloc}};
 }
 
 sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(

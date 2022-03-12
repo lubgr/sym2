@@ -2,6 +2,7 @@
 
 #include <chibi/sexp.h>
 #include <memory>
+#include <memory_resource>
 #include <span>
 #include <stack>
 #include <stdexcept>
@@ -40,7 +41,7 @@ namespace sym2 {
     struct FailedConversionToSexp : std::invalid_argument {
         FailedConversionToSexp(const char* msg, Expr orig)
             : std::invalid_argument(msg)
-            , orig{orig}
+            , orig{std::move(orig), {}}
         {}
 
         Expr orig;
@@ -48,7 +49,7 @@ namespace sym2 {
 
     class FromChibiToExpr {
       public:
-        explicit FromChibiToExpr(sexp ctx);
+        explicit FromChibiToExpr(sexp ctx, std::pmr::polymorphic_allocator<> allocator = {});
 
         Expr convert(sexp from);
 
@@ -71,12 +72,13 @@ namespace sym2 {
         Expr throwSexp(const char* msg, sexp irritant = nullptr);
 
         sexp ctx;
+        std::pmr::polymorphic_allocator<> alloc;
         std::stack<PreservedSexp> current; /* For getting the relevant bits into exceptions. */
     };
 
     class FromExprToChibi {
       public:
-        explicit FromExprToChibi(sexp ctx);
+        explicit FromExprToChibi(sexp ctx, std::pmr::polymorphic_allocator<> allocator = {});
 
         sexp convert(ExprView<> from);
 
@@ -94,6 +96,7 @@ namespace sym2 {
         sexp compositeFromSumProductOrPower(ExprView<sum || product || power> composite);
 
         sexp ctx;
+        std::pmr::polymorphic_allocator<> alloc;
     };
 
     std::vector<Expr> convertFromList(sexp ctx, sexp list);
