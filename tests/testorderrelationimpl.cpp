@@ -12,7 +12,8 @@ TEST_CASE("Order relation")
 {
     SUBCASE("Excessive ordered operands")
     {
-        std::vector<Expr> symbols;
+        std::pmr::memory_resource* mr = std::pmr::get_default_resource();
+        std::pmr::vector<Expr> symbols{mr};
 
         for (char c1 = 'a'; c1 <= 'z'; ++c1)
             for (char c2 = 'a'; c2 <= 'z'; ++c2) {
@@ -24,8 +25,8 @@ TEST_CASE("Order relation")
         std::vector<ExprView<>> views;
         std::copy(symbols.cbegin(), symbols.cend(), std::back_inserter(views));
 
-        const Expr lhs{CompositeType::sum, views};
-        const Expr rhs{CompositeType::sum, views};
+        const Expr lhs{CompositeType::sum, views, mr};
+        const Expr rhs{CompositeType::sum, views, mr};
 
         CHECK_FALSE(productsOrSums(lhs, rhs));
         CHECK_FALSE(productsOrSums(rhs, lhs));

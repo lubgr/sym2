@@ -64,6 +64,8 @@ bool hasSignFlag(ExprView<> e)
 
 TEST_CASE("Expr constructor")
 {
+    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
+
     SUBCASE("Zero")
     {
         CHECK(isSmallIntEqualTo(0_ex, 0));
@@ -72,45 +74,45 @@ TEST_CASE("Expr constructor")
     SUBCASE("Small int")
     {
         CHECK(isSmallIntEqualTo(42_ex, 42));
-        CHECK(isSmallIntEqualTo(Expr{-42}, -42));
+        CHECK(isSmallIntEqualTo(Expr{-42, mr}, -42));
     }
 
     SUBCASE("Minus one")
     {
-        CHECK(isSmallIntEqualTo(Expr{-1}, -1));
+        CHECK(isSmallIntEqualTo(Expr{-1, mr}, -1));
     }
 
     SUBCASE("Small rational")
     {
-        CHECK(isSmallRationalEqualTo(Expr{2, 3}, 2, 3));
-        CHECK(isSmallRationalEqualTo(Expr{-2, 3}, -2, 3));
+        CHECK(isSmallRationalEqualTo(Expr{2, 3, mr}, 2, 3));
+        CHECK(isSmallRationalEqualTo(Expr{-2, 3, mr}, -2, 3));
     }
 
     SUBCASE("Small rational normalization")
     {
-        CHECK(isSmallRationalEqualTo(Expr{9, 6}, 3, 2));
+        CHECK(isSmallRationalEqualTo(Expr{9, 6, mr}, 3, 2));
     }
 
     SUBCASE("NaN floating point argument throws")
     {
-        CHECK_THROWS(Expr{std::numeric_limits<double>::quiet_NaN()});
-        CHECK_THROWS(Expr{std::numeric_limits<double>::signaling_NaN()});
+        CHECK_THROWS(Expr{std::numeric_limits<double>::quiet_NaN(), mr});
+        CHECK_THROWS(Expr{std::numeric_limits<double>::signaling_NaN(), mr});
     }
 
     SUBCASE("Small rational throws if denom == 0")
     {
-        CHECK_THROWS(Expr{42, 0});
+        CHECK_THROWS(Expr{42, 0, mr});
     }
 
     SUBCASE("Small rational negative denom")
     {
-        CHECK(isSmallRationalEqualTo(Expr{2, -3}, -2, 3));
+        CHECK(isSmallRationalEqualTo(Expr{2, -3, mr}, -2, 3));
     }
 
     SUBCASE("Small rational to small int")
     {
-        CHECK(Expr{10, 5} == 2_ex);
-        CHECK(Expr{10, -5} == Expr{-2});
+        CHECK(Expr{10, 5, mr} == 2_ex);
+        CHECK(Expr{10, -5, mr} == Expr{-2, mr});
     }
 
     SUBCASE("Large int")
@@ -119,12 +121,12 @@ TEST_CASE("Expr constructor")
 
         SUBCASE("> 0")
         {
-            CHECK(hasLargeIntCharacteristics(Expr{LargeIntRef{largeInt}}));
+            CHECK(hasLargeIntCharacteristics(Expr{LargeIntRef{largeInt}, mr}));
         }
 
         SUBCASE("< 0")
         {
-            CHECK(hasLargeIntCharacteristics(Expr{LargeIntRef{-largeInt}}));
+            CHECK(hasLargeIntCharacteristics(Expr{LargeIntRef{-largeInt}, mr}));
         }
     }
 
@@ -132,22 +134,22 @@ TEST_CASE("Expr constructor")
     {
         const LargeInt fits{"12345"};
 
-        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{fits}}, 12345));
-        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{-fits}}, -12345));
+        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{fits}, mr}, 12345));
+        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{-fits}, mr}, -12345));
     }
 
     SUBCASE("Large zero to small zero")
     {
         const LargeInt zero{0};
 
-        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{zero}}, 0));
+        CHECK(isSmallIntEqualTo(Expr{LargeIntRef{zero}, mr}, 0));
     }
 
     SUBCASE("Large to small rational")
     {
         const LargeRational fits{17, 31};
 
-        CHECK(isSmallRationalEqualTo(Expr{LargeRationalRef{fits}}, 17, 31));
+        CHECK(isSmallRationalEqualTo(Expr{LargeRationalRef{fits}, mr}, 17, 31));
     }
 
     SUBCASE("Large rational")
@@ -186,37 +188,37 @@ TEST_CASE("Expr constructor")
     SUBCASE("Sign flags")
     {
         CHECK(hasSignFlag(42_ex));
-        CHECK(hasSignFlag(Expr{-42}));
-        CHECK(hasSignFlag(Expr{2, 3}));
+        CHECK(hasSignFlag(Expr{-42, mr}));
+        CHECK(hasSignFlag(Expr{2, 3, mr}));
         CHECK(hasSignFlag(1.23456_ex));
 
         const LargeInt n1{"2893479827489234263426423649823478238570935809575903675026398235"};
         const LargeInt n2{"283749237498273489274382709084938593857982374982729873"};
         const LargeRational lr{n1, n2};
 
-        CHECK(hasSignFlag(Expr{LargeIntRef{n1}}));
-        CHECK(hasSignFlag(Expr{LargeRationalRef{lr}}));
+        CHECK(hasSignFlag(Expr{LargeIntRef{n1}, mr}));
+        CHECK(hasSignFlag(Expr{LargeRationalRef{lr}, mr}));
 
-        CHECK(hasSignFlag(Expr{"a", SymbolFlag::positive}));
-        CHECK(hasSignFlag(Expr{"a", SymbolFlag::positiveReal}));
+        CHECK(hasSignFlag(Expr{"a", SymbolFlag::positive, mr}));
+        CHECK(hasSignFlag(Expr{"a", SymbolFlag::positiveReal, mr}));
 
-        CHECK(hasSignFlag(Expr{"pi", 3.14}));
-        CHECK(hasSignFlag(Expr{"minpi", -3.14}));
+        CHECK(hasSignFlag(Expr{"pi", 3.14, mr}));
+        CHECK(hasSignFlag(Expr{"minpi", -3.14, mr}));
     }
 
     SUBCASE("Too long symbol name throws")
     {
-        CHECK_THROWS(Expr{"12345678901234"});
+        CHECK_THROWS(Expr{"12345678901234", mr});
     }
 
     SUBCASE("Empty symbol name throws")
     {
-        CHECK_THROWS(Expr{""});
+        CHECK_THROWS(Expr{"", mr});
     }
 
     SUBCASE("Successfull symbol creation")
     {
-        const Expr symbol{"abcdef_{gh}^i"};
+        const Expr symbol{"abcdef_{gh}^i", mr};
         auto e = view(symbol);
 
         CHECK(e.size() == 1);
@@ -285,7 +287,7 @@ TEST_CASE("Expr constructor")
         const auto two = 2_ex;
         const Expr frac{3, 7};
         const std::vector<ExprView<>> args{two, frac};
-        const Expr c{CompositeType::complexNumber, args};
+        const Expr c{CompositeType::complexNumber, args, mr};
         auto e = view(c);
 
         CHECK(e[0].header == Type::complexNumber);
