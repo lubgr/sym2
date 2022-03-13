@@ -46,9 +46,8 @@ namespace sym2 {
         Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2, BinaryDoubleFctPtr eval,
           allocator_type allocator = {});
         explicit Expr(ExprView<> e, allocator_type allocator = {});
-        Expr(
-          CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator = {});
-        Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator = {});
+        Expr(CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator);
+        Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator);
         Expr(
           CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator);
         Expr(ExprLiteral literal, allocator_type allocator);
