@@ -191,7 +191,8 @@ sexp poly_min_degree(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp o
             return sexp_xtype_exception(
               ctx, self, "Min. polynomial degree must be queried w.r.t. a symbol", variable);
 
-        const int result = polyMinDegree(conv.convert(of), conv.convert(variable));
+        const std::int32_t result =
+          polyMinDegreeWithValidityCheck(conv.convert(of), conv.convert(variable));
 
         return sexp_make_fixnum(result);
     });
