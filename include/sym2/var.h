@@ -36,8 +36,8 @@ namespace sym2 {
         Var operator-() const;
 
       public:
-        /* To be used internally only: */
-        static Var internal(const Expr& backend);
+        // To be used internally only:
+        explicit Var(const Expr& backend);
         Expr& get();
         const Expr& get() const;
 

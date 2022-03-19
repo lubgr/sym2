@@ -132,13 +132,9 @@ sym2::Var sym2::Var::operator-() const
     return result;
 }
 
-sym2::Var sym2::Var::internal(const Expr& backend)
+sym2::Var::Var(const Expr& backend)
 {
-    Var result;
-
-    result.initialize(backend);
-
-    return result;
+    initialize(backend);
 }
 
 sym2::Expr& sym2::Var::get()

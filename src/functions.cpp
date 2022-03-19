@@ -13,14 +13,14 @@ sym2::Var sym2::sqrt(const Var& base)
 
 sym2::Var sym2::pow(const Var& base, const Var& exp)
 {
-    return Var::internal(autoPower(base.get(), exp.get()));
+    return Var(autoPower(base.get(), exp.get()));
 }
 
 namespace sym2 {
     namespace {
         Var unary(Expr (*f)(ExprView<>), const Var& arg)
         {
-            return Var::internal(f(arg.get()));
+            return Var(f(arg.get()));
         }
     }
 }
@@ -62,5 +62,5 @@ sym2::Var sym2::atan(const Var& arg)
 
 sym2::Var sym2::atan2(const Var& y, const Var& x)
 {
-    return Var::internal(sym2::atan2(y.get(), x.get()));
+    return Var(sym2::atan2(y.get(), x.get()));
 }
