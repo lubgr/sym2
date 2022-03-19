@@ -56,7 +56,11 @@ if (WITH_SANITIZER)
         OUTPUT_VARIABLE libasanpath
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    set(asanPreload "DYLD_INSERT_LIBRARIES=${libasanpath}")
+    if (APPLE)
+        set(asanPreload "DYLD_INSERT_LIBRARIES=${libasanpath}")
+    elseif (UNIX)
+        set(asanPreload "LD_PRELOAD=${libasanpath}")
+    endif()
 endif()
 
 function(add_scm_test source)
