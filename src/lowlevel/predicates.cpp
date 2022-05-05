@@ -243,14 +243,10 @@ bool sym2::isNegative(ExprView<> e)
 
 bool sym2::isZero(ExprView<> e)
 {
-    static const Expr zero{0};
-
-    return e == zero;
+    return e == 0_ex;
 }
 
 bool sym2::isOne(ExprView<> e)
 {
-    static const Expr one{1};
-
-    return e == one;
+    return e == 1_ex;
 }
