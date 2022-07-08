@@ -256,7 +256,13 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[1].header == Type::functionId);
         CHECK(e[1].pre.name == "sin"sv);
-        CHECK(e[1].main.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin));
+
+        // doctest can't output a function pointer properly and tries to cast to void*, which
+        // doesn't compile. Also note that taking the address of a std:: function is technically not
+        // allowed either, but we don't care for now.
+        const bool evalFctPointerIsStdSin =
+          e[1].main.unaryEval == static_cast<UnaryDoubleFctPtr>(std::sin);
+        CHECK(evalFctPointerIsStdSin);
 
         CHECK(isShortSymbol(e[2], "a"));
     }
@@ -276,7 +282,13 @@ TEST_CASE("Expr constructor")
 
         CHECK(e[1].header == Type::functionId);
         CHECK(e[1].pre.name == "atan2"sv);
-        CHECK(e[1].main.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2));
+
+        // doctest can't output a function pointer properly and tries to cast to void*, which
+        // doesn't compile. Also note that taking the address of a std:: function is technically not
+        // allowed either, but we don't care for now.
+        const bool evalFctPointerIsStdAtan2 =
+          e[1].main.binaryEval == static_cast<BinaryDoubleFctPtr>(std::atan2);
+        CHECK(evalFctPointerIsStdAtan2);
 
         CHECK(isShortSymbol(e[2], "a"));
         CHECK(isShortSymbol(e[3], "b"));

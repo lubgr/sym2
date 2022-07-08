@@ -5,7 +5,7 @@ import os
 class DoctestConan(ConanFile):
     name = "doctest"
     url = "https://github.com/conan-io/conan-center-index"
-    version = "2.4.8"
+    version = "2.4.9"
     homepage = "https://github.com/onqtam/doctest"
     description = "C++11/14/17/20 single header testing framework"
     topics = ("doctest", "header-only", "unit-test", "tdd")
@@ -24,6 +24,7 @@ class DoctestConan(ConanFile):
 
     def package(self):
         cmake = CMake(self)
+        cmake.definitions["CMAKE_CXX_FLAGS"] = "-Wno-error=redundant-decls"
         cmake.configure(source_folder="src")
         cmake.install()
         self.copy(pattern="LICENSE.txt", dst="licenses", src="src")
