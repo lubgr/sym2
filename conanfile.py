@@ -20,7 +20,7 @@ class Sym2Conan(ConanFile):
         self.build_requires("doctest/2.4.8@sym2/stable")
         self.build_requires("cmake-coverage/770145a@sym2/develop")
         self.build_requires("benchmark/1.6.1@sym2/stable")
-        self.build_requires("ginac/1.8.2@sym2/stable")
+        self.build_requires("ginac/1.8.3@sym2/stable")
 
     def source(self):
         git = tools.Git("src")
