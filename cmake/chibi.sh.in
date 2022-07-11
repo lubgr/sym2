@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+libSuffix="@CMAKE_SHARED_LIBRARY_SUFFIX@"
+srcdir="@CMAKE_SOURCE_DIR@"
+builddir="@CMAKE_BINARY_DIR@"
+darwin="@APPLE@"
+
+if [ "${darwin}" = "1" ]; then
+    lddTool="otool -L"
+    preload="DYLD_INSERT_LIBRARIES"
+else
+    lddTool="ldd"
+    preload="LD_PRELOAD"
+fi
+
+chibi="${builddir}/scheme/bin/chibi-scheme"
+libsym2="${builddir}/lib/libsym2${libSuffix}"
+libasan=`${lddTool} "${libsym2}" | grep 'lib.*asan' | awk '{print $1}'`
+
+chibilibs="${builddir}/scheme/lib"
+paths="-I ${chibilibs} -I ${builddir}/lib -I ${srcdir}/src"
+
+export "${preload}=${libasan}"
+export LD_LIBRARY_PATH="${chibilibs}"
+export DYLD_LIBRARY_PATH="${chibilibs}"
+
+${chibi} -i "${builddir}/scheme/share/chibi/chibi.img" ${paths} -m sym2 $@

@@ -22,6 +22,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(cmake/Flags.cmake)
 include(cmake/Sanitizer.cmake)
+include(cmake/RunChibi.cmake)
 
 if(${WITH_COVERAGE})
     include(${CMakeCoverage})
