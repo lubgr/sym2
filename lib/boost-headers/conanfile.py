@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class BoostHeadersConan(ConanFile):
     name = "boost-headers"
-    version = "1.78.0"
+    version = "1.79.0"
     license = "BSL-1.0"
     url = "https://www.boost.org"
     description = "Boost provides free peer-reviewed portable C++ source libraries"
@@ -32,8 +32,7 @@ class BoostHeadersConan(ConanFile):
     # For a more sophisticated study of the dependencies, see Boost's own bcp tool
     # (https://www.boost.org/doc/libs/release/tools/bcp/doc/html/index.html). Note that the list
     # below is slightly depressing, since lots of header code will be pulled (and parsed) that is
-    # only remotely of interest. In particular, Boost range and Boost iterator seem to pull in quite
-    # heavy dependencies like fusion and so on.
+    # only remotely of interest.
     transitive = [
             "array",
             "assert",
