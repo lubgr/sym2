@@ -18,7 +18,7 @@ class Sym2Conan(ConanFile):
         self.build_requires("chibi-scheme/0.10-e587881@sym2/develop")
         self.build_requires("boost-headers/1.79.0@sym2/stable")
         self.build_requires("doctest/2.4.9@sym2/stable")
-        self.build_requires("cmake-coverage/770145a@sym2/develop")
+        self.build_requires("cmake-coverage/03be0c7@sym2/develop")
         self.build_requires("benchmark/1.6.1@sym2/stable")
         self.build_requires("ginac/1.8.3@sym2/stable")
 

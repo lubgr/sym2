@@ -5,7 +5,7 @@ import os
 class CmakeCoverageConan(ConanFile):
     name = "cmake-coverage"
     url = "https://github.com/bilke/cmake-modules"
-    version = "770145a"
+    version = "03be0c7"
     description = "Additional CMake modules"
     license = "BSD-3-Clause"
 
