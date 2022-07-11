@@ -1,8 +1,12 @@
 target create @CMAKE_BINARY_DIR@/scheme/bin/chibi-scheme
+
 settings append target.run-args -i @CMAKE_BINARY_DIR@/scheme/share/chibi/chibi.img
 settings append target.run-args -I @CMAKE_BINARY_DIR@/scheme/lib
 settings append target.run-args -I @CMAKE_BINARY_DIR@/lib
 settings append target.run-args -I @CMAKE_SOURCE_DIR@/src
 settings append target.run-args -m sym2
+
 settings append target.env-vars DYLD_LIBRARY_PATH=@CMAKE_BINARY_DIR@/scheme/lib
 settings append target.env-vars LD_LIBRARY_PATH=@CMAKE_BINARY_DIR@/scheme/lib  
+
+command script import @CMAKE_SOURCE_DIR@/misc/pretty.py

@@ -1,3 +1,2 @@
 
 command script import ./misc/pretty.py
-command script import ./misc/lldbtarget.py
