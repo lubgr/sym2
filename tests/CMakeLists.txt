@@ -73,9 +73,16 @@ function(add_scm_test source)
         -I ${sym2_SOURCE_DIR}/src
         -I ${sym2_BINARY_DIR}/lib
         ${CMAKE_CURRENT_SOURCE_DIR}/${source})
-    set_tests_properties("sym2.${name}" PROPERTIES
-        ENVIRONMENT
-        "LD_LIBRARY_PATH=${sym2_BINARY_DIR}/scheme/lib:$ENV{LD_LIBRARY_PATH};${asanPreload}")
+
+    if (APPLE)
+        set_tests_properties("sym2.${name}" PROPERTIES
+            ENVIRONMENT
+            "DYLD_LIBRARY_PATH=${sym2_BINARY_DIR}/scheme/lib:$ENV{DYLD_LIBRARY_PATH};${asanPreload}")
+    elseif (UNIX)
+        set_tests_properties("sym2.${name}" PROPERTIES
+            ENVIRONMENT
+            "LD_LIBRARY_PATH=${sym2_BINARY_DIR}/scheme/lib:$ENV{LD_LIBRARY_PATH};${asanPreload}")
+    endif()
 endfunction()
 
 add_scm_test(order.scm)

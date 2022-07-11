@@ -31,5 +31,6 @@ paths="-I ${chibilibs} -I ${builddir}/lib -I src"
 shift 1
 
 export LD_LIBRARY_PATH="${chibilibs}"
+export DYLD_LIBRARY_PATH="${chibilibs}"
 
 ${debugger} "${chibi}" "${args}" -i "${builddir}/scheme/share/chibi/chibi.img" ${paths} -m sym2 $@
