@@ -4,8 +4,53 @@
 #include <limits>
 #include <numeric>
 #include <stdexcept>
+#include "exprliteral.h"
 #include "get.h"
 #include "query.h"
+
+std::int32_t sym2::polyDegree(ExprView<> of, ExprView<> wrt)
+{
+    if (of == wrt)
+        return 1;
+    else if (is<number>(of))
+        return 0;
+    else if (is<power>(of)) {
+        const auto [base, exp] = splitAsPower(of);
+
+        if (is < integer && small > (exp)) {
+            const std::int32_t baseDegree = polyDegree(base, wrt);
+            const auto expDegree = get<std::int32_t>(exp);
+
+            // Check overflow using large integers, should only ever happen in completely
+            // pathological cases.
+            assert(get<LargeInt>(exp) * baseDegree <= std::numeric_limits<std::int32_t>::max());
+            assert(get<LargeInt>(exp) * baseDegree >= std::numeric_limits<std::int32_t>::min());
+
+            return baseDegree * expDegree;
+        }
+
+        return 0;
+    }
+
+    const auto recur = [wrt](const ExprView<> operand) { return polyDegree(operand, wrt); };
+
+    if (is<sum>(of)) {
+        const OperandsView ops = OperandsView::operandsOf(of);
+        const auto int32Max = [](std::int32_t lhs, std::int32_t rhs) { return std::max(lhs, rhs); };
+
+        // We prefer transform_reduce over max_element to enforce a single call to polyDegree per
+        // operand. While both algorithms have linear time complexity, max_element invokes the
+        // comparator N-1 times, which results in polyDegree being called N-1 times more often than
+        // with transform_reduce.
+        return std::transform_reduce(
+          ops.begin(), ops.end(), std::numeric_limits<std::int32_t>::min(), int32Max, recur);
+    } else if (is<product>(of)) {
+        const OperandsView ops = OperandsView::operandsOf(of);
+        return std::transform_reduce(ops.begin(), ops.end(), std::int32_t{0}, std::plus<>{}, recur);
+    }
+
+    return 0;
+}
 
 std::int32_t sym2::polyMinDegreeNoValidityCheck(const ExprView<> of, ExprView<symbol> variable)
 {

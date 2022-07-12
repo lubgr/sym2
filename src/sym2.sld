@@ -8,6 +8,7 @@
     auto^
     order-lt
     poly-min-degree
+    poly-degree
     roundtrip
     sign
     split-const-term)
