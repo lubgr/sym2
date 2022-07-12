@@ -20,6 +20,7 @@ option(COLORED_OUTPUT "Force ANSI-colored output (GNU/Clang)." ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(cmake/Compiler.cmake)
 include(cmake/Flags.cmake)
 include(cmake/Sanitizer.cmake)
 include(cmake/RunChibi.cmake)
