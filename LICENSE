@@ -1,7 +1,6 @@
-The files functionview.h and stdbackport.h of this project are a small part of
-llvm/ADT/STLExtras.h and libcxx/include/concepts, respectively, from the LLVM
-project (see https://llvm.org) with minor changes. This file is licensed under
-the "Apache License v2.0 with LLVM exceptions", see below.
+The file functionview.h of this project are a small part of llvm/ADT/STLExtras.h
+from the LLVM project (see https://llvm.org) with minor changes. This file is
+licensed under the "Apache License v2.0 with LLVM exceptions", see below.
 
                              Apache License
                        Version 2.0, January 2004
