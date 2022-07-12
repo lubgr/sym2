@@ -1,9 +1,9 @@
 #pragma once
 
 #include <boost/stl_interfaces/iterator_interface.hpp>
-#include <boost/stl_interfaces/view_interface.hpp>
 #include <cstdint>
 #include <iterator>
+#include <ranges>
 #include <type_traits>
 #include "predicateexpr.h"
 #include "violationhandler.h"
@@ -35,8 +35,7 @@ namespace sym2 {
     }
 
     template <PredicateTag auto tag = any>
-    class ExprView : public boost::stl_interfaces::view_interface<ExprView<tag>,
-                       boost::stl_interfaces::element_layout::contiguous> {
+    class ExprView : public std::ranges::view_interface<ExprView<tag>> {
       public:
         /* Necessary at least for Boost range compatibility: */
         using const_iterator = ConstBlobIterator;
@@ -63,9 +62,6 @@ namespace sym2 {
         {
             assertTagWithStacktrace(*this);
         }
-
-        // TODO only required until libstdc++ implements https://wg21.link/P2325R3
-        ExprView() = default;
 
       private:
         friend class Expr;

@@ -1,13 +1,13 @@
 #pragma once
 
 #include <boost/stl_interfaces/iterator_interface.hpp>
-#include <boost/stl_interfaces/view_interface.hpp>
 #include <cstdint>
+#include <ranges>
 #include "childiterator.h"
 #include "view.h"
 
 namespace sym2 {
-    class OperandsView : public boost::stl_interfaces::view_interface<OperandsView> {
+    class OperandsView : public std::ranges::view_interface<OperandsView> {
       public:
         OperandsView() = default;
 
