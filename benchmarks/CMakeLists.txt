@@ -7,3 +7,12 @@ target_link_libraries(benchmark-mixed-arithmetic
     sym2
     ginac::ginac
     benchmark::benchmark)
+
+add_executable(benchmark-queries
+    queries.cpp)
+
+target_link_libraries(benchmark-queries
+    PRIVATE
+    sym2
+    ginac::ginac
+    benchmark::benchmark)
