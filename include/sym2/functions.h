@@ -29,4 +29,6 @@ namespace sym2 {
     std::string_view name(const Var& arg);
     std::vector<Var> operands(const Var& arg);
     std::vector<Var> collectSymbols(const Var& arg);
+
+    std::int32_t degree(const Var& arg, const Var& wrt);
 }

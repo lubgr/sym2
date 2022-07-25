@@ -1,6 +1,7 @@
 
 #include "autosimpl.h"
 #include "logarithm.h"
+#include "polynomial.h"
 #include "sym2/sym2.h"
 #include "trigonometric.h"
 
@@ -62,5 +63,10 @@ sym2::Var sym2::atan(const Var& arg)
 
 sym2::Var sym2::atan2(const Var& y, const Var& x)
 {
-    return Var(sym2::atan2(y.get(), x.get()));
+    return Var{sym2::atan2(y.get(), x.get())};
+}
+
+std::int32_t sym2::degree(const Var& arg, const Var& wrt)
+{
+    return polyDegree(arg.get(), wrt.get());
 }
