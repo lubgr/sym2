@@ -12,6 +12,15 @@ target_include_directories(sym2common
     INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
+target_include_directories(sym2common
+    SYSTEM
+    INTERFACE
+    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+
+target_include_directories(sym2common
+    INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
 target_compile_features(sym2common
     INTERFACE
     cxx_std_20)
@@ -20,9 +29,9 @@ if (WITH_UNITY_BUILD)
     add_library(sym2
         unity.cpp)
 
-    target_include_directories(sym2
-        PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+    target_link_libraries(sym2
+        PUBLIC
+        sym2common)
 
     add_library(sym2lowlevel INTERFACE)
 else()
@@ -44,15 +53,6 @@ else()
     target_link_libraries(sym2lowlevel
         PRIVATE
         sym2common)
-
-    target_include_directories(sym2lowlevel
-        SYSTEM
-        PUBLIC
-        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
-
-    target_include_directories(sym2lowlevel
-        PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
     add_library(sym2
         autosimpl.cpp
@@ -77,12 +77,6 @@ target_link_libraries(sym2
     sym2common
     PRIVATE
     sym2lowlevel)
-
-target_include_directories(sym2
-    SYSTEM
-    PRIVATE
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
-
 add_library(sym2chibi
     chibibridge.cpp
     chibiconverter.cpp)
@@ -91,11 +85,6 @@ target_link_libraries(sym2chibi
     PRIVATE
     chibi::libchibi-scheme
     sym2)
-
-target_include_directories(sym2chibi
-    SYSTEM
-    PRIVATE
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
 
 set_target_properties(sym2chibi
     PROPERTIES
