@@ -1,29 +1,22 @@
 
-add_library(unit-tests-lowlevel
-    OBJECT
+add_executable(unit-tests-lowlevel
     lowlevel/testassumptions.cpp
     lowlevel/testexpr.cpp
-    lowlevel/testview.cpp)
+    lowlevel/testview.cpp
+    main.cpp)
 
 target_include_directories(unit-tests-lowlevel
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/lowlevel)
 
-target_include_directories(unit-tests-lowlevel
-    PUBLIC
-    ${PROJECT_SOURCE_DIR}/include/sym2
-    ${PROJECT_SOURCE_DIR}/src)
-
-target_include_directories(unit-tests-lowlevel
-    SYSTEM
-    PUBLIC
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
-
 target_link_libraries(unit-tests-lowlevel
-    PUBLIC
+    PRIVATE
     sym2
     doctest::doctest)
+
+add_test(NAME sym2.lowlevel-unittests COMMAND unit-tests-lowlevel)
 
 add_executable(unit-tests
     testchilditerator.cpp
@@ -40,7 +33,8 @@ add_executable(unit-tests
 
 target_link_libraries(unit-tests
     PRIVATE
-    unit-tests-lowlevel)
+    sym2
+    doctest::doctest)
 
 add_test(NAME sym2.unittests COMMAND unit-tests)
 
@@ -69,13 +63,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
     target_include_directories(pretty-printer-tests
         PRIVATE
-        ${PROJECT_SOURCE_DIR}/include/sym2
         ${PROJECT_SOURCE_DIR}/src)
-
-    target_include_directories(pretty-printer-tests
-        SYSTEM
-        PRIVATE
-        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
 
     target_link_libraries(pretty-printer-tests
         PRIVATE
