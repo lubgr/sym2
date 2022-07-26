@@ -1,7 +1,7 @@
 
 #include <sstream>
 #include "doctest/doctest.h"
-#include "sym2.h"
+#include "sym2/sym2.h"
 
 using namespace sym2;
 using namespace sym2::literals;

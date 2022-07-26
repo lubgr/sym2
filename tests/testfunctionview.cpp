@@ -1,7 +1,7 @@
 
 #include <functional>
 #include "doctest/doctest.h"
-#include "functionview.h"
+#include "sym2/functionview.h"
 
 using namespace sym2;
 
