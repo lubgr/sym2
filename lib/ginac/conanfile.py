@@ -50,7 +50,7 @@ class GinacConan(ConanFile):
 
     def build(self):
         cmake = self._configure_cmake()
-        cmake.build()
+        cmake.build(target = "ginac")
 
     def package(self):
         cmake = self._configure_cmake()
