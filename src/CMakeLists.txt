@@ -8,6 +8,10 @@ target_link_libraries(sym2common
     $<$<BOOL:${WITH_SANITIZER}>:sanitizer>
     flags)
 
+target_compile_options(sym2common
+    INTERFACE
+    -fno-semantic-interposition)
+
 target_include_directories(sym2common
     INTERFACE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)

@@ -1,4 +1,8 @@
 
+# The flags set here aren't necessarily all target_compile_options that are used to build the
+# targets. Instead, they are mostly baseline warning settings to be used. More project-specific
+# flags might be set elsewhere.
+
 set(gccFlags -pedantic-errors -Wall -Wextra -pedantic -Wwrite-strings -Wpointer-arith -Wcast-qual
     -Wformat=2 -Wmissing-include-dirs -Wcast-align -Wnon-virtual-dtor -Wctor-dtor-privacy
     -Wdisabled-optimization -Winvalid-pch -Wconversion -Wno-ctor-dtor-privacy -Wno-format-nonliteral
