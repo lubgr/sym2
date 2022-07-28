@@ -73,4 +73,30 @@
   (test 1 (sign '(^ (* -1 (pi 3.14)) 2)))
 )
 
+(test-group "Contains"
+  (test-assert (contains 'a 'a))
+  (test-not (contains 'a 'b))
+  (test-assert (contains 42 42))
+  (test-not (contains 42 43))
+  (test-assert (contains '(pi 3.14) '(pi 3.14)))
+  (test-not (contains '(pi 3.14) '(other 3.14)))
+
+  (test-not (contains 'a 42))
+  (test-not (contains 'a '(pi 3.14)))
+  (test-not (contains 42 'a))
+
+  (for-each
+    (lambda (operand)
+      (test-assert (contains operand '(* a b c d)))
+      (test-assert (contains operand '(+ a b c d))))
+    '(a b c d))
+
+  (test-not (contains '(* a b) '(* b c)))
+  (test-assert (contains '(* a b) '(+ 42 (^ a b) (* a b))))
+  (test-not (contains '(* a b) '(+ 42 (^ a b) (* b c))))
+  (test-assert (contains '(sin (+ a b)) '(^ c (* (sin (+ a b)) (cos (* c d))))))
+
+  (test-assert (contains 'a '(sin a)))
+)
+
 (test-exit)

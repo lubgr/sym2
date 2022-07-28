@@ -6,6 +6,7 @@
     auto+
     auto*
     auto^
+    contains
     order-lt
     poly-min-degree
     poly-degree

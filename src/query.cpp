@@ -1,6 +1,8 @@
 
 #include "query.h"
 #include <cassert>
+#include <functional>
+#include <ranges>
 #include "childiterator.h"
 #include "expr.h"
 #include "exprliteral.h"
@@ -115,4 +117,15 @@ std::pair<sym2::ExprView<>, std::span<const sym2::ExprView<>>> sym2::frontAndRes
 {
     assert(ops.size() >= 1);
     return std::make_pair(ops.front(), ops.subspan(1));
+}
+
+bool sym2::contains(ExprView<> needle, ExprView<> haystack)
+{
+    if (haystack == needle)
+        return true;
+    else if (is<composite>(haystack)) {
+        const OperandsView ops = OperandsView::operandsOf(haystack);
+        return std::ranges::any_of(ops, std::bind_front(&contains, needle));
+    } else
+        return false;
 }

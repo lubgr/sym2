@@ -112,6 +112,19 @@ sexp auto_power(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp base, 
     });
 }
 
+sexp does_contain(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp needle, sexp haystack)
+{
+    assert(n == 2);
+
+    return wrappedTryCatch(ctx, self, [&]() {
+        FromChibiToExpr conv{ctx};
+        const Expr convertedNeedle = conv.convert(needle);
+        const Expr convertedHaystack = conv.convert(haystack);
+
+        return contains(convertedNeedle, convertedHaystack) ? SEXP_TRUE : SEXP_FALSE;
+    });
+}
+
 sexp order_less_than(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp lhs, sexp rhs)
 {
     assert(n == 2);
@@ -218,6 +231,7 @@ sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] se
     sexp_define_foreign(ctx, env, "auto-plus", 1, auto_plus);
     sexp_define_foreign(ctx, env, "auto-times", 1, auto_times);
     sexp_define_foreign(ctx, env, "auto^", 2, auto_power);
+    sexp_define_foreign(ctx, env, "contains", 2, does_contain);
     sexp_define_foreign(ctx, env, "order-lt", 2, order_less_than);
     sexp_define_foreign(ctx, env, "split-const-term", 1, const_and_term);
     sexp_define_foreign(ctx, env, "sign", 1, sign);

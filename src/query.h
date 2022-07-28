@@ -45,4 +45,6 @@ namespace sym2 {
     std::pair<ExprView<>, std::span<const Expr>> frontAndRest(std::span<const Expr> ops);
     std::pair<ExprView<>, std::span<const ExprView<>>> frontAndRest(
       std::span<const ExprView<>> ops);
+
+    bool contains(ExprView<> needle, ExprView<> haystack);
 }
