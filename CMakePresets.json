@@ -1,0 +1,54 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3, "minor": 20, "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++-12"
+      },
+      "warnings": { "dev": true },
+      "errors": { "dev": true }
+    },
+    {
+      "inherits": "base",
+      "name": "default",
+      "displayName": "Development build: sanitizer, ninja, ccache",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "WITH_SANITIZER": "ON"
+      }
+    },
+    {
+      "inherits": "base",
+      "name": "benchmark",
+      "displayName": "Development benchmark build: RelWithDebInfo, ninja, ccache",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
+      "inherits": "base",
+      "name": "release",
+      "displayName": "Release build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "inherits": "base",
+      "name": "coverage",
+      "displayName": "Coverage/debug build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "WITH_COVERAGE": "ON"
+      }
+    }
+  ]
+}
