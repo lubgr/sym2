@@ -8,8 +8,8 @@
     auto^
     contains
     order-lt
-    poly-min-degree
-    poly-degree
+    min-degree
+    degree
     roundtrip
     sign
     split-const-term)

@@ -8,7 +8,7 @@
 #include "get.h"
 #include "query.h"
 
-std::int32_t sym2::polyDegree(ExprView<> of, ExprView<> wrt)
+std::int32_t sym2::degree(ExprView<> of, ExprView<> wrt)
 {
     if (of == wrt)
         return 1;
@@ -18,7 +18,7 @@ std::int32_t sym2::polyDegree(ExprView<> of, ExprView<> wrt)
         const auto [base, exp] = splitAsPower(of);
 
         if (is < integer && small > (exp)) {
-            const std::int32_t baseDegree = polyDegree(base, wrt);
+            const std::int32_t baseDegree = degree(base, wrt);
             const auto expDegree = get<std::int32_t>(exp);
 
             // Check overflow using large integers, should only ever happen in completely
@@ -32,15 +32,15 @@ std::int32_t sym2::polyDegree(ExprView<> of, ExprView<> wrt)
         return 0;
     }
 
-    const auto recur = [wrt](const ExprView<> operand) { return polyDegree(operand, wrt); };
+    const auto recur = [wrt](const ExprView<> operand) { return degree(operand, wrt); };
 
     if (is<sum>(of)) {
         const OperandsView ops = OperandsView::operandsOf(of);
         const auto int32Max = [](std::int32_t lhs, std::int32_t rhs) { return std::max(lhs, rhs); };
 
-        // We prefer transform_reduce over max_element to enforce a single call to polyDegree per
+        // We prefer transform_reduce over max_element to enforce a single call to degree per
         // operand. While both algorithms have linear time complexity, max_element invokes the
-        // comparator N-1 times, which results in polyDegree being called N-1 times more often than
+        // comparator N-1 times, which results in degree being called N-1 times more often than
         // with transform_reduce.
         return std::transform_reduce(
           ops.begin(), ops.end(), std::numeric_limits<std::int32_t>::min(), int32Max, recur);
@@ -52,11 +52,10 @@ std::int32_t sym2::polyDegree(ExprView<> of, ExprView<> wrt)
     return 0;
 }
 
-std::int32_t sym2::polyMinDegreeNoValidityCheck(const ExprView<> of, ExprView<symbol> variable)
+std::int32_t sym2::minDegreeNoValidityCheck(const ExprView<> of, ExprView<symbol> variable)
 {
-    const auto recurse = [variable](const ExprView<> of) {
-        return polyMinDegreeNoValidityCheck(of, variable);
-    };
+    const auto recurse = [variable](
+                           const ExprView<> of) { return minDegreeNoValidityCheck(of, variable); };
 
     if (is<number>(of))
         return 0;
@@ -93,12 +92,12 @@ std::int32_t sym2::polyMinDegreeNoValidityCheck(const ExprView<> of, ExprView<sy
     return 0;
 }
 
-std::int32_t sym2::polyMinDegreeWithValidityCheck(const ExprView<> of, ExprView<symbol> variable)
+std::int32_t sym2::minDegreeWithValidityCheck(const ExprView<> of, ExprView<symbol> variable)
 {
     if (!isValidPolynomial(of))
         throw std::domain_error{"Min. polynomial degree query for invalid polynomail input"};
 
-    return polyMinDegreeNoValidityCheck(of, variable);
+    return minDegreeNoValidityCheck(of, variable);
 }
 
 bool sym2::isValidPolynomial(const ExprView<> p)

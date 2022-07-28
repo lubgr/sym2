@@ -205,7 +205,7 @@ sexp poly_min_degree(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp o
               ctx, self, "Min. polynomial degree must be queried w.r.t. a symbol", variable);
 
         return sexp_make_fixnum(
-          polyMinDegreeWithValidityCheck(conv.convert(of), conv.convert(variable)));
+          minDegreeWithValidityCheck(conv.convert(of), conv.convert(variable)));
     });
 }
 
@@ -216,7 +216,7 @@ sexp poly_degree(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp of, s
     return wrappedTryCatch(ctx, self, [&]() {
         FromChibiToExpr conv{ctx};
 
-        return sexp_make_fixnum(polyDegree(conv.convert(of), conv.convert(variable)));
+        return sexp_make_fixnum(degree(conv.convert(of), conv.convert(variable)));
     });
 }
 
@@ -236,8 +236,8 @@ sexp sexp_init_library(sexp ctx, [[maybe_unused]] sexp self, [[maybe_unused]] se
     sexp_define_foreign(ctx, env, "split-const-term", 1, const_and_term);
     sexp_define_foreign(ctx, env, "sign", 1, sign);
     sexp_define_foreign(ctx, env, "expr->string", 1, to_string);
-    sexp_define_foreign(ctx, env, "poly-min-degree", 2, poly_min_degree);
-    sexp_define_foreign(ctx, env, "poly-degree", 2, poly_degree);
+    sexp_define_foreign(ctx, env, "min-degree", 2, poly_min_degree);
+    sexp_define_foreign(ctx, env, "degree", 2, poly_degree);
 
     return SEXP_VOID;
 }

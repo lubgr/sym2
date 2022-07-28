@@ -68,5 +68,5 @@ sym2::Var sym2::atan2(const Var& y, const Var& x)
 
 std::int32_t sym2::degree(const Var& arg, const Var& wrt)
 {
-    return polyDegree(arg.get(), wrt.get());
+    return degree(arg.get(), wrt.get());
 }
