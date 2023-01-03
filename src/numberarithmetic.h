@@ -1,9 +1,9 @@
 #pragma once
 
 #include <memory_resource>
+#include "largerational.h"
 #include "sym2/expr.h"
 #include "sym2/exprview.h"
-#include "largerational.h"
 #include "sym2/predicates.h"
 
 namespace sym2 {
@@ -11,8 +11,7 @@ namespace sym2 {
 
     class NumberArithmetic {
       public:
-        // The memory resource is currently unused. This might change in the future though, so we
-        // keep the parameter for now.
+        // The memory resource is used to construct return objects from member functions.
         explicit NumberArithmetic(std::pmr::memory_resource* mr);
 
         Expr multiply(ExprView<number> lhs, ExprView<number> rhs);

@@ -6,7 +6,7 @@
 #include "sym2/query.h"
 #include "sym2/smallrational.h"
 
-sym2::NumberArithmetic::NumberArithmetic(std::pmr::memory_resource* mr)
+sym2::NumberArithmetic::NumberArithmetic(std::pmr::memory_resource* const mr)
     : mr{mr}
 {}
 
