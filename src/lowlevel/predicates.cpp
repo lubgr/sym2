@@ -4,9 +4,10 @@
 #include <queue>
 #include "allocator.h"
 #include "blobapi.h"
+#include "operandsview.h"
+#include "sym2/eval.h"
 #include "sym2/expr.h"
 #include "sym2/get.h"
-#include "operandsview.h"
 #include "sym2/query.h"
 
 namespace sym2 {
@@ -125,14 +126,13 @@ bool sym2::isPositive(ExprView<> e) noexcept
 {
     if (isSymbol(e))
         return getDomainFlag(e.get()) == DomainFlag::positive;
-    else if (isNumericallyEvaluable(e))
-        // TODO Here, we would rather need to evaluate to a number, then check if it's complex, if
-        // yes it can't be positive, only if it's real we can say if it's positive. Note that
-        // evaluating to a number will potentially allocate.
-        // FIXME this will currently return true for a complex expression that happens to evaluate
-        // to a positive real part, which doesn't make any sense
-        return get<double>(e) >= 0.0;
-    else if (isSum(e)) {
+    else if (isNumericallyEvaluable(e)) {
+        const std::complex<double> cx = evalComplex(e, [](auto&&...) {
+            assert(false);
+            return 0.0;
+        });
+        return std::abs(std::imag(cx)) < 1e-10 && std::real(cx) > 0.0;
+    } else if (isSum(e)) {
         const NonNumericSign sign = signOfNonNumericallyEvaluable(e);
 
         if (sign == NonNumericSign::positive || sign == NonNumericSign::onlyNumeric)
@@ -159,10 +159,13 @@ bool sym2::isNegative(ExprView<> e) noexcept
 {
     if (isSymbol(e))
         return false;
-    else if (isNumericallyEvaluable(e))
-        // TODO See above, same issue as with isPositive
-        return get<double>(e) < 0.0;
-    else if (isSum(e)) {
+    else if (isNumericallyEvaluable(e)) {
+        const std::complex<double> cx = evalComplex(e, [](auto&&...) {
+            assert(false);
+            return 0.0;
+        });
+        return std::abs(std::imag(cx)) < 1e-10 && std::real(cx) < 0.0;
+    } else if (isSum(e)) {
         const NonNumericSign sign = signOfNonNumericallyEvaluable(e);
         if (sign == NonNumericSign::onlyNumeric)
             return reduceNumericallyEvaluable(e, std::plus<>{}, 0.0) < 0.0;

@@ -20,6 +20,7 @@
   (test-error (split-const-term 3.14)))
 
 (test-group "Sign"
+  (test #f (sign 0))
   (test 1 (sign 42))
   (test 1 (sign 3/7))
   (test -1 (sign -42))
@@ -43,6 +44,10 @@
 
   (test -1 (sign '(* -1 a:+)))
   (test 1 (sign '(+ 1 a:+ b:+)))
+
+  ; Notion of positive/negative numbers only applies to the real domain
+  (test #f (sign 2+3i))
+  (test #f (sign -2-3i))
 
   (test -1 (sign '(* -2/3 (+ a:+ b:+))))
   (test #f (sign '(* -2/3 (+ a:+ b))))
