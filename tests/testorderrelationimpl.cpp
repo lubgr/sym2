@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <array>
 #include <vector>
-#include "autosimpl.h"
+#include "sym2/autosimpl.h"
 #include "doctest/doctest.h"
 #include "orderrelationimpl.h"
 
@@ -22,11 +22,8 @@ TEST_CASE("Order relation")
                 symbols.emplace_back(name);
             }
 
-        std::vector<ExprView<>> views;
-        std::copy(symbols.cbegin(), symbols.cend(), std::back_inserter(views));
-
-        const Expr lhs{CompositeType::sum, views, mr};
-        const Expr rhs{CompositeType::sum, views, mr};
+        const Expr lhs{CompositeType::sum, symbols, mr};
+        const Expr rhs{CompositeType::sum, symbols, mr};
 
         CHECK_FALSE(productsOrSums(lhs, rhs));
         CHECK_FALSE(productsOrSums(rhs, lhs));

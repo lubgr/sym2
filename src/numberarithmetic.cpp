@@ -2,12 +2,12 @@
 #include "numberarithmetic.h"
 #include <array>
 #include <functional>
-#include "get.h"
-#include "query.h"
-#include "smallrational.h"
+#include "sym2/get.h"
+#include "sym2/query.h"
+#include "sym2/smallrational.h"
 
-sym2::NumberArithmetic::NumberArithmetic(std::pmr::memory_resource* buffer)
-    : buffer{buffer}
+sym2::NumberArithmetic::NumberArithmetic(std::pmr::memory_resource* mr)
+    : mr{mr}
 {}
 
 sym2::Expr sym2::NumberArithmetic::multiply(ExprView<number> lhs, ExprView<number> rhs)
@@ -29,7 +29,7 @@ sym2::Expr sym2::NumberArithmetic::multiplyComplex(ExprView<number> lhs, ExprVie
     const Expr real2 = multiply(imag(lhs), imag(rhs));
     const std::array<Expr, 2> operands{{subtract(real1, real2), add(imag1, imag2)}};
 
-    return Expr{CompositeType::complexNumber, operands, buffer};
+    return Expr{CompositeType::complexNumber, operands, mr};
 }
 
 template <class Operation>
@@ -38,7 +38,7 @@ sym2::Expr sym2::NumberArithmetic::reduceViaLargeRational(
 {
     const LargeRational result = op(get<LargeRational>(lhs), get<LargeRational>(rhs));
 
-    return Expr{LargeRationalRef{result}, buffer};
+    return Expr{result, mr};
 }
 
 template <class Operation>
@@ -47,7 +47,7 @@ sym2::Expr sym2::NumberArithmetic::reduceViaFloatingPoint(
 {
     const double result = op(get<double>(lhs), get<double>(rhs));
 
-    return Expr{result, buffer};
+    return Expr{result, mr};
 }
 
 sym2::Expr sym2::NumberArithmetic::add(ExprView<number> lhs, ExprView<number> rhs)
@@ -64,7 +64,7 @@ sym2::Expr sym2::NumberArithmetic::addComplex(ExprView<number> lhs, ExprView<num
 {
     const std::array<Expr, 2> operands{{add(real(lhs), real(rhs)), add(imag(lhs), imag(rhs))}};
 
-    return Expr{CompositeType::complexNumber, operands, buffer};
+    return Expr{CompositeType::complexNumber, operands, mr};
 }
 
 sym2::Expr sym2::NumberArithmetic::subtract(ExprView<number> lhs, ExprView<number> rhs)
@@ -82,5 +82,5 @@ sym2::Expr sym2::NumberArithmetic::subtractComplex(ExprView<number> lhs, ExprVie
     const std::array<Expr, 2> operands{
       {subtract(real(lhs), real(rhs)), subtract(imag(lhs), imag(rhs))}};
 
-    return Expr{CompositeType::complexNumber, operands, buffer};
+    return Expr{CompositeType::complexNumber, operands, mr};
 }

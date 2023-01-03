@@ -1,12 +1,13 @@
 
-#include "predicates.h"
-#include <functional>
-#include "access.h"
-#include "blob.h"
-#include "expr.h"
-#include "get.h"
+#include "sym2/predicates.h"
+#include <cassert>
+#include <queue>
+#include "allocator.h"
+#include "blobapi.h"
+#include "sym2/expr.h"
+#include "sym2/get.h"
 #include "operandsview.h"
-#include "query.h"
+#include "sym2/query.h"
 
 namespace sym2 {
     enum class NonNumericSign { positive, negative, unknown, onlyNumeric };
@@ -69,136 +70,67 @@ namespace sym2 {
 
             return result;
         }
+
+        template <std::size_t staticQueueSize, class Fct>
+        bool bfs(ExprView<> root, Fct callback, const bool expected, const bool earlyReturn)
+        {
+            auto [_, mr] =
+              monotonicStackPmrResource<ByteSize{staticQueueSize * sizeof(ExprView<>)}>();
+            std::queue<ExprView<>, std::pmr::deque<ExprView<>>> lookAt{&mr};
+
+            if (callback(root) != expected)
+                return earlyReturn;
+
+            lookAt.push(root);
+
+            while (!lookAt.empty()) {
+                for (const ExprView<> op : OperandsView::operandsOf(lookAt.front()))
+                    if (callback(op) != expected)
+                        return earlyReturn;
+                    else
+                        lookAt.push(op);
+
+                lookAt.pop();
+            }
+
+            return !earlyReturn;
+        }
+
+        template <std::size_t staticQueueSize, class Fct>
+        bool bfsAllOf(ExprView<> root, Fct callback)
+        {
+            return bfs<staticQueueSize>(root, callback, true, false);
+        }
+
+        template <std::size_t staticQueueSize, class Fct>
+        bool bfsAnyOf(ExprView<> root, Fct callback)
+        {
+            return bfs<staticQueueSize>(root, callback, false, true);
+        }
+
+        template <std::size_t staticQueueSize, class Fct>
+        bool bfsNoneOf(ExprView<> root, Fct callback)
+        {
+            return bfs<staticQueueSize>(root, callback, false, false);
+        }
     }
 }
 
-bool sym2::isRealDomain(ExprView<> e)
+bool sym2::isNumericallyEvaluable(ExprView<> e) noexcept
 {
-    return (flags(e) & Flag::real) != Flag::none;
+    return bfsNoneOf<64>(e, isSymbol);
 }
 
-bool sym2::isComplexDomain(ExprView<> e)
+bool sym2::isPositive(ExprView<> e) noexcept
 {
-    return type(e) == Type::complexNumber;
-}
-
-bool sym2::isNumber(ExprView<> e)
-{
-    switch (type(e)) {
-        case Type::smallInt:
-        case Type::smallRational:
-        case Type::floatingPoint:
-        case Type::largeInt:
-        case Type::largeRational:
-        case Type::complexNumber:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool sym2::isInteger(ExprView<> e)
-{
-    const Type t = type(e);
-
-    return t == Type::smallInt || t == Type::largeInt;
-}
-
-bool sym2::isRational(ExprView<> e)
-{
-    switch (type(e)) {
-        case Type::smallInt:
-        case Type::smallRational:
-        case Type::largeInt:
-        case Type::largeRational:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool sym2::isFloatingPoint(ExprView<> e)
-{
-    return type(e) == Type::floatingPoint;
-}
-
-bool sym2::isSmall(ExprView<> e)
-{
-    switch (type(e)) {
-        case Type::smallInt:
-        case Type::smallRational:
-        case Type::symbol:
-        case Type::floatingPoint:
-        case Type::constant:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool sym2::isLarge(ExprView<> e)
-{
-    return !isSmall(e);
-}
-
-bool sym2::isScalar(ExprView<> e)
-{
-    return !isComposite(e);
-}
-
-bool sym2::isComposite(ExprView<> e)
-{
-    switch (type(e)) {
-        case Type::sum:
-        case Type::product:
-        case Type::power:
-        case Type::function:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool sym2::isSymbol(ExprView<> e)
-{
-    return type(e) == Type::symbol;
-}
-
-bool sym2::isConstant(ExprView<> e)
-{
-    return type(e) == Type::constant;
-}
-
-bool sym2::isSum(ExprView<> e)
-{
-    return type(e) == Type::sum;
-}
-
-bool sym2::isProduct(ExprView<> e)
-{
-    return type(e) == Type::product;
-}
-
-bool sym2::isPower(ExprView<> e)
-{
-    return type(e) == Type::power;
-}
-
-bool sym2::isFunction(ExprView<> e)
-{
-    return type(e) == Type::function;
-}
-
-bool sym2::isNumericallyEvaluable(ExprView<> e)
-{
-    return (flags(e) & Flag::numericallyEvaluable) != Flag::none;
-}
-
-bool sym2::isPositive(ExprView<> e)
-{
-    if ((flags(e) & Flag::positive) != Flag::none)
-        return true;
+    if (isSymbol(e))
+        return getDomainFlag(e.get()) == DomainFlag::positive;
     else if (isNumericallyEvaluable(e))
+        // TODO Here, we would rather need to evaluate to a number, then check if it's complex, if
+        // yes it can't be positive, only if it's real we can say if it's positive. Note that
+        // evaluating to a number will potentially allocate.
+        // FIXME this will currently return true for a complex expression that happens to evaluate
+        // to a positive real part, which doesn't make any sense
         return get<double>(e) >= 0.0;
     else if (isSum(e)) {
         const NonNumericSign sign = signOfNonNumericallyEvaluable(e);
@@ -223,11 +155,12 @@ bool sym2::isPositive(ExprView<> e)
     return false;
 }
 
-bool sym2::isNegative(ExprView<> e)
+bool sym2::isNegative(ExprView<> e) noexcept
 {
-    if ((flags(e) & Flag::negative) != Flag::none)
-        return true;
+    if (isSymbol(e))
+        return false;
     else if (isNumericallyEvaluable(e))
+        // TODO See above, same issue as with isPositive
         return get<double>(e) < 0.0;
     else if (isSum(e)) {
         const NonNumericSign sign = signOfNonNumericallyEvaluable(e);
@@ -241,12 +174,113 @@ bool sym2::isNegative(ExprView<> e)
     return false;
 }
 
-bool sym2::isZero(ExprView<> e)
+bool sym2::isRealDomain(ExprView<> e) noexcept
 {
-    return e == 0_ex;
+    return bfsAllOf<64>(e, [](ExprView<> op) {
+        // TODO handle function domains
+        if (isSymbolHeader(*op.get())) {
+            const DomainFlag domain = getDomainFlag(op.get());
+            return domain == DomainFlag::real || domain == DomainFlag::positive;
+        } else if (isComplexNumberHeader(*op.get()))
+            return false;
+        else if (isNumberHeader(*op.get()))
+            return true;
+        else
+            // We treat everything else, in particular composites, as real since the all-of
+            // semantics will keep invoking this predicate for all leaves. Note that this also
+            // treats constants as real, which might change in the future.
+            return true;
+    });
 }
 
-bool sym2::isOne(ExprView<> e)
+bool sym2::isComplexDomain(ExprView<> e) noexcept
 {
-    return e == 1_ex;
+    return bfsAllOf<64>(e, [](ExprView<> op) {
+        // TODO handle function domains
+        if (isSymbolHeader(*op.get())) {
+            const DomainFlag domain = getDomainFlag(op.get());
+            return domain == DomainFlag::none;
+        } else if (isComplexNumberHeader(*op.get()))
+            return true;
+        else if (isNumberHeader(*op.get()))
+            return false;
+        else if (isConstantHeader(*op.get()))
+            // This might change in the future when we want generalised constants with any number
+            // type.
+            return false;
+        else
+            // We treat everything else, in particular composites, as complex since the all-of
+            // semantics will keep invoking this predicate for all leaves.
+            return true;
+    });
+}
+
+bool sym2::isNumber(ExprView<> e) noexcept
+{
+    return isNumberHeader(*e.get());
+}
+
+bool sym2::isInteger(ExprView<> e) noexcept
+{
+    return isIntegerHeader(*e.get());
+}
+
+bool sym2::isRational(ExprView<> e) noexcept
+{
+    return isRationalHeader(*e.get());
+}
+
+bool sym2::isFloatingPoint(ExprView<> e) noexcept
+{
+    return isFloatingPointHeader(*e.get());
+}
+
+bool sym2::isSmall(ExprView<> e) noexcept
+{
+    return isSmallHeader(*e.get());
+}
+
+bool sym2::isLarge(ExprView<> e) noexcept
+{
+    return isLargeHeader(*e.get());
+}
+
+bool sym2::isScalar(ExprView<> e) noexcept
+{
+    return isScalarHeader(*e.get());
+}
+
+bool sym2::isComposite(ExprView<> e) noexcept
+{
+    return isCompositeHeader(*e.get());
+}
+
+bool sym2::isSymbol(ExprView<> e) noexcept
+{
+    return isSymbolHeader(*e.get());
+}
+
+bool sym2::isConstant(ExprView<> e) noexcept
+{
+    return isConstantHeader(*e.get());
+}
+
+bool sym2::isSum(ExprView<> e) noexcept
+{
+    return isSumHeader(*e.get());
+}
+
+bool sym2::isProduct(ExprView<> e) noexcept
+{
+    return isProductHeader(*e.get());
+}
+
+bool sym2::isPower(ExprView<> e) noexcept
+{
+    return isPowerHeader(*e.get());
+}
+
+bool sym2::isFunction(ExprView<> e) noexcept
+{
+    return isFunctionHeader(*e.get());
 }

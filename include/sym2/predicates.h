@@ -1,30 +1,28 @@
 #pragma once
 
+#include "exprview.h"
 #include "predicateexpr.h"
-#include "view.h"
 
 namespace sym2 {
-    bool isRealDomain(ExprView<> e);
-    bool isComplexDomain(ExprView<> e);
-    bool isNumber(ExprView<> e);
-    bool isInteger(ExprView<> e);
-    bool isRational(ExprView<> e);
-    bool isFloatingPoint(ExprView<> e);
-    bool isSmall(ExprView<> e);
-    bool isLarge(ExprView<> e);
-    bool isScalar(ExprView<> e);
-    bool isComposite(ExprView<> e);
-    bool isSymbol(ExprView<> e);
-    bool isConstant(ExprView<> e);
-    bool isSum(ExprView<> e);
-    bool isProduct(ExprView<> e);
-    bool isPower(ExprView<> e);
-    bool isFunction(ExprView<> e);
-    bool isNumericallyEvaluable(ExprView<> e);
-    bool isPositive(ExprView<> e);
-    bool isNegative(ExprView<> e);
-    bool isZero(ExprView<> e);
-    bool isOne(ExprView<> e);
+    bool isRealDomain(ExprView<> e) noexcept;
+    bool isComplexDomain(ExprView<> e) noexcept;
+    bool isNumber(ExprView<> e) noexcept;
+    bool isInteger(ExprView<> e) noexcept;
+    bool isRational(ExprView<> e) noexcept;
+    bool isFloatingPoint(ExprView<> e) noexcept;
+    bool isSmall(ExprView<> e) noexcept;
+    bool isLarge(ExprView<> e) noexcept;
+    bool isScalar(ExprView<> e) noexcept;
+    bool isComposite(ExprView<> e) noexcept;
+    bool isSymbol(ExprView<> e) noexcept;
+    bool isConstant(ExprView<> e) noexcept;
+    bool isSum(ExprView<> e) noexcept;
+    bool isProduct(ExprView<> e) noexcept;
+    bool isPower(ExprView<> e) noexcept;
+    bool isFunction(ExprView<> e) noexcept;
+    bool isNumericallyEvaluable(ExprView<> e) noexcept;
+    bool isPositive(ExprView<> e) noexcept;
+    bool isNegative(ExprView<> e) noexcept;
 
     constexpr inline auto realDomain = predicate<isRealDomain>();
     constexpr inline auto complexDomain = predicate<isComplexDomain>();
@@ -48,6 +46,4 @@ namespace sym2 {
     // that are numerically evaluable.
     constexpr inline auto positive = predicate<isPositive>();
     constexpr inline auto negative = predicate<isNegative>();
-    constexpr inline auto zero = predicate<isZero>();
-    constexpr inline auto one = predicate<isOne>();
 }

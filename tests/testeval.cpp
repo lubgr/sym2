@@ -5,12 +5,12 @@
 #include <stdexcept>
 #include <string_view>
 #include <unordered_map>
-#include "autosimpl.h"
-#include "constants.h"
+#include "sym2/autosimpl.h"
+#include "sym2/constants.h"
 #include "doctest/doctest.h"
-#include "eval.h"
-#include "exprliteral.h"
-#include "trigonometric.h"
+#include "sym2/eval.h"
+#include "sym2/expr.h"
+#include "testutils.h"
 
 using namespace sym2;
 
@@ -32,6 +32,8 @@ namespace {
 
 TEST_CASE("Numeric evaluation of numerics/constant")
 {
+    auto* mr = std::pmr::get_default_resource();
+
     SUBCASE("Integer")
     {
         CHECK(evalReal(42_ex, lookupThrow) == doctest::Approx(42.0));
@@ -39,12 +41,12 @@ TEST_CASE("Numeric evaluation of numerics/constant")
 
     SUBCASE("Double")
     {
-        CHECK(evalReal(1.23456789_ex, lookupThrow) == doctest::Approx(1.23456789));
+        CHECK(evalReal(Expr{1.23456789, mr}, lookupThrow) == doctest::Approx(1.23456789));
     }
 
     SUBCASE("Small rational")
     {
-        CHECK(evalReal(Expr{2, 3}, lookupThrow) == doctest::Approx(2.0 / 3.0));
+        CHECK(evalReal(Expr{2, 3, mr}, lookupThrow) == doctest::Approx(2.0 / 3.0));
     }
 
     SUBCASE("Constant")
@@ -55,7 +57,7 @@ TEST_CASE("Numeric evaluation of numerics/constant")
     SUBCASE("Complex")
     {
         std::pmr::memory_resource* mr = std::pmr::get_default_resource();
-        const Expr cplx{CompositeType::complexNumber, {2_ex, 3_ex}, mr};
+        const Expr cplx = directComplex(mr, 2_ex, 3_ex);
 
         CHECK(evalComplex(cplx, lookupThrow) == std::complex<double>{2, 3});
         CHECK(evalReal(cplx, lookupThrow) == doctest::Approx(2.0));
@@ -64,12 +66,13 @@ TEST_CASE("Numeric evaluation of numerics/constant")
 
 TEST_CASE("Numeric evaluation of composites without lookup")
 {
-    const Expr sqrtTwo = autoPower(2_ex, Expr{1, 2});
-    const Expr sqrtThree = autoPower(3_ex, Expr{1, 2});
+    auto* mr = std::pmr::get_default_resource();
+    const Expr sqrtTwo = directPower(mr, 2_ex, Expr{1, 2, mr});
+    const Expr sqrtThree = directPower(mr, 3_ex, Expr{1, 2, mr});
 
     SUBCASE("Sqrt(2) + e")
     {
-        const Expr what = autoSum(sqrtTwo, euler);
+        const Expr what = directSum(mr, sqrtTwo, euler);
         const double expected = std::sqrt(2.0) + M_E;
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
@@ -77,7 +80,7 @@ TEST_CASE("Numeric evaluation of composites without lookup")
 
     SUBCASE("2*sqrt(3)")
     {
-        const Expr what = autoProduct(2_ex, sqrtThree);
+        const Expr what = directProduct(mr, 2_ex, sqrtThree);
         const double expected = 2.0 * std::sqrt(3.0);
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
@@ -87,8 +90,8 @@ TEST_CASE("Numeric evaluation of composites without lookup")
     {
         const double expected =
           1.0 + M_PI + std::sqrt(2.0) + std::sqrt(3.0) * std::pow(4.0, 1.0 / 17.0);
-        const Expr p = autoProduct(sqrtThree, autoPower(4_ex, Expr{1, 17}));
-        const Expr what = autoSum(1_ex, pi, sqrtTwo, p);
+        const Expr p = directProduct(mr, sqrtThree, directPower(mr, 4, Expr{1, 17, mr}));
+        const Expr what = directSum(mr, 1, pi, sqrtTwo, p);
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
     }
@@ -96,7 +99,8 @@ TEST_CASE("Numeric evaluation of composites without lookup")
     SUBCASE("-2*sqrt(3)*4^(1/3)*Pi")
     {
         const double expected = -2.0 * std::sqrt(3.0) * std::pow(4.0, 1.0 / 3.0) * M_PI;
-        const Expr what = autoProduct(Expr{-2}, sqrtThree, autoPower(4_ex, Expr{1, 3}), pi);
+        const Expr what =
+          directProduct(mr, Expr{-2, mr}, sqrtThree, directPower(mr, 4_ex, Expr{1, 3, mr}), pi);
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
     }
@@ -104,7 +108,7 @@ TEST_CASE("Numeric evaluation of composites without lookup")
     SUBCASE("atan2(42, 43)")
     {
         const double expected = std::atan2(42.0, 43.0);
-        const Expr what = sym2::atan2(42_ex, 43_ex);
+        const Expr what{"atan2", 42_ex, 43_ex, std::atan2, mr};
 
         CHECK(evalCheckImagZero(what) == doctest::Approx(expected));
     }
@@ -112,6 +116,8 @@ TEST_CASE("Numeric evaluation of composites without lookup")
 
 TEST_CASE("Numeric evaluation with lookup")
 {
+    auto* const mr = std::pmr::get_default_resource();
+
     SUBCASE("Short symbol")
     {
         const auto lookup = [](std::string_view symbol) {
@@ -129,7 +135,7 @@ TEST_CASE("Numeric evaluation with lookup")
             return 42.0;
         };
 
-        CHECK(evalCheckImagZero("abcdefghijkl"_ex, lookup) == doctest::Approx(42.0));
+        CHECK(evalCheckImagZero(Expr{"abcdefghijkl", mr}, lookup) == doctest::Approx(42.0));
     }
 
     SUBCASE("a + 2*b*c^d - sqrt(3)*tan(e)")
@@ -144,8 +150,9 @@ TEST_CASE("Numeric evaluation with lookup")
         const auto fp = [](std::string_view symbol) { return table.at(symbol); };
         const double expected =
           fp("a") + 2.0 * fp("b") * std::pow(fp("c"), fp("d")) - std::sqrt(3.0) * std::tan(fp("e"));
-        const auto what = autoSum("a"_ex, autoProduct(2_ex, "b"_ex, autoPower("c"_ex, "d"_ex)),
-          autoProduct(Expr{-1}, autoPower(3_ex, Expr{1, 2}), tan("e"_ex)));
+        const auto what = directSum(mr, "a", directProduct(mr, 2, "b", directPower(mr, "c", "d")),
+          directProduct(mr, Expr{-1, mr}, directPower(mr, 3, Expr{1, 2, mr}),
+            Expr{"tan", "a"_ex, std::tan, mr}));
 
         CHECK(evalCheckImagZero(what, fp) == doctest::Approx(expected));
     }
@@ -153,11 +160,11 @@ TEST_CASE("Numeric evaluation with lookup")
 
 TEST_CASE("Numeric evaluation to complex")
 {
-    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
+    auto* const mr = std::pmr::get_default_resource();
 
     SUBCASE("Complex number")
     {
-        const Expr cplx{CompositeType::complexNumber, {2_ex, 3_ex}, mr};
+        const Expr cplx = directComplex(mr, 2, 3);
         const std::complex<double> actual = evalComplex(cplx, lookupThrow);
 
         CHECK(actual.real() == doctest::Approx(2.0));
@@ -166,7 +173,7 @@ TEST_CASE("Numeric evaluation to complex")
 
     SUBCASE("Real number")
     {
-        const std::complex<double> actual = evalComplex(1.2345_ex, lookupThrow);
+        const std::complex<double> actual = evalComplex(Expr{1.2345, mr}, lookupThrow);
 
         CHECK(actual.real() == doctest::Approx(1.2345));
         CHECK(actual.imag() == doctest::Approx(0.0));
@@ -175,21 +182,15 @@ TEST_CASE("Numeric evaluation to complex")
 
 TEST_CASE("Numeric power evaluation with complex/real distinction")
 {
+    auto* const mr = std::pmr::get_default_resource();
     const double base = -42.0;
     const double exp = 9.87654;
-    const auto what = autoPower(Expr{base}, Expr{exp});
-    const auto expected = std::pow(std::complex<double>{base}, exp);
+    const Expr what = directPower(mr, base, exp);
+    const std::complex<double> expected = std::pow(std::complex<double>{base}, exp);
 
     SUBCASE("Complex exponentiation")
     {
         CHECK(evalComplex(what, lookupThrow).real() == doctest::Approx(expected.real()));
         CHECK(evalComplex(what, lookupThrow).imag() == doctest::Approx(expected.imag()));
-    }
-
-    SUBCASE("Real exponentiation yields real part")
-    {
-        const auto expectedReal = std::real(expected);
-
-        CHECK(evalReal(what, lookupThrow) == doctest::Approx(expectedReal));
     }
 }

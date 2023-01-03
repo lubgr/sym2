@@ -10,7 +10,7 @@ target_link_libraries(sym2common
 
 target_compile_options(sym2common
     INTERFACE
-    -fno-semantic-interposition)
+    $<$<CXX_COMPILER_ID:GNU>:-fno-semantic-interposition>)
 
 target_include_directories(sym2common
     INTERFACE
@@ -27,7 +27,7 @@ target_include_directories(sym2common
 
 target_compile_features(sym2common
     INTERFACE
-    cxx_std_20)
+    cxx_std_23)
 
 if (WITH_UNITY_BUILD)
     add_library(sym2
@@ -41,15 +41,13 @@ if (WITH_UNITY_BUILD)
 else()
     add_library(sym2lowlevel
         OBJECT
-        lowlevel/access.cpp
         lowlevel/blob.cpp
         lowlevel/childiterator.cpp
         lowlevel/expr.cpp
-        lowlevel/exprliteral.cpp
+        lowlevel/exprview.cpp
         lowlevel/get.cpp
         lowlevel/predicates.cpp
-        lowlevel/query.cpp
-        lowlevel/view.cpp)
+        )
 
     set_property(TARGET sym2lowlevel
         PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
@@ -61,7 +59,6 @@ else()
     add_library(sym2
         autosimpl.cpp
         cohenautosimpl.cpp
-        functions.cpp
         logarithm.cpp
         numberarithmetic.cpp
         operandsview.cpp
@@ -71,8 +68,8 @@ else()
         prettyprinter.cpp
         query.cpp
         trigonometric.cpp
-        var.cpp
-        violationhandler.cpp)
+        violationhandler.cpp
+        )
 
 endif()
 
@@ -81,6 +78,7 @@ target_link_libraries(sym2
     sym2common
     PRIVATE
     sym2lowlevel)
+
 add_library(sym2chibi
     chibibridge.cpp
     chibiconverter.cpp)

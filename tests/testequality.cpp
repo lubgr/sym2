@@ -1,30 +1,34 @@
 
-#include "autosimpl.h"
-#include "constants.h"
+#include <array>
+#include "sym2/constants.h"
 #include "doctest/doctest.h"
-#include "expr.h"
-#include "exprliteral.h"
+#include "sym2/expr.h"
+#include "testutils.h"
 
 using namespace sym2;
 
 TEST_CASE("Equality")
 {
-    const Expr s = autoSum(42_ex, "a"_ex, "b"_ex);
-    const Expr pr = autoProduct(42_ex, "a"_ex, "b"_ex);
-    const Expr pw = autoPower(42_ex, "a"_ex);
+    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
+    const Expr s = directSum(mr, 42_ex, "a"_ex, "b"_ex);
+    const Expr pr = directProduct(mr, 42_ex, "a"_ex, "b"_ex);
+    const Expr pw = directPower(mr, 42_ex, "a"_ex);
 
     SUBCASE("Identity equality")
     {
-        for (ExprView<> e : {Expr{42}, Expr{"a"}, pi, s, pr, pw})
+        const FixedExpr<1> n = 42_ex;
+        const FixedExpr<1> a = "a"_ex;
+
+        for (ExprView<> e : std::array<ExprView<>, 6>{n, a, pi, s, pr, pw})
             CHECK(e == e);
     }
 
     SUBCASE("Scalar Equality by value")
     {
-        CHECK(Expr{"a"} == "a"_ex);
-        CHECK(Expr{42} == 42_ex);
-        CHECK(Expr{0} == 0_ex);
-        CHECK(Expr{1} == 1_ex);
+        CHECK(Expr{"a", mr} == "a"_ex);
+        CHECK(Expr{42, mr} == 42_ex);
+        CHECK(Expr{0, mr} == 0_ex);
+        CHECK(Expr{1, mr} == 1_ex);
     }
 
     SUBCASE("Composite equality")
@@ -38,7 +42,7 @@ TEST_CASE("Equality")
 
     SUBCASE("Scalar inequality")
     {
-        CHECK(Expr{"a"} != "b"_ex);
-        CHECK(Expr{42} != 43_ex);
+        CHECK(Expr{"a", mr} != "b"_ex);
+        CHECK(Expr{42, mr} != 43_ex);
     }
 }

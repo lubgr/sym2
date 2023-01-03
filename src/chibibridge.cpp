@@ -5,12 +5,12 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
-#include "autosimpl.h"
+#include "sym2/autosimpl.h"
 #include "chibiconverter.h"
 #include "orderrelation.h"
-#include "polynomial.h"
+#include "sym2/polynomial.h"
 #include "prettyprinter.h"
-#include "query.h"
+#include "sym2/query.h"
 #include "sym2/printengine.h"
 
 using namespace sym2;

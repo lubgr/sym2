@@ -1,8 +1,8 @@
 
 #include <boost/range/algorithm.hpp>
-#include "autosimpl.h"
+#include "sym2/autosimpl.h"
 #include "doctest/doctest.h"
-#include "exprliteral.h"
+#include "sym2/expr.h"
 #include "operandsview.h"
 #include "testutils.h"
 #include "trigonometric.h"
@@ -11,12 +11,14 @@ using namespace sym2;
 
 TEST_CASE("Semantic traversal")
 {
+    auto* mr = std::pmr::get_default_resource();
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr li{LargeIntRef{largeInt}};
-    const Expr p1 = autoProduct(2_ex, autoSum("a"_ex, "b"_ex));
-    const Expr p2 = autoProduct("c"_ex, "d"_ex, "e"_ex, "f"_ex);
-    const Expr fct = sym2::atan2("a"_ex, "b"_ex);
-    const Expr s = autoSum(li, fct, p1, p2);
+    const Expr li{largeInt, mr};
+    const Expr fp{0.123456789, mr};
+    const Expr p1 = directProduct(mr, 2_ex, directSum(mr, "a"_ex, "b"_ex));
+    const Expr p2 = directProduct(mr, "c"_ex, "d"_ex, "e"_ex, "f"_ex);
+    const Expr fct{"atan2", "a"_ex, "b"_ex, std::atan2, mr};
+    const Expr s = directSum(mr, li, fct, p1, p2);
 
     SUBCASE("OperandsView")
     {
@@ -46,13 +48,31 @@ TEST_CASE("Semantic traversal")
             CHECK(false);
     }
 
+    SUBCASE("OperandsView of scalar leaves")
+    {
+        CHECK(OperandsView::operandsOf(42_ex).empty());
+        CHECK(OperandsView::operandsOf("a"_ex).empty());
+        CHECK(OperandsView::operandsOf(li).empty());
+        CHECK(OperandsView::operandsOf(fp).empty());
+    }
+
+    SUBCASE("OperandsView of function")
+    {
+        const OperandsView ops = OperandsView::operandsOf(fct);
+
+        CHECK(ops.size() == 2);
+        CHECK(*ops.begin() == "a"_ex);
+        CHECK(*std::next(ops.begin()) == "b"_ex);
+    }
+
     SUBCASE("Single, artificial OperandsView")
     {
-        const std::vector<ExprView<>> expected{s};
+        const std::vector<ExprView<>> expected{p2};
         std::vector<ExprView<>> actual;
 
-        boost::copy(OperandsView::singleOperand(s), std::back_inserter(actual));
+        boost::copy(OperandsView::singleOperand(p2), std::back_inserter(actual));
 
+        CHECK(actual.size() == expected.size());
         CHECK_RANGES_EQ(actual, expected);
     }
 

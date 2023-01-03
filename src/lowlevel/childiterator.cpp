@@ -1,58 +1,46 @@
 
 #include "childiterator.h"
-#include "access.h"
-#include "blob.h"
-#include "query.h"
+#include "blobapi.h"
 
-sym2::ChildIterator::ChildIterator(const Blob* op, std::size_t n)
+sym2::ChildIterator::ChildIterator(const Blob* op)
     : op{op}
-    , n{n}
 {}
 
 sym2::ChildIterator sym2::ChildIterator::logicalChildren(ExprView<> e) noexcept
 {
-    assert(e.size() >= 1);
-
-    const std::size_t n = nOperands(e);
-    const Blob* const start = type(e) == Type::function ? &e[2] : &e[1];
-
-    return ChildIterator{start, n};
-}
-
-sym2::ChildIterator sym2::ChildIterator::physicalChildren(ExprView<> e) noexcept
-{
-    const std::size_t n = nPhysicalChildren(e);
-
-    assert(n >= 1);
-
-    const Blob* const start = type(e) == Type::function ? &e[2] : &e[1];
-
-    return ChildIterator{start, n};
+    return ChildIterator{getFirstOperand(e.get())};
 }
 
 sym2::ChildIterator sym2::ChildIterator::ChildIterator::singleChild(ExprView<> e) noexcept
 {
-    return ChildIterator{&e[0], 1};
+    return ChildIterator{e.get()};
+}
+
+sym2::ChildIterator sym2::ChildIterator::ChildIterator::logicalChildrenSentinel(
+  ExprView<> e) noexcept
+{
+    return ChildIterator{getPastTheEndOperand(e.get())};
+}
+
+sym2::ChildIterator sym2::ChildIterator::ChildIterator::singleChildSentinel(ExprView<> e) noexcept
+{
+    return ChildIterator{std::next(e.get())};
 }
 
 sym2::ExprView<> sym2::ChildIterator::operator*() const noexcept
 {
-    return {op, currentSize()};
+    return ExprView<>{op};
 }
 
-sym2::ChildIterator& sym2::ChildIterator::operator++() noexcept
+sym2::ChildIterator::difference_type sym2::ChildIterator::operator-(
+  ChildIterator rhs) const noexcept
 {
-    assert(op != nullptr);
+    return op - rhs.op;
+}
 
-    if (--n == 0)
-        op = nullptr;
-    else
-        op = op + currentSize();
+sym2::ChildIterator sym2::ChildIterator::operator+=(std::size_t n) noexcept
+{
+    op += n;
 
     return *this;
-}
-
-std::size_t sym2::ChildIterator::currentSize() const noexcept
-{
-    return nPhysicalChildren(*op) + 1;
 }

@@ -5,13 +5,12 @@
 #include <boost/logic/tribool.hpp>
 #include <limits>
 #include <tuple>
-#include "eval.h"
-#include "expr.h"
-#include "exprliteral.h"
-#include "get.h"
+#include "sym2/eval.h"
+#include "sym2/expr.h"
+#include "sym2/get.h"
 #include "operandsview.h"
 #include "orderrelation.h"
-#include "query.h"
+#include "sym2/query.h"
 
 bool sym2::orderLessThan(ExprView<> lhs, ExprView<> rhs)
 {
@@ -42,9 +41,10 @@ bool sym2::orderLessThan(ExprView<> lhs, ExprView<> rhs)
         return true;
     else if (is<product>(lhs) && is < power || sum || symbol || function > (rhs))
         return orderLessThan(OperandsView::operandsOf(lhs), OperandsView::singleOperand(rhs));
-    else if (is<power>(lhs) && is < sum || symbol || function > (rhs))
-        return powers(splitAsPower(lhs), {rhs, (1_ex).view()});
-    else if (is<sum>(lhs) && is < symbol || function > (rhs))
+    else if (is<power>(lhs) && is < sum || symbol || function > (rhs)) {
+        static const auto one = 1_ex;
+        return powers(splitAsPower(lhs), {rhs, one});
+    } else if (is<sum>(lhs) && is < symbol || function > (rhs))
         return orderLessThan(OperandsView::operandsOf(lhs), OperandsView::singleOperand(rhs));
     else if (is<function>(lhs) && is<symbol>(rhs))
         return leftFunctionRightSymbol(lhs, rhs);

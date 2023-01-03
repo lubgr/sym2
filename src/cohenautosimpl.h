@@ -3,9 +3,9 @@
 #include <memory_resource>
 #include <span>
 #include <vector>
-#include "expr.h"
+#include "sym2/expr.h"
 #include "operandsview.h"
-#include "predicates.h"
+#include "sym2/predicates.h"
 #include "sym2/functionview.h"
 
 namespace sym2 {
@@ -17,7 +17,7 @@ namespace sym2 {
             FunctionView<Expr(ExprView<number>, ExprView<number>)> numericMultiply;
         };
 
-        CohenAutoSimpl(Dependencies callbacks, std::pmr::memory_resource* buffer);
+        CohenAutoSimpl(Dependencies callbacks, std::pmr::memory_resource* mr);
 
         Expr simplifySum(std::span<const ExprView<>> ops);
         Expr simplifyProduct(std::span<const ExprView<>> ops);
@@ -44,12 +44,12 @@ namespace sym2 {
         std::pmr::vector<Expr> simplMoreThanTwoFactors(std::span<const ExprView<>> ops);
 
         // The exponent must not be zero:
-        Expr computePowerRationalToInt(ExprView<rational> base, std::int32_t exp);
-        Expr computePowerRationalToUnsigned(ExprView<rational> base, std::uint32_t exp);
+        Expr computePowerRationalToInt(ExprView<rational> base, std::int16_t exp);
+        Expr computePowerRationalToUnsigned(ExprView<rational> base, std::uint16_t exp);
         Expr simplPowerRationalToRational(
           ExprView<rational> base, ExprView<rational && !integer> exp);
 
         Dependencies callbacks;
-        std::pmr::memory_resource* buffer;
+        std::pmr::memory_resource* mr;
     };
 }

@@ -1,12 +1,12 @@
 
-#include "polynomial.h"
+#include "sym2/polynomial.h"
 #include <cassert>
 #include <limits>
 #include <numeric>
 #include <stdexcept>
-#include "exprliteral.h"
-#include "get.h"
-#include "query.h"
+#include "sym2/expr.h"
+#include "sym2/get.h"
+#include "sym2/query.h"
 
 std::int32_t sym2::degree(ExprView<> of, ExprView<> wrt)
 {
@@ -19,7 +19,7 @@ std::int32_t sym2::degree(ExprView<> of, ExprView<> wrt)
 
         if (is < integer && small > (exp)) {
             const std::int32_t baseDegree = degree(base, wrt);
-            const auto expDegree = get<std::int32_t>(exp);
+            const auto expDegree = get<std::int16_t>(exp);
 
             // Check overflow using large integers, should only ever happen in completely
             // pathological cases.
@@ -66,7 +66,7 @@ std::int32_t sym2::minDegreeNoValidityCheck(const ExprView<> of, ExprView<symbol
 
         assert(is < integer && small && positive > (exp));
 
-        return get<std::int32_t>(exp) * recurse(base);
+        return get<std::int16_t>(exp) * recurse(base);
     } else if (is<sum>(of)) {
         auto result = std::numeric_limits<std::int32_t>::max();
 
@@ -117,4 +117,22 @@ bool sym2::isValidPolynomial(const ExprView<> p)
     }
 
     return false;
+}
+
+sym2::ExprView<> sym2::coefficient(ExprView<> of, ExprView<> wrt, std::int32_t exponent)
+{
+    static const auto zero = 0_ex;
+    static const auto one = 1_ex;
+
+    if (of == wrt)
+        return exponent == 1 ? one : zero;
+    else if (!contains(of, wrt) && exponent == 0)
+        return of;
+    else
+        return zero;
+}
+
+sym2::ExprView<> sym2::leadingCoefficient(ExprView<> of, ExprView<> wrt)
+{
+    return coefficient(of, wrt, degree(of, wrt));
 }

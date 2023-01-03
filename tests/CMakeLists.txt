@@ -1,24 +1,6 @@
 
-add_executable(unit-tests-lowlevel
-    lowlevel/testassumptions.cpp
-    lowlevel/testexpr.cpp
-    lowlevel/testview.cpp
-    main.cpp)
-
-target_include_directories(unit-tests-lowlevel
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_SOURCE_DIR}/src/lowlevel)
-
-target_link_libraries(unit-tests-lowlevel
-    PRIVATE
-    sym2
-    doctest::doctest)
-
-add_test(NAME sym2.lowlevel-unittests COMMAND unit-tests-lowlevel)
-
 add_executable(unit-tests
+    testexpr.cpp
     testchilditerator.cpp
     testequality.cpp
     testfunctionview.cpp
@@ -28,7 +10,6 @@ add_executable(unit-tests
     testorderrelationimpl.cpp
     testpredicates.cpp
     testquery.cpp
-    testvar.cpp
     main.cpp)
 
 target_link_libraries(unit-tests

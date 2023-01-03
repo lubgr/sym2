@@ -1,8 +1,6 @@
 
-#include "expr.h"
+#include "sym2/expr.h"
 #include <algorithm>
-#include <boost/iterator/function_output_iterator.hpp>
-#include <boost/range/algorithm.hpp>
 #include <cassert>
 #include <cstring>
 #include <exception>
@@ -10,377 +8,191 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
-#include "access.h"
-#include "blob.h"
-#include "predicates.h"
+#include "blobapi.h"
+#include "sym2/predicates.h"
 
-namespace sym2 {
-    struct ChildBlobNumberGuard {
-        /* RAII class to make sure we don't forget to update the number of child blobs at the end of
-         * a ctor body. Shall guard against early returns. Exceptions aren't an issue (then the
-         * object has no lifetime anyhow).
-         * Instances should be declared at the beginning of a ctor, non-statically. */
-        std::pmr::vector<Blob>& buffer;
-        const std::size_t index;
+sym2::Expr::Expr(allocator_type allocator)
+    : Expr{std::int16_t{0}, allocator}
+{}
 
-        ~ChildBlobNumberGuard()
-        {
-            if (std::uncaught_exceptions() != 0)
-                /* Make sure the assert below doesn't fire if stack unwinding is in process anyhow.
-                 */
-                return;
-
-            assert(buffer.size() > 1);
-
-            buffer[index].main.nChildBlobs = buffer.size() - index - 1;
-        }
-    };
-
-    namespace {
-        Type toInternalType(CompositeType composite)
-        {
-            switch (composite) {
-                case CompositeType::sum:
-                    return Type::sum;
-                case CompositeType::product:
-                    return Type::product;
-                case CompositeType::power:
-                    return Type::power;
-                case CompositeType::complexNumber:
-                    return Type::complexNumber;
-                default:
-                    assert(false && "Unhandled composite type");
-                    return Type::sum; // Random choice
-            }
-        }
-    }
-
-    template <class Number>
-    Flag negativePositeFlag(const Number& n)
-    {
-        return n >= Number{0} ? Flag::positive : Flag::negative;
-    }
-}
+sym2::Expr::Expr(std::int16_t n, allocator_type allocator)
+    : buffer{{construct(n)}, allocator}
+{}
 
 sym2::Expr::Expr(std::int32_t n, allocator_type allocator)
-    : buffer{allocator}
+    : Expr{static_cast<std::int16_t>(n), allocator}
 {
-    appendSmallInt(n);
+    if (n > std::numeric_limits<std::int16_t>::max())
+        throw std::domain_error("Small integer expressions must fit into 16 bits");
+}
+
+sym2::Expr::Expr(std::int16_t num, std::int16_t denom, allocator_type allocator)
+    : buffer{{[&]() -> Blob {
+                 if (denom == 0)
+                     throw std::invalid_argument{
+                       "Zero denominator during small rational construction"};
+                 return construct(num, denom);
+             }()},
+      allocator}
+{}
+
+sym2::Expr::Expr(std::int32_t num, std::int32_t denom, allocator_type allocator)
+    : Expr{static_cast<std::int16_t>(num), static_cast<std::int16_t>(denom), allocator}
+{
+    if (num > std::numeric_limits<std::int16_t>::max()
+      || denom > std::numeric_limits<std::int16_t>::max())
+        throw std::domain_error(
+          "Numerator and denominator of small rationals must fit into 16 bits");
 }
 
 sym2::Expr::Expr(double n, allocator_type allocator)
-    : buffer{{floatingPointBlob(n)}, allocator}
+    : buffer{constructSequence(n, allocator)}
 {
     if (!std::isfinite(n))
-        throw std::domain_error("Floating point Expr must be of finite value");
+        throw std::domain_error("Floating point value must be finite");
 }
 
-sym2::Expr::Expr(std::int32_t num, std::int32_t denom, allocator_type allocator)
-    : buffer{allocator}
-{
-    if (denom == 0)
-        throw std::domain_error("Zero denominator of small exact rational");
-
-    if (denom < 0) {
-        denom = -denom;
-        num = -num;
-    }
-
-    appendSmallRationalOrInt(num, denom);
-}
-
-sym2::Expr::Expr(LargeIntRef n, allocator_type allocator)
-    : buffer{allocator}
-{
-    appendSmallOrLargeInt(n.value);
-}
-
-sym2::Expr::Expr(LargeRationalRef n, allocator_type allocator)
-    : buffer{allocator}
-{
-    const auto num = numerator(n.value);
-    const auto denom = denominator(n.value);
-
-    if (fitsInto<std::int32_t>(num) && fitsInto<std::int32_t>(denom)) {
-        appendSmallRationalOrInt(static_cast<std::int32_t>(num), static_cast<std::int32_t>(denom));
-        return;
-    }
-
-    const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
-
-    buffer.push_back(Blob{.header = Type::largeRational,
-      .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(n.value),
-      .pre = preZero,
-      .mid = {.nLogicalOrPhysicalChildren = 2},
-      .main = mainZero /* Number of child blobs to be determined. */});
-
-    appendSmallOrLargeInt(num);
-    appendSmallOrLargeInt(denom);
-}
-
-sym2::Expr::Expr(std::string_view symbol, allocator_type allocator)
-    : buffer{{symbolBlob(symbol)}, allocator}
+sym2::Expr::Expr(const LargeInt& n, allocator_type allocator)
+    : buffer{[=]() -> std::pmr::vector<Blob> {
+                 if (fitsInto<std::int16_t>(n))
+                     return {construct(static_cast<std::int16_t>(n))};
+                 else
+                     return constructSequence(n, allocator);
+             }(),
+      allocator}
 {}
 
-sym2::Expr::Expr(std::string_view symbol, SymbolFlag constraint, allocator_type allocator)
-    : Expr{symbol, allocator}
-{
-    Flag& flags = buffer.front().flags;
+sym2::Expr::Expr(const LargeRational& n, allocator_type allocator)
+    : buffer{[=]() -> std::pmr::vector<Blob> {
+        const auto num = numerator(n);
+        const auto denom = denominator(n);
 
-    switch (constraint) {
-        case SymbolFlag::real:
-            flags |= Flag::real;
-            break;
-        case SymbolFlag::positive:
-            flags |= Flag::positive;
-            break;
-        case SymbolFlag::positiveReal:
-            flags |= Flag::real | Flag::positive;
-            break;
-    }
+        if (fitsInto<std::int16_t>(num) && fitsInto<std::int16_t>(denom))
+            return {{construct(static_cast<std::int16_t>(num), static_cast<std::int16_t>(denom))},
+              allocator};
+
+        return constructSequence(n, allocator);
+    }()}
+{}
+
+sym2::Expr::Expr(std::string_view symbol, allocator_type allocator)
+    : Expr{symbol, DomainFlag::none, allocator}
+{}
+
+sym2::Expr::Expr(std::string_view symbol, DomainFlag domain, allocator_type allocator)
+    : buffer{[=]() -> std::pmr::vector<Blob> {
+        if (isSmallName(symbol))
+            return {{construct(symbol, domain)}, allocator};
+        else
+            return constructSequence(symbol, domain, allocator);
+    }()}
+{
+    if (symbol.size() == 0)
+        throw std::invalid_argument{"Empty symbol names are invalid"};
 }
 
 sym2::Expr::Expr(std::string_view constant, double value, allocator_type allocator)
-    : buffer{{Blob{.header = Type::constant,
-               .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(value),
-               .pre = preZero,
-               .mid = midZero,
-               .main = {.inexact = value}}},
-      allocator}
-{
-    copyNameOrThrow(constant, smallNameLength);
-}
+    : buffer{[=]() -> std::pmr::vector<Blob> {
+        if (constant.empty())
+            throw std::invalid_argument{"Constant name must be non-empty"};
+        if (!std::isfinite(value))
+            throw std::domain_error("Constant floating point value must be finite");
+
+        return constructSequence(constant, value, allocator);
+    }()}
+{}
 
 sym2::Expr::Expr(
   std::string_view function, ExprView<> arg, UnaryDoubleFctPtr eval, allocator_type allocator)
-    : buffer{{Blob{.header = Type::function,
-               // When the argument is numerically evaluable or real, propagate these flags:
-               .flags = (is<numericallyEvaluable>(arg) ? Flag::numericallyEvaluable : Flag::none)
-                 | (is<realDomain>(arg) ? Flag::real : Flag::none),
-               .pre = preZero,
-               .mid = {.nLogicalOrPhysicalChildren = 1},
-               .main = mainZero}},
-      allocator}
-{
-    const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
-
-    buffer.push_back(Blob{.header = Type::functionId,
-      .flags = Flag::none,
-      .pre = preZero,
-      .mid = midZero,
-      .main = {.unaryEval = eval}});
-
-    copyNameOrThrow(function, smallNameLength, 1);
-
-    buffer.reserve(arg.size() + 2);
-
-    std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
-}
+    : buffer{constructSequence(function, arg.get(), eval, allocator)}
+{}
 
 sym2::Expr::Expr(std::string_view function, ExprView<> arg1, ExprView<> arg2,
   BinaryDoubleFctPtr eval, allocator_type allocator)
-    : buffer{{Blob{.header = Type::function,
-               // When both arguments are numerically evaluable or real, propagate these flags:
-               .flags = (areAll<numericallyEvaluable>(arg1, arg2) ? Flag::numericallyEvaluable :
-                                                                    Flag::none)
-                 | (areAll<realDomain>(arg1, arg2) ? Flag::real : Flag::none),
-               .pre = preZero,
-               .mid = {.nLogicalOrPhysicalChildren = 2},
-               .main = mainZero}},
-      allocator}
-{
-    const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
-
-    buffer.push_back(Blob{.header = Type::functionId,
-      .flags = Flag::none,
-      .pre = preZero,
-      .mid = midZero,
-      .main = {.binaryEval = eval}});
-
-    copyNameOrThrow(function, smallNameLength, 1);
-
-    buffer.reserve(arg1.size() + arg2.size() + 2);
-
-    for (ExprView<> arg : {arg1, arg2})
-        std::copy(arg.begin(), arg.end(), std::back_inserter(buffer));
-}
-
-sym2::Expr::Expr(ExprView<> e, allocator_type allocator)
-    : buffer{e.begin(), e.end(), allocator}
+    : buffer{constructSequence(function, arg1.get(), arg2.get(), eval, allocator)}
 {}
 
+sym2::Expr::Expr(ExprView<> e, allocator_type allocator)
+    : buffer{constructDuplicateSequence(e.get(), allocator)}
+{}
+
+namespace sym2 {
+    namespace {
+        template <class T, class BlobRetrieveFct>
+        void constructComposite(CompositeType composite, const std::span<const T> ops,
+          std::pmr::vector<Blob>& buffer, BlobRetrieveFct&& get)
+        {
+            if (composite == CompositeType::complexNumber
+              && (ops.size() != 2
+                || !std::all_of(ops.begin(), ops.end(), is < number && realDomain >)))
+                throw std::invalid_argument(
+                  "Complex numbers must be created with two numeric real-valued arguments");
+            else if (composite == CompositeType::power && ops.size() != 2)
+                throw std::invalid_argument("Powers must be created with exactly two operands");
+
+            const std::uint32_t totalExtent =
+              std::transform_reduce(ops.begin(), ops.end(), std::uint32_t{0}, std::plus<>{},
+                [](const ExprView<> e) { return remoteExtent(e.get()) + 1; });
+            const auto numOperands = static_cast<std::uint16_t>(ops.size());
+
+            if (totalExtent > std::numeric_limits<std::uint16_t>::max())
+                throw std::range_error{"Can't handle composite expression of given size"};
+
+            buffer.reserve(totalExtent + 1);
+            // We only resize to hold all immediate logical operands of the composite expression,
+            // since we use the size() below to know where sub-expression data of the immediate
+            // operands should be copied.
+            buffer.resize(numOperands + 1, Blob{});
+
+            buffer[0] = constructCompositeHeader(composite, numOperands, totalExtent);
+
+            for (std::uint16_t i = 0; i < numOperands; ++i) {
+                const Blob* const src = get(ops[i]);
+
+                appendDuplicateSequence(src, i + 1, buffer);
+            }
+        }
+    }
+}
+
 sym2::Expr::Expr(CompositeType composite, std::span<const Expr> ops, allocator_type allocator)
-    : Expr{composite, ops.size(), allocator}
+    : buffer{allocator}
 {
-    appendOperands(composite, ops);
+    constructComposite(composite, ops, buffer, [](const Expr& op) { return op.buffer.data(); });
 }
 
 sym2::Expr::Expr(CompositeType composite, std::span<const ExprView<>> ops, allocator_type allocator)
-    : Expr{composite, ops.size(), allocator}
+    : buffer{allocator}
 {
-    appendOperands(composite, ops);
+    constructComposite(composite, ops, buffer, [](const ExprView<> op) { return op.get(); });
 }
 
-sym2::Expr::Expr(
-  CompositeType composite, std::initializer_list<ExprView<>> ops, allocator_type allocator)
-    : Expr{composite, ops.size(), allocator}
-{
-    appendOperands(composite, ops);
-}
-
-sym2::Expr::Expr(ExprLiteral literal, allocator_type allocator)
-    : Expr{static_cast<ExprView<>>(literal), allocator}
+sym2::Expr::Expr(CompositeType composite, ExprView<> op1, ExprView<> op2, allocator_type allocator)
+    : Expr{composite, {{op1, op2}}, allocator}
 {}
-
-sym2::Expr::Expr(CompositeType composite, std::size_t nOps, allocator_type allocator)
-    : buffer{{Blob{.header = toInternalType(composite),
-               .flags = Flag::none,
-               .pre = preZero,
-               .mid = {.nLogicalOrPhysicalChildren = static_cast<std::uint32_t>(nOps)},
-               .main = mainZero /* Number of child blobs to be determined. */}},
-      allocator}
-{
-    // This constructor doesn't do anything apart from the initialization above since it's only used
-    // as a delegate constructor from other constructors.
-}
-
-template <class Range>
-void sym2::Expr::appendOperands(CompositeType composite, const Range& ops)
-{
-    assert(ops.size() <= std::numeric_limits<std::uint32_t>::max());
-
-    if (composite == CompositeType::complexNumber
-      && (ops.size() != 2 || !std::all_of(ops.begin(), ops.end(), is < number && realDomain >)))
-        throw std::invalid_argument(
-          "Complex numbers must be created with two numeric real-valued arguments");
-    else if (composite == CompositeType::power && ops.size() != 2)
-        throw std::invalid_argument("Powers must be created with exactly two operands");
-
-    // Likely to be more, but we also don't premature allocation if it might just fit in-place:
-    buffer.reserve(ops.size());
-
-    bool numEval = true;
-    bool allRealDomain = composite != CompositeType::complexNumber;
-
-    {
-        const ChildBlobNumberGuard childBlobNumberUpdater{buffer, 0};
-
-        for (ExprView<> ev : ops) {
-            numEval = numEval && is<numericallyEvaluable>(ev);
-            allRealDomain = allRealDomain && is<realDomain>(ev);
-            buffer.insert(buffer.end(), ev.begin(), ev.end());
-        }
-    }
-
-    if (numEval)
-        buffer.front().flags |= Flag::numericallyEvaluable;
-
-    if (allRealDomain)
-        buffer.front().flags |= Flag::real;
-
-    assert(!(is<positive>(view()) && is<negative>(view())));
-}
-
-void sym2::Expr::appendSmallInt(std::int32_t n)
-{
-    buffer.push_back(smallIntBlob(n));
-}
-
-void sym2::Expr::appendSmallRationalOrInt(std::int32_t num, std::int32_t denom)
-{
-    const auto divisor = std::gcd(num, denom);
-
-    assert(denom > 0);
-
-    num /= divisor;
-    denom /= divisor;
-
-    if (denom == 1)
-        appendSmallInt(num);
-    else
-        buffer.push_back(smallRationalBlob(num, denom));
-}
-
-void sym2::Expr::appendSmallOrLargeInt(const LargeInt& n)
-{
-    if (fitsInto<std::int32_t>(n))
-        appendSmallInt(static_cast<std::int32_t>(n));
-    else
-        appendLargeInt(n);
-}
-
-void sym2::Expr::appendLargeInt(const LargeInt& n)
-{
-    static constexpr auto opSize = sizeof(Blob);
-
-    buffer.push_back(Blob{.header = Type::largeInt,
-      .flags = Flag::numericallyEvaluable | Flag::real | negativePositeFlag(n),
-      .pre = preZero,
-      .mid = {.largeIntSign = n < 0 ? -1 : 1},
-      .main = mainZero /* Number of child blobs to be determined. */});
-
-    /* Save the index instead of a reference to back(), which might be invalidated below. */
-    const std::size_t frontIdx = buffer.size() - 1;
-    const ChildBlobNumberGuard childBlobNumberUpdater{buffer, frontIdx};
-
-    std::size_t byteCount = 0;
-    const auto toCountedAliasedOps = [&byteCount, this](unsigned char byte) mutable {
-        const auto opByteIndex = byteCount % opSize;
-
-        ++byteCount;
-
-        if (opByteIndex == 0) {
-            buffer.push_back({});
-            std::memset(&buffer.back(), 0, opSize);
-        }
-
-        auto* aliased = reinterpret_cast<unsigned char*>(&buffer.back());
-        aliased[opByteIndex] = byte;
-    };
-
-    export_bits(n, boost::make_function_output_iterator(toCountedAliasedOps), 8);
-
-    const auto remainder = byteCount % opSize;
-
-    auto* aliased = reinterpret_cast<unsigned char*>(&buffer[frontIdx + 1]);
-    assert(buffer.size() > frontIdx + 1);
-    const auto length = buffer.size() - frontIdx - 1;
-
-    /* Rotate any trailing zero bytes to the front. When import and exports of large integer bits
-     * happens with the most significant bits first, leading zeros are dropped. This allows for an
-     * easier import, as the whole Blob span can be used as the bit source: */
-    std::rotate(
-      aliased, aliased + length * opSize - (opSize - remainder), aliased + length * opSize);
-}
-
-void sym2::Expr::copyNameOrThrow(
-  std::string_view name, std::uint8_t maxLength, std::size_t bufferIndex)
-{
-    assert(buffer.size() >= bufferIndex + 1);
-
-    auto* dest = std::next(reinterpret_cast<char*>(&buffer[bufferIndex]), 2);
-
-    if (name.length() > maxLength || name.empty())
-        throw std::invalid_argument("Names must be non-empty not exceed a tight length limit");
-
-    std::copy(name.cbegin(), name.cend(), dest);
-}
 
 sym2::Expr::Expr(const Expr& other, allocator_type allocator)
     : buffer{other.buffer, allocator}
 {}
 
-sym2::Expr& sym2::Expr::operator=(const Expr& other) = default;
-
 sym2::Expr::Expr(Expr&& other, allocator_type allocator)
     : buffer{std::move(other.buffer), allocator}
 {}
 
-sym2::Expr& sym2::Expr::operator=(Expr&& other) = default;
-
-sym2::Expr::~Expr() = default;
-
-sym2::ExprView<> sym2::Expr::view() const
+sym2::FixedExpr<2> sym2::operator"" _ex(const long double n)
 {
-    return ExprView<>{buffer.data(), buffer.size()};
+    return FixedExpr<2>{static_cast<double>(n)};
+}
+
+sym2::FixedExpr<1> sym2::operator"" _ex(const char* str, const std::size_t length)
+{
+    return FixedExpr<1>{std::string_view{str, length}};
+}
+
+sym2::FixedExpr<1> sym2::operator"" _ex(const unsigned long long n)
+{
+    if (n > static_cast<unsigned long long>(std::numeric_limits<std::int16_t>::max()))
+        throw std::domain_error("Small integers must fit into 16 bits");
+
+    return FixedExpr<1>{static_cast<std::int16_t>(n)};
 }

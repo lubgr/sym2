@@ -82,12 +82,11 @@
 )
 
 (test-group "Real and positive base power simplifications"
-  (test 'a:r+ (auto^ '(^ a:r+ 3) 1/3))
-  (test 'a:r+ (auto^ '(^ a:r+ 2) 1/2))
-  (test '(+ a:r+ b:r+ c:r+) (auto^ '(^ (+ a:r+ b:r+ c:r+) 8) 1/8))
+  (test 'a:+ (auto^ '(^ a:+ 3) 1/3))
+  (test 'a:+ (auto^ '(^ a:+ 2) 1/2))
+  (test '(+ a:+ b:+ c:+) (auto^ '(^ (+ a:+ b:+ c:+) 8) 1/8))
 
   ; Can only contract when the base of the base is positive _and_ in the real domain:
-  (test '(^ (^ a:r 2) 1/2) (auto^ '(^ a:r 2) 1/2))
-  (test '(^ (^ a:+ 2) 1/2) (auto^ '(^ a:+ 2) 1/2)))
+  (test '(^ (^ a:r 2) 1/2) (auto^ '(^ a:r 2) 1/2)))
 
 (test-exit)

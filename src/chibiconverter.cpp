@@ -11,8 +11,8 @@
 #include <cassert>
 #include <cmath>
 #include <variant>
-#include "get.h"
-#include "query.h"
+#include "sym2/get.h"
+#include "sym2/query.h"
 
 namespace sym2 {
     template <class... Ts>
@@ -143,14 +143,14 @@ sym2::Expr sym2::FromChibiToExpr::numberToExpr(sexp from)
          * integers without loss also qualify as integers. */
         return Expr{sexp_flonum_value(from), alloc};
     else if (sexp_exact_integerp(from))
-        return Expr{LargeIntRef{extractSmallOrLargeInt(from)}, alloc};
+        return Expr{extractSmallOrLargeInt(from), alloc};
     else if (sexp_ratiop(from)) {
         const auto num = preserve(sexp_ratio_numerator(from));
         const auto denom = preserve(sexp_ratio_denominator(from));
         const LargeRational n{
           extractSmallOrLargeInt(num.get()), extractSmallOrLargeInt(denom.get())};
 
-        return Expr{LargeRationalRef{n}, alloc};
+        return Expr{n, alloc};
     } else if (sexp_complexp(from)) {
         const auto realPart = preserve(sexp_complex_real(from));
         const auto imagPart = preserve(sexp_complex_imag(from));
@@ -184,24 +184,22 @@ sym2::Expr sym2::FromChibiToExpr::symbolFromString(sexp str)
     if (colon == std::string_view::npos)
         return Expr{name, alloc};
 
-    const SymbolFlag flag = symbolConstraintsOrThrow(name.substr(colon + 1));
+    const DomainFlag flag = symbolConstraintsOrThrow(name.substr(colon + 1));
     return Expr{name.substr(0, colon), flag, alloc};
 }
 
-sym2::SymbolFlag sym2::FromChibiToExpr::symbolConstraintsOrThrow(std::string_view flags)
+sym2::DomainFlag sym2::FromChibiToExpr::symbolConstraintsOrThrow(std::string_view flags)
 {
     if (flags == "r")
-        return SymbolFlag::real;
-    else if (flags == "+")
-        return SymbolFlag::positive;
-    else if (flags == "+r" || flags == "r+")
-        return SymbolFlag::positiveReal;
+        return DomainFlag::real;
+    else if (flags == "+" || flags == "+r" || flags == "r+")
+        return DomainFlag::positive;
 
     const auto msg = std::string{"Invalid symbol constraints: "}.append(flags);
 
     throwSexp(msg.c_str());
 
-    return SymbolFlag::real;
+    return DomainFlag::real;
 }
 
 std::vector<sym2::PreservedSexp> sym2::FromChibiToExpr::collectItems(sexp list)
@@ -315,10 +313,11 @@ sexp sym2::FromExprToChibi::symbolFrom(ExprView<symbol> symbol)
 
     if (is < positive || realDomain > (symbol))
         name.push_back(':');
-    if (is<realDomain>(symbol))
-        name.push_back('r');
+
     if (is<positive>(symbol))
         name.push_back('+');
+    else if (is<realDomain>(symbol))
+        name.push_back('r');
 
     return chibiSymbolFromString(name).get();
 }
@@ -338,7 +337,7 @@ sym2::PreservedSexp sym2::FromExprToChibi::chibiSymbolFromString(std::string_vie
 sexp sym2::FromExprToChibi::dispatchOver(ExprView<number> from)
 {
     if (is < small && integer > (from))
-        return sexp_make_fixnum(get<std::int32_t>(from));
+        return sexp_make_fixnum(get<std::int16_t>(from));
     else if (is < large && integer > (from)) {
         const auto n = get<LargeInt>(from);
         return serializeLargeInt(n).get();

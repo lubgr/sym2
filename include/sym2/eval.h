@@ -4,9 +4,9 @@
 #include <complex>
 #include <numeric>
 #include "childiterator.h"
+#include "exprview.h"
 #include "get.h"
 #include "query.h"
-#include "view.h"
 
 namespace sym2 {
     template <class LookupFct>
@@ -21,11 +21,13 @@ namespace sym2 {
         if (is < number && complexDomain > (e))
             return {recurReal(real(e)), recurReal(imag(e))};
         else if (is<sum>(e))
-            return std::transform_reduce(ChildIterator::logicalChildren(e), ChildIterator{},
-              std::complex<double>{}, std::plus<>{}, recurComplex);
+            return std::transform_reduce(ChildIterator::logicalChildren(e),
+              ChildIterator::logicalChildrenSentinel(e), std::complex<double>{}, std::plus<>{},
+              recurComplex);
         else if (is<product>(e))
-            return std::transform_reduce(ChildIterator::logicalChildren(e), ChildIterator{},
-              std::complex<double>{1.0, 0.0}, std::multiplies<>{}, recurComplex);
+            return std::transform_reduce(ChildIterator::logicalChildren(e),
+              ChildIterator::logicalChildrenSentinel(e), std::complex<double>{1.0, 0.0},
+              std::multiplies<>{}, recurComplex);
         else if (is<power>(e))
             return std::pow(recurComplex(firstOperand(e)), recurComplex(secondOperand(e)));
         else
@@ -46,15 +48,15 @@ namespace sym2 {
         else if (is < large && integer > (e))
             return static_cast<double>(get<LargeInt>(e));
         else if (is < large && rational > (e))
-            return recur(numerator(e)) / recur(denominator(e));
+            return static_cast<double>(get<LargeRational>(e));
         else if (is < complexDomain && number > (e))
             return recur(real(e));
         else if (is<sum>(e))
-            return std::transform_reduce(
-              ChildIterator::logicalChildren(e), ChildIterator{}, 0.0, std::plus<>{}, recur);
+            return std::transform_reduce(ChildIterator::logicalChildren(e),
+              ChildIterator::logicalChildrenSentinel(e), 0.0, std::plus<>{}, recur);
         else if (is<product>(e))
-            return std::transform_reduce(
-              ChildIterator::logicalChildren(e), ChildIterator{}, 1.0, std::multiplies<>{}, recur);
+            return std::transform_reduce(ChildIterator::logicalChildren(e),
+              ChildIterator::logicalChildrenSentinel(e), 1.0, std::multiplies<>{}, recur);
         else if (is<power>(e))
             return std::pow(recur(firstOperand(e)), recur(secondOperand(e)));
         else if (is<function>(e)) {

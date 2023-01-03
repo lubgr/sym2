@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <string_view>
 #include "doublefctptr.h"
+#include "exprview.h"
 #include "largerational.h"
 #include "smallrational.h"
-#include "view.h"
 
 namespace sym2 {
     template <class T>
@@ -15,7 +15,7 @@ namespace sym2 {
      * evaluated can be retrieved as get<double>, and a small integer can be accessed via
      * get<LargeInt> etc. */
     template <>
-    std::int32_t get<std::int32_t>(ExprView<> e);
+    std::int16_t get<std::int16_t>(ExprView<> e);
     template <>
     SmallRational get<SmallRational>(ExprView<> e);
     template <>

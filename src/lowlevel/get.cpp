@@ -1,25 +1,25 @@
 
-#include "get.h"
+#include "sym2/get.h"
 #include <cassert>
-#include "blob.h"
-#include "childiterator.h"
-#include "eval.h"
-#include "predicates.h"
+#include "blobapi.h"
+#include "sym2/eval.h"
+#include "sym2/predicates.h"
+#include "sym2/query.h"
 
 template <>
-std::int32_t sym2::get<std::int32_t>(ExprView<> e)
+std::int16_t sym2::get<std::int16_t>(ExprView<> e)
 {
     assert((is < small && integer > (e)));
 
-    return e[0].main.exact.num;
+    return getSmallInt(*e.get());
 }
 
 template <>
 sym2::SmallRational sym2::get<sym2::SmallRational>(ExprView<> e)
 {
-    assert((is<small>(e) && is<rational>(e)));
+    assert(is < small && rational > (e));
 
-    return e[0].main.exact;
+    return getSmallRational(*e.get());
 }
 
 template <>
@@ -27,10 +27,13 @@ double sym2::get<double>(ExprView<> e)
 {
     assert((is<numericallyEvaluable>(e)));
 
-    if (is < floatingPoint || constant > (e))
-        return e[0].main.inexact;
-    else if (is < small && (integer || rational) > (e))
-        return static_cast<double>(e[0].main.exact.num) / e[0].main.exact.denom;
+    if (is < floatingPoint || constant > (e)) {
+        return getFloatingPoint(e.get());
+    } else if (is < small && (integer || rational) > (e)) {
+        const SmallRational rational = get<SmallRational>(e);
+
+        return static_cast<double>(rational.num) / rational.denom;
+    }
 
     return evalReal(e, [](auto&&...) {
         assert(false);
@@ -44,18 +47,11 @@ sym2::LargeInt sym2::get<sym2::LargeInt>(ExprView<> e)
     assert((is<integer>(e)));
 
     if (is < small && integer > (e))
-        return LargeInt{get<std::int32_t>(e)};
+        return LargeInt{get<std::int16_t>(e)};
 
     assert((is < large && integer > (e)));
 
-    LargeInt result;
-
-    const auto* first = reinterpret_cast<const unsigned char*>(std::next(e.data()));
-    const auto* last = std::next(first, nPhysicalChildren(e) * sizeof(Blob));
-
-    import_bits(result, first, last);
-
-    return e[0].mid.largeIntSign * result;
+    return getLargeInt(e.get());
 }
 
 template <>
@@ -68,8 +64,12 @@ sym2::LargeRational sym2::get<sym2::LargeRational>(ExprView<> e)
     else if (is < small && rational > (e)) {
         const auto value = get<SmallRational>(e);
         return LargeRational{value.num, value.denom};
-    } else
-        return LargeRational{get<LargeInt>(numerator(e)), get<LargeInt>(denominator(e))};
+    } else {
+        const ExprView<integer> num{getNumeratorFromLargeRational(e.get())};
+        const ExprView<integer> denom{getDenominatorFromLargeRational(e.get())};
+
+        return LargeRational{get<LargeInt>(num), get<LargeInt>(denom)};
+    }
 }
 
 template <>
@@ -77,9 +77,12 @@ std::string_view sym2::get<std::string_view>(ExprView<> e)
 {
     assert((is < symbol || constant || function > (e)));
 
-    const Blob& blobWithName = is < symbol || constant > (e) ? e[0] : e[1];
-
-    return std::string_view{static_cast<const char*>(blobWithName.pre.name)};
+    if (is<symbol>(e))
+        return getSymbolName(e.get());
+    else if (is<constant>(e))
+        return getConstantName(e.get());
+    else
+        return getFunctionName(e.get());
 }
 
 template <>
@@ -87,7 +90,7 @@ sym2::UnaryDoubleFctPtr sym2::get<sym2::UnaryDoubleFctPtr>(ExprView<> e)
 {
     assert((is<function>(e)));
 
-    return e[1].main.unaryEval;
+    return getUnaryDoubleFctPtr(e.get());
 }
 
 template <>
@@ -95,5 +98,5 @@ sym2::BinaryDoubleFctPtr sym2::get<sym2::BinaryDoubleFctPtr>(ExprView<> e)
 {
     assert((is<function>(e)));
 
-    return e[1].main.binaryEval;
+    return getBinaryDoubleFctPtr(e.get());
 }

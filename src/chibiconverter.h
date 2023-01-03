@@ -7,9 +7,9 @@
 #include <stack>
 #include <stdexcept>
 #include <vector>
-#include "expr.h"
+#include "sym2/expr.h"
 #include "operandsview.h"
-#include "predicates.h"
+#include "sym2/predicates.h"
 
 namespace sym2 {
     class PreservedSexp {
@@ -59,7 +59,7 @@ namespace sym2 {
         Expr numberToExpr(sexp from);
         LargeInt extractSmallOrLargeInt(sexp from);
         Expr symbolFromString(sexp str);
-        SymbolFlag symbolConstraintsOrThrow(std::string_view flags);
+        DomainFlag symbolConstraintsOrThrow(std::string_view flags);
         std::vector<PreservedSexp> collectItems(sexp list);
         Expr nonEmptyListToExpr(std::span<const PreservedSexp> from);
         Expr compositeToExpr(CompositeType kind, std::span<const PreservedSexp> operands);

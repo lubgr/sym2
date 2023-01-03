@@ -3,10 +3,10 @@
 #include <deque>
 #include <memory_resource>
 #include <utility>
+#include "sym2/exprview.h"
 #include "operandsview.h"
-#include "predicates.h"
+#include "sym2/predicates.h"
 #include "sym2/printengine.h"
-#include "view.h"
 
 namespace sym2 {
     class Expr;

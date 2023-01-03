@@ -31,7 +31,6 @@
     (tlt 'a1 'a2)
     (tlt 'a1:+ 'a1)
     (tlt 'a1:+ 'a1:r)
-    (tlt 'a1:r+ 'a1:+)
     (tlt 'a1:r+ 'a1:r)
     (tlt 'A 'a)
     (tlt 'a 'e)

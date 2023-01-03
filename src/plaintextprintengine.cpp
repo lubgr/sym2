@@ -7,7 +7,7 @@ sym2::PlaintextPrintEngine::PlaintextPrintEngine(std::ostream& out)
 {}
 
 sym2::PrintEngine& sym2::PlaintextPrintEngine::symbol(
-  std::string_view name, std::optional<SymbolFlag>)
+  std::string_view name, std::optional<DomainFlag>)
 {
     out << name;
 
@@ -28,7 +28,7 @@ sym2::PrintEngine& sym2::PlaintextPrintEngine::floatingPoint(double n)
     return *this;
 }
 
-sym2::PrintEngine& sym2::PlaintextPrintEngine::integer(std::int32_t n)
+sym2::PrintEngine& sym2::PlaintextPrintEngine::integer(std::int16_t n)
 {
     out << n;
 

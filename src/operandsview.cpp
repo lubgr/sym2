@@ -2,20 +2,22 @@
 #include "operandsview.h"
 #include <boost/range/algorithm/equal.hpp>
 #include <cassert>
-#include "query.h"
+#include "sym2/query.h"
 
-sym2::OperandsView::OperandsView(ChildIterator first) noexcept
+sym2::OperandsView::OperandsView(const ChildIterator first, const ChildIterator last) noexcept
     : first{first}
+    , sentinel{last}
 {}
 
-sym2::OperandsView sym2::OperandsView::operandsOf(ExprView<> e) noexcept
+sym2::OperandsView sym2::OperandsView::operandsOf(const ExprView<> e) noexcept
 {
-    return OperandsView{ChildIterator::logicalChildren(e)};
+    return OperandsView{
+      ChildIterator::logicalChildren(e), ChildIterator::logicalChildrenSentinel(e)};
 }
 
-sym2::OperandsView sym2::OperandsView::singleOperand(ExprView<> e) noexcept
+sym2::OperandsView sym2::OperandsView::singleOperand(const ExprView<> e) noexcept
 {
-    return OperandsView{ChildIterator::singleChild(e)};
+    return OperandsView{ChildIterator::singleChild(e), ChildIterator::singleChildSentinel(e)};
 }
 
 sym2::ChildIterator sym2::OperandsView::begin() const noexcept
@@ -30,10 +32,16 @@ sym2::ChildIterator sym2::OperandsView::end() const noexcept
 
 std::size_t sym2::OperandsView::size() const noexcept
 {
-    return first.n;
+    return static_cast<std::size_t>(sentinel - first);
 }
 
-sym2::OperandsView sym2::OperandsView::subview(std::size_t offset, std::size_t count) const noexcept
+bool sym2::OperandsView::empty() const noexcept
+{
+    return first == sentinel;
+}
+
+sym2::OperandsView sym2::OperandsView::subview(
+  const std::size_t offset, const std::size_t count) const noexcept
 {
     constexpr std::size_t npos = -1;
     OperandsView result{};
@@ -47,14 +55,12 @@ sym2::OperandsView sym2::OperandsView::subview(std::size_t offset, std::size_t c
     return result;
 }
 
-bool sym2::OperandsView::operator==(OperandsView rhs) const noexcept
+bool sym2::OperandsView::operator==(const OperandsView rhs) const noexcept
 {
-    // TODO when this class saves the number of physical blobs upon construction, we can turn this
-    // into a memcmp:
     return boost::equal(*this, rhs);
 }
 
-bool sym2::OperandsView::operator!=(OperandsView rhs) const noexcept
+bool sym2::OperandsView::operator!=(const OperandsView rhs) const noexcept
 {
     return !(*this == rhs);
 }

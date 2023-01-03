@@ -2,8 +2,9 @@
 
 #include <array>
 #include <memory_resource>
+#include <span>
 #include "expr.h"
-#include "view.h"
+#include "exprview.h"
 
 namespace sym2 {
     Expr autoSum(ExprView<> lhs, ExprView<> rhs);

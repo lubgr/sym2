@@ -1,14 +1,15 @@
 
-#include "query.h"
+#include "sym2/query.h"
 #include <cassert>
 #include <functional>
 #include <ranges>
 #include "childiterator.h"
-#include "expr.h"
-#include "exprliteral.h"
-#include "get.h"
-#include "predicates.h"
-#include "view.h"
+#include "sym2/expr.h"
+#include "sym2/exprview.h"
+#include "sym2/get.h"
+#include "lowlevel/blobapi.h"
+#include "operandsview.h"
+#include "sym2/predicates.h"
 
 sym2::BaseExp sym2::splitAsPower(ExprView<> e)
 {
@@ -17,7 +18,7 @@ sym2::BaseExp sym2::splitAsPower(ExprView<> e)
     if (is<power>(e))
         return {firstOperand(e), secondOperand(e)};
 
-    return {e, one.view()};
+    return {e, one};
 }
 
 sym2::ConstAndTerm sym2::splitConstTerm(ExprView<!number> e)
@@ -31,92 +32,72 @@ sym2::ConstAndTerm sym2::splitConstTerm(ExprView<!number> e)
         if (is<number>(first))
             return {first, rest};
         else
-            return {one.view(), ops};
+            return {one, ops};
     }
 
     assert(is < symbol || constant || sum || power || function > (e));
 
-    return {one.view(), OperandsView::singleOperand(e)};
+    return {one, OperandsView::singleOperand(e)};
 }
 
-sym2::ExprView<> sym2::nthOperand(ExprView<composite> e, std::uint32_t n)
+sym2::ExprView<> sym2::firstOperand(ExprView<!small> e)
 {
-    auto operand = ChildIterator::logicalChildren(e);
-
-    assert(n > 0);
-
-    return *std::next(operand, n - 1);
+    return nthOperand(e, 0);
 }
 
-sym2::ExprView<> sym2::firstOperand(ExprView<composite> e)
+sym2::ExprView<> sym2::secondOperand(ExprView<!small> e)
 {
     return nthOperand(e, 1);
 }
 
-sym2::ExprView<> sym2::secondOperand(ExprView<composite> e)
+std::size_t sym2::nOperands(ExprView<> e)
 {
-    return nthOperand(e, 2);
+    return nOperands(e.get());
 }
 
-namespace sym2 {
-    namespace {
-        sym2::ExprView<> nthPhysical(ExprView<> e, std::uint32_t n)
-        {
-            auto operand = ChildIterator::physicalChildren(e);
+sym2::ExprView<> sym2::nthOperand(ExprView<!small> e, std::uint16_t n)
+{
+    assert(static_cast<std::size_t>(n + 1) <= nOperands(e));
 
-            assert(n > 0);
-
-            return *std::next(operand, n - 1);
-        }
-    }
+    return *std::next(ChildIterator::logicalChildren(e), n);
 }
 
-sym2::ExprView<sym2::number> sym2::real(ExprView<number> c)
+sym2::ExprView<sym2::number> sym2::real(ExprView<number> n)
 {
-    if (is<complexDomain>(c))
-        return nthPhysical(c, 1);
+    if (is<complexDomain>(n))
+        return ExprView<>{getRealFromCommplexNumber(n.get())};
     else
-        return c;
+        return n;
 }
 
-sym2::ExprView<sym2::number> sym2::imag(ExprView<number> c)
+sym2::ExprView<sym2::number> sym2::imag(ExprView<number> n)
 {
-    static const Expr zero{0};
+    static auto zero = 0_ex;
 
-    if (is<complexDomain>(c))
-        return nthPhysical(c, 2);
+    if (is<complexDomain>(n))
+        return ExprView<>{getImagFromCommplexNumber(n.get())};
     else
         return zero;
-}
-
-sym2::ExprView<sym2::integer> sym2::numerator(ExprView<rational> n)
-{
-    return nthPhysical(n, 1);
-}
-
-sym2::ExprView<sym2::integer> sym2::denominator(ExprView<rational> n)
-{
-    return nthPhysical(n, 2);
 }
 
 std::pair<sym2::ExprView<>, sym2::OperandsView> sym2::frontAndRest(OperandsView ops)
 {
     assert(ops.size() >= 1);
-    return std::make_pair(ops.front(), ops.subview(1));
+    return std::make_pair(*ops.begin(), ops.subview(1));
 }
 
 std::pair<sym2::ExprView<>, std::span<const sym2::Expr>> sym2::frontAndRest(
   std::span<const Expr> ops)
 {
     assert(ops.size() >= 1);
-    return std::make_pair(std::ref(ops.front()), ops.subspan(1));
+    return std::make_pair(std::ref(*ops.begin()), ops.subspan(1));
 }
 
 std::pair<sym2::ExprView<>, std::span<const sym2::ExprView<>>> sym2::frontAndRest(
   std::span<const ExprView<>> ops)
 {
     assert(ops.size() >= 1);
-    return std::make_pair(ops.front(), ops.subspan(1));
+    return std::make_pair(*ops.begin(), ops.subspan(1));
 }
 
 bool sym2::contains(ExprView<> needle, ExprView<> haystack)
@@ -125,7 +106,7 @@ bool sym2::contains(ExprView<> needle, ExprView<> haystack)
         return true;
     else if (is<composite>(haystack)) {
         const OperandsView ops = OperandsView::operandsOf(haystack);
-        return std::ranges::any_of(ops, std::bind_front(&contains, needle));
+        return std::any_of(ops.begin(), ops.end(), std::bind_front(&contains, needle));
     } else
         return false;
 }

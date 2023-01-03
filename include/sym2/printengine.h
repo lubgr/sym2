@@ -4,17 +4,17 @@
 #include <iosfwd>
 #include <optional>
 #include <string_view>
-#include "symbolflag.h"
+#include "domainflag.h"
 
 namespace sym2 {
     class PrintEngine {
       public:
         virtual ~PrintEngine() = default;
 
-        virtual PrintEngine& symbol(std::string_view name, std::optional<SymbolFlag> flag) = 0;
+        virtual PrintEngine& symbol(std::string_view name, std::optional<DomainFlag> flag) = 0;
         virtual PrintEngine& functionName(std::string_view name) = 0;
         virtual PrintEngine& floatingPoint(double n) = 0;
-        virtual PrintEngine& integer(std::int32_t n) = 0;
+        virtual PrintEngine& integer(std::int16_t n) = 0;
         virtual PrintEngine& largeInteger(std::string_view n) = 0;
 
         virtual PrintEngine& plusSign() = 0;
@@ -49,10 +49,10 @@ namespace sym2 {
         explicit PlaintextPrintEngine(std::ostream& out);
 
         // This engine doesn't do anything with the symbol flag argument.
-        PrintEngine& symbol(std::string_view name, std::optional<SymbolFlag>) override;
+        PrintEngine& symbol(std::string_view name, std::optional<DomainFlag>) override;
         PrintEngine& functionName(std::string_view name) override;
         PrintEngine& floatingPoint(double n) override;
-        PrintEngine& integer(std::int32_t n) override;
+        PrintEngine& integer(std::int16_t n) override;
         PrintEngine& largeInteger(std::string_view n) override;
 
         PrintEngine& plusSign() override;

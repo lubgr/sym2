@@ -6,11 +6,12 @@
 void PolyDegree01Sym2(benchmark::State& state)
 {
     const auto n = static_cast<std::int32_t>(state.range(0));
-    const sym2::Var a{"a"};
-    sym2::Var x = 0;
+    const sym2::FixedExpr<1> a{"a"};
+    auto* mr = std::pmr::new_delete_resource();
+    sym2::Expr x{0, mr};
 
     for (std::int32_t i = 1; i < n; ++i)
-        x += sym2::pow(a, i);
+        x = sym2::autoSum(x, sym2::autoPower(a, sym2::FixedExpr<1>{i}));
 
     for (auto _ : state) {
         const std::int32_t result = sym2::degree(x, a);

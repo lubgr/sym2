@@ -1,47 +1,45 @@
 
-#include "autosimpl.h"
+#include "sym2/autosimpl.h"
 #include <array>
 #include <functional>
 #include <memory_resource>
 #include <vector>
 #include "allocator.h"
 #include "cohenautosimpl.h"
-#include "get.h"
+#include "sym2/get.h"
 #include "numberarithmetic.h"
 #include "orderrelation.h"
-#include "predicates.h"
+#include "sym2/predicates.h"
 
 namespace sym2 {
     template <class NumericAddFct, class NumericMultiplyFct>
     struct SimplificationBundle {
-        std::pmr::memory_resource* buffer;
+        std::pmr::memory_resource* mr;
         NumericAddFct numericAdd;
         NumericMultiplyFct numericMultiply;
 
         CohenAutoSimpl::Dependencies callbacks{orderLessThan, numericAdd, numericMultiply};
-        CohenAutoSimpl simplifier{callbacks, buffer};
+        CohenAutoSimpl simplifier{callbacks, mr};
     };
 
-    auto createSimplificationBundle(std::pmr::memory_resource* buffer)
+    auto createSimplificationBundle(std::pmr::memory_resource* mr)
     {
-        NumberArithmetic numerics{buffer};
+        NumberArithmetic numerics{mr};
 
-        return SimplificationBundle{buffer, std::bind_front(&NumberArithmetic::add, numerics),
+        return SimplificationBundle{mr, std::bind_front(&NumberArithmetic::add, numerics),
           std::bind_front(&NumberArithmetic::multiply, numerics)};
     }
 }
 
 sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
 {
-    const std::array<ExprView<>, 2> ops{{lhs, rhs}};
-
-    return autoSum(ops);
+    return autoSum({{lhs, rhs}});
 }
 
 sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
 {
-    auto [_, buffer] = monotonicStackPmrResource<ByteSize{1000}>();
-    auto bundle = createSimplificationBundle(&buffer);
+    auto [_, mr] = monotonicStackPmrResource<ByteSize{1000}>();
+    auto bundle = createSimplificationBundle(&mr);
     const Expr result = bundle.simplifier.simplifySum(ops);
 
     return Expr{result};
@@ -49,15 +47,13 @@ sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
 
 sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
 {
-    const std::array<ExprView<>, 2> ops{{lhs, rhs}};
-
-    return autoProduct(ops);
+    return autoProduct({{lhs, rhs}});
 }
 
 sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
 {
-    auto [_, buffer] = monotonicStackPmrResource<ByteSize{1000}>();
-    auto bundle = createSimplificationBundle(&buffer);
+    auto [_, mr] = monotonicStackPmrResource<ByteSize{1000}>();
+    auto bundle = createSimplificationBundle(&mr);
     const Expr result = bundle.simplifier.simplifyProduct(ops);
 
     return Expr{result};
@@ -65,13 +61,13 @@ sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
 
 sym2::Expr sym2::autoMinus(ExprView<> arg)
 {
-    return autoProduct(ExprLiteral{-1}, arg);
+    return autoProduct(FixedExpr<1>{-1}, arg);
 }
 
 sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
 {
-    auto [_, buffer] = monotonicStackPmrResource<ByteSize{1000}>();
-    auto bundle = createSimplificationBundle(&buffer);
+    auto [_, mr] = monotonicStackPmrResource<ByteSize{1000}>();
+    auto bundle = createSimplificationBundle(&mr);
     const Expr result = bundle.simplifier.simplifyPower(base, exp);
 
     return Expr{result};
@@ -79,11 +75,11 @@ sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
 
 sym2::Expr sym2::autoOneOver(ExprView<> arg)
 {
-    return autoPower(arg, ExprLiteral{-1});
+    return autoPower(arg, FixedExpr<1>{-1});
 }
 
 sym2::Expr sym2::autoComplex(ExprView<> real, ExprView<> imag)
 {
     // TODO
-    return Expr{CompositeType::complexNumber, {real, imag}, {}};
+    return Expr{CompositeType::complexNumber, real, imag, {}};
 }

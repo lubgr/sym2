@@ -91,8 +91,8 @@ namespace sym2 {
     template <auto fct, class... Arg>
     requires std::predicate<decltype(fct), Arg...>
     struct Predicate {
-        /* Leaf type for predicates in expressions. Its main purpose is to allow for extracting the
-         * function NTTP, which wouldn't be as easy with the full-blown PredicateExpr. */
+        // Leaf type for predicates in expressions. Its main purpose is to allow for extracting the
+        // function NTTP, which wouldn't be as easy with the full-blown PredicateExpr.
         constexpr auto operator&&(const PredicateOperand auto& rhs) const
         {
             return construct<PredicateExprType::logicalAnd>(rhs);
@@ -157,7 +157,8 @@ namespace sym2 {
     template <class T>
     concept PredicateTag = PredicateOperand<T> || std::is_same_v<T, AnyFlag>;
 
-    namespace detail {
+    namespace detail
+    {
         template <auto fct, class... Arg, class... Actual>
         auto invokeEval(const Predicate<fct, Arg...>&, Actual&&... arg)
         {

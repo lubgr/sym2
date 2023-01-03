@@ -1,7 +1,7 @@
 #pragma once
 
+#include "exprview.h"
 #include "predicates.h"
-#include "view.h"
 
 namespace sym2 {
     // Functions for multivariate polynomial terms with rational number coefficients, symbolic
@@ -21,4 +21,7 @@ namespace sym2 {
     // Valid polynomials are symbols, rational numbers, or composites of these leaves. In addition,
     // powers must have a small, integral, and positive exponent.
     bool isValidPolynomial(ExprView<> p);
+
+    ExprView<> coefficient(ExprView<> of, ExprView<> wrt, std::int32_t exponent);
+    ExprView<> leadingCoefficient(ExprView<> of, ExprView<> wrt);
 }

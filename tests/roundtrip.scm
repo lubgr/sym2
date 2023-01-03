@@ -58,8 +58,8 @@
 
     (test-roundtrip 'a_x:+)
     (test-roundtrip 'a_x:r)
-    (test-roundtrip 'a_x:r+)
-    (test 'a_x:r+ (roundtrip 'a_x:+r))
+    (test 'a_x:+ (roundtrip 'a_x:r+))
+    (test 'a_x:+ (roundtrip 'a_x:+r))
 
     (test-roundtrip-error 'a:c)
     (test-roundtrip-error 'a:rr)

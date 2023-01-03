@@ -1,18 +1,14 @@
 
 #include "lowlevel/blob.cpp"
 
-#include "lowlevel/access.cpp"
 #include "lowlevel/childiterator.cpp"
 #include "lowlevel/expr.cpp"
-#include "lowlevel/exprliteral.cpp"
+#include "lowlevel/exprview.cpp"
 #include "lowlevel/get.cpp"
 #include "lowlevel/predicates.cpp"
-#include "lowlevel/query.cpp"
-#include "lowlevel/view.cpp"
 
 #include "autosimpl.cpp"
 #include "cohenautosimpl.cpp"
-#include "functions.cpp"
 #include "logarithm.cpp"
 #include "numberarithmetic.cpp"
 #include "operandsview.cpp"
@@ -22,5 +18,4 @@
 #include "prettyprinter.cpp"
 #include "query.cpp"
 #include "trigonometric.cpp"
-#include "var.cpp"
 #include "violationhandler.cpp"

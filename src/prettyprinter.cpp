@@ -3,10 +3,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
-#include "autosimpl.h"
-#include "expr.h"
-#include "get.h"
-#include "query.h"
+#include "sym2/autosimpl.h"
+#include "sym2/expr.h"
+#include "sym2/get.h"
+#include "sym2/query.h"
 
 #include <iostream>
 
@@ -63,14 +63,12 @@ void sym2::PrettyPrinter::print(ExprView<> e)
 void sym2::PrettyPrinter::printSymbolOrConstant(ExprView<symbol || constant> e)
 {
     const auto name = get<std::string_view>(e);
-    std::optional<SymbolFlag> flag = std::nullopt;
+    std::optional<DomainFlag> flag = std::nullopt;
 
     if (is < positive && realDomain > (e))
-        flag = SymbolFlag::positiveReal;
-    else if (is<positive>(e))
-        flag = SymbolFlag::positive;
+        flag = DomainFlag::positive;
     else if (is<realDomain>(e))
-        flag = SymbolFlag::real;
+        flag = DomainFlag::real;
 
     engine.symbol(name, flag);
 }
@@ -86,7 +84,7 @@ void sym2::PrettyPrinter::printNumber(ExprView<number> e)
     if (is<floatingPoint>(e))
         engine.floatingPoint(get<double>(e));
     else if (is < integer && small > (e))
-        engine.integer(get<std::int32_t>(e));
+        engine.integer(get<std::int16_t>(e));
     else if (is < integer && large > (e))
         engine.largeInteger(toString(get<LargeInt>(e)));
     else if (is < rational && small > (e)) {
@@ -102,10 +100,10 @@ void sym2::PrettyPrinter::printNumber(ExprView<number> e)
         const auto lr = get<LargeRational>(e);
         const bool denominatorIsScalar = true;
         engine.openNumerator();
-        print(numerator(e));
+        engine.largeInteger(toString(numerator(lr)));
         engine.closeNumerator();
         engine.openDenominator(denominatorIsScalar);
-        print(denominator(e));
+        engine.largeInteger(toString(denominator(lr)));
         engine.closeDenominator(denominatorIsScalar);
     } else if (is<complexDomain>(e)) {
         printNumber(real(e));
@@ -129,7 +127,7 @@ void sym2::PrettyPrinter::printNumber(ExprView<number> e)
 
 void sym2::PrettyPrinter::printPower(ExprView<> base, ExprView<!power> exp)
 {
-    if (exp == ExprLiteral{1, 2}) {
+    if (exp == FixedExpr<1>{1, 2}) {
         engine.openSquareRoot();
         print(base);
         engine.closeSquareRoot();
@@ -277,8 +275,8 @@ std::pair<std::pmr::deque<sym2::Expr>, std::pmr::deque<sym2::Expr>>
         denom.emplace_front(sr.denom);
     } else if (is < large && rational > (num.front())) {
         const auto lr = get<LargeRational>(num.front());
-        num.front() = Expr{LargeIntRef{numerator(lr)}, resource};
-        denom.emplace_front(LargeIntRef{denominator(lr)});
+        num.front() = Expr{numerator(lr), resource};
+        denom.emplace_front(denominator(lr));
     }
 
     return frac;
@@ -294,7 +292,7 @@ void sym2::PrettyPrinter::printProductWithoutFractions(View&& factors)
 
     if (current == last) {
         print(*first);
-    } else if (*first == ExprLiteral{-1})
+    } else if (*first == FixedExpr<1>{-1})
         engine.unaryMinusSign();
     else if (*first == 1_ex)
         ;
@@ -325,7 +323,7 @@ void sym2::PrettyPrinter::printFunction(ExprView<function> e)
     const OperandsView operands = OperandsView::operandsOf(e);
 
     engine.functionName(get<std::string_view>(e)).openParentheses();
-    print(operands.front());
+    print(*operands.begin());
 
     if (operands.size() == 2) {
         engine.comma();

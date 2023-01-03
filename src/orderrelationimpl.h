@@ -1,9 +1,9 @@
 #pragma once
 
 #include <boost/logic/tribool_fwd.hpp>
+#include "sym2/exprview.h"
 #include "operandsview.h"
-#include "predicates.h"
-#include "view.h"
+#include "sym2/predicates.h"
 
 namespace sym2 {
     struct BaseExp;
