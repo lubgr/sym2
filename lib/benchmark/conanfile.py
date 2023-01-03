@@ -8,7 +8,7 @@ class BenchmarkConan(ConanFile):
     description = "A microbenchmark support library."
     topics = ("conan", "benchmark", "google", "microbenchmark")
     url = "https://github.com/google/benchmark"
-    version = "1.6.1"
+    version = "1.7.1"
     license = "Apache-2.0"
     generators = "cmake"
     settings = "arch", "build_type", "compiler", "os"

@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class BoostHeadersConan(ConanFile):
     name = "boost-headers"
-    version = "1.79.0"
+    version = "1.81.0"
     license = "BSL-1.0"
     url = "https://www.boost.org"
     description = "Boost provides free peer-reviewed portable C++ source libraries"
@@ -40,6 +40,7 @@ class BoostHeadersConan(ConanFile):
             "concept",
             "concept_check",
             "core",
+            "cstdfloat",
             "current_function",
             "cstdint",
             "detail",
