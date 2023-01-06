@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/callable_traits/args.hpp>
 #include <boost/hana/basic_tuple.hpp>
 #include <boost/hana/concat.hpp>
 #include <boost/hana/size.hpp>
@@ -18,7 +17,7 @@ namespace sym2 {
 
     template <PredicateExprType Kind, class... T>
     struct PredicateExpr {
-        /* Must be a structural type, so std::tuple doesn't work: */
+        // Must be a structural type, so std::tuple doesn't work:
         const boost::hana::basic_tuple<T...> operands;
 
         template <auto fct, class... Arg>
@@ -123,35 +122,28 @@ namespace sym2 {
     {}
 
     namespace detail {
-        template <auto fct, class Tuple>
+        template <auto fct>
         struct DeducePredicateType;
 
-        template <auto fct, template <class...> class Tuple, class... Arg>
-        struct DeducePredicateType<fct, Tuple<Arg...>> {
+        template <class... Arg, bool(fct)(Arg...)>
+        struct DeducePredicateType<fct> {
             using Type = Predicate<fct, Arg...>;
         };
     }
 
-    template <auto fct, class... ExplicitArgs>
+    template <auto fct>
     constexpr auto predicate()
     {
-        if constexpr (sizeof...(ExplicitArgs) == 0) {
-            using PredicateType = typename detail::DeducePredicateType<fct,
-              boost::callable_traits::args_t<decltype(fct)>>::Type;
-
-            return PredicateType{};
-        } else {
-            return Predicate<fct, ExplicitArgs...>{};
-        }
+        return typename detail::DeducePredicateType<fct>::Type{};
     }
 
-    /* We will need this for templates with default non-type template parameters. The default value
-     * is likely to be completely unconstrained w.r.t. what the default predicate implies. While it
-     * was more natural to have a any-Predicate instances as the default, this cannot work because
-     * this any-Predicate can't be declared without the type in question being at least
-     * forward-declared. Hence, we need another, unrelated type/flag that acts as a replacement for
-     * the any-predicate. The machinery for determining explicitness of constructors doesn't account
-     * for this type, so we have to filter it out beforehand. */
+    // We will need this for templates with default non-type template parameters. The default value
+    // is likely to be completely unconstrained w.r.t. what the default predicate implies. While it
+    // was more natural to have an any-Predicate instances as the default, this cannot work because
+    // this any-Predicate can't be declared without the type in question being at least
+    // forward-declared. Hence, we need another, unrelated type/flag that acts as a replacement for
+    // the any-predicate. The machinery for determining explicitness of constructors doesn't account
+    // for this type, so we have to filter it out beforehand.
     constexpr inline enum class AnyFlag { any } any{AnyFlag::any};
 
     template <class T>
@@ -210,7 +202,7 @@ namespace sym2 {
 
         template <PredicateOperand auto what>
         struct IsOneOfInvoker {
-            /* Only works for predicate expressions with one single argument. */
+            // Only works for predicate expressions with one single argument
             template <class... Arg>
             bool operator()(Arg&&... arg) const
             {
