@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "exprview.h"
 #include "predicates.h"
 
