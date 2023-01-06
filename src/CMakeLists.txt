@@ -32,52 +32,34 @@ target_compile_features(sym2common
 if (WITH_UNITY_BUILD)
     add_library(sym2
         unity.cpp)
-
-    target_link_libraries(sym2
-        PUBLIC
-        sym2common)
-
-    add_library(sym2lowlevel INTERFACE)
 else()
-    add_library(sym2lowlevel
-        OBJECT
-        lowlevel/blob.cpp
-        lowlevel/childiterator.cpp
-        lowlevel/expr.cpp
-        lowlevel/exprview.cpp
-        lowlevel/get.cpp
-        lowlevel/predicates.cpp
-        )
-
-    set_property(TARGET sym2lowlevel
-        PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
-
-    target_link_libraries(sym2lowlevel
-        PRIVATE
-        sym2common)
-
     add_library(sym2
         autosimpl.cpp
+        blob.cpp
+        childiterator.cpp
         cohenautosimpl.cpp
+        expr.cpp
+        exprview.cpp
+        get.cpp
         logarithm.cpp
         numberarithmetic.cpp
         operandsview.cpp
         orderrelationimpl.cpp
         plaintextprintengine.cpp
         polynomial.cpp
+        predicates.cpp
         prettyprinter.cpp
         query.cpp
         trigonometric.cpp
         violationhandler.cpp
         )
-
 endif()
+
+set_property(TARGET sym2 PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS})
 
 target_link_libraries(sym2
     PUBLIC
-    sym2common
-    PRIVATE
-    sym2lowlevel)
+    sym2common)
 
 add_library(sym2chibi
     chibibridge.cpp

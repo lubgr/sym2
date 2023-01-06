@@ -3,12 +3,12 @@
 #include <cassert>
 #include <functional>
 #include <ranges>
+#include "blob.h"
 #include "childiterator.h"
+#include "operandsview.h"
 #include "sym2/expr.h"
 #include "sym2/exprview.h"
 #include "sym2/get.h"
-#include "lowlevel/blobapi.h"
-#include "operandsview.h"
 #include "sym2/predicates.h"
 
 sym2::BaseExp sym2::splitAsPower(ExprView<> e)

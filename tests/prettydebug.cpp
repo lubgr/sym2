@@ -9,7 +9,7 @@
 // with the `expr` command, the pretty printer implementations are restricted to the ordinary
 // environment of a simple `frame variable` dump. Note that this probably also means that using the
 // pretty printers from an application that links against sym2 won't be straightforward.
-#include "lowlevel/blob.cpp"
+#include "blob.cpp"
 
 using namespace sym2;
 

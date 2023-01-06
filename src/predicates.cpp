@@ -3,7 +3,7 @@
 #include <cassert>
 #include <queue>
 #include "allocator.h"
-#include "blobapi.h"
+#include "blob.h"
 #include "operandsview.h"
 #include "sym2/eval.h"
 #include "sym2/expr.h"

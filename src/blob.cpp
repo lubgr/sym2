@@ -9,7 +9,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
-#include "blobapi.h"
+#include "blob.h"
 
 namespace sym2 {
     enum class Type : std::uint8_t {

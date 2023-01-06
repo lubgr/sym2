@@ -8,7 +8,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
-#include "blobapi.h"
+#include "blob.h"
 #include "sym2/predicates.h"
 
 sym2::Expr::Expr(allocator_type allocator)

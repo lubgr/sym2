@@ -1,6 +1,6 @@
 
 #include "childiterator.h"
-#include "blobapi.h"
+#include "blob.h"
 
 sym2::ChildIterator::ChildIterator(const Blob* op)
     : op{op}
