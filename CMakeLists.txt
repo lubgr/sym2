@@ -31,6 +31,7 @@ if(${WITH_COVERAGE})
 endif()
 
 add_subdirectory(src)
+add_subdirectory(bindings)
 
 if(${BUILD_TESTING} AND (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR}))
     enable_testing()

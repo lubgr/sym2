@@ -60,16 +60,3 @@ set_property(TARGET sym2 PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
 target_link_libraries(sym2
     PUBLIC
     sym2common)
-
-add_library(sym2chibi
-    chibibridge.cpp
-    chibiconverter.cpp)
-
-target_link_libraries(sym2chibi
-    PRIVATE
-    chibi::libchibi-scheme
-    sym2)
-
-set_target_properties(sym2chibi
-    PROPERTIES
-    PREFIX "")
