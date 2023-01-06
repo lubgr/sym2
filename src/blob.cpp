@@ -113,6 +113,23 @@ namespace sym2 {
             return reinterpret_cast<DataLayout*>(data);
         }
 
+        Type type(const Blob header) noexcept
+        {
+            return fromBlob(header).classified.classifier;
+        }
+
+        bool isSelfContainedHeader(const Blob header) noexcept
+        {
+            switch (type(header)) {
+                case Type::shortSymbol:
+                case Type::smallInt:
+                case Type::smallRational:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         std::uint32_t extentFromBytes(const DataLayout data)
         {
             return data.classified.pre0.byte << 16 | data.classified.pre1 << 8
@@ -127,6 +144,14 @@ namespace sym2 {
             data.classified.pre0.byte = static_cast<char>((extent >> 16) & 0xff);
             data.classified.pre1 = static_cast<char>((extent >> 8) & 0xff);
             data.classified.pre2 = static_cast<char>(extent & 0xff);
+        }
+
+        std::uint16_t offsetToRemote(const Blob header) noexcept
+        {
+            if (isSelfContainedHeader(header))
+                return 0;
+            else
+                return fromBlob(header).classified.main.location.offset;
         }
 
         std::pair<std::uint16_t, std::uint32_t> offsetAndRemoteExtent(const Blob* const header)
@@ -534,13 +559,19 @@ sym2::Blob sym2::constructCompositeHeader(
     return toBlob(data);
 }
 
-sym2::Blob sym2::constructDuplicate(Blob header, std::uint16_t newOffset) noexcept
-{
-    DataLayout result = fromBlob(header);
+namespace sym2 {
+    namespace {
+        // Duplicates a blob and sets the offset to the given new offset. Works only with a header
+        // blob that is followed by additional data, UB otherwise.
+        Blob constructDuplicate(Blob header, std::uint16_t newOffset) noexcept
+        {
+            DataLayout result = fromBlob(header);
 
-    result.classified.main.location.offset = newOffset;
+            result.classified.main.location.offset = newOffset;
 
-    return toBlob(result);
+            return toBlob(result);
+        }
+    }
 }
 
 std::pmr::vector<sym2::Blob> sym2::constructDuplicateSequence(
@@ -551,30 +582,6 @@ std::pmr::vector<sym2::Blob> sym2::constructDuplicateSequence(
     appendDuplicateSequence(from, 0, result);
 
     return result;
-}
-
-namespace sym2 {
-    namespace {
-        Type type(const Blob header) noexcept
-        {
-            return fromBlob(header).classified.classifier;
-        }
-
-        // Returns true if the given single blob instance doesn't refer to additional data, e.g.
-        // returns true for small integers and rational numbers, small symbols.
-        bool isSelfContainedHeader(const Blob header) noexcept
-        {
-            switch (type(header)) {
-                case Type::shortSymbol:
-                case Type::smallInt:
-                case Type::smallRational:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-    }
 }
 
 void sym2::appendDuplicateSequence(
@@ -706,14 +713,6 @@ bool sym2::isPowerHeader(const Blob header) noexcept
 bool sym2::isFunctionHeader(const Blob header) noexcept
 {
     return type(header) == Type::function;
-}
-
-std::uint16_t sym2::offsetToRemote(const Blob header) noexcept
-{
-    if (isSelfContainedHeader(header))
-        return 0;
-    else
-        return fromBlob(header).classified.main.location.offset;
 }
 
 std::uint32_t sym2::remoteExtent(const Blob* const header) noexcept

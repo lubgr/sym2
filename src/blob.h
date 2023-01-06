@@ -58,24 +58,17 @@ namespace sym2 {
     std::pmr::vector<Blob> constructSequence(std::string_view function, const Blob* arg1,
       const Blob* arg2, BinaryDoubleFctPtr eval, std::pmr::polymorphic_allocator<> allocator);
 
-    // Offset is set to 1, which assumes that the follow-up Blobs are placed right after the header
-    // Blob.
+    // Assumes that the follow-up Blobs are placed right after the header blob.
     Blob constructCompositeHeader(
       CompositeType composite, std::uint16_t numOperands, std::uint32_t extent) noexcept;
-    // Duplicates a blob and sets the offset to the given new offset. Works only with a header blob
-    // that is followed by additional data, UB otherwise.
-    Blob constructDuplicate(Blob header, std::uint16_t newOffset) noexcept;
     // Constructs a duplicate, irrespective of whether the original object is self-contained in a
-    // single blob or not. The result always has a zero- or one-offset.
+    // single blob or not.
     std::pmr::vector<Blob> constructDuplicateSequence(
       const Blob* from, std::pmr::polymorphic_allocator<> allocator);
     // Appends a duplicate of the given expression. Works for self-contained single blob expressions
-    // and those with offset and extent. The second parameter dictates the index at which the first
+    // and those with additional blobs. The second parameter dictates the index at which the first
     // blob of the duplicate is placed in the output container. If the output container is not large
-    // enough for this assignment, it is resized. When the original expression has remote blobs, the
-    // output container is always resized to accomodate them at the end. In summary: output[where]
-    // will contain the single/header blob with updated offset if applicable, and remote blobs will
-    // be appended.
+    // enough for the new content, it is resized.
     void appendDuplicateSequence(
       const Blob* from, std::size_t where, std::pmr::vector<Blob>& output);
 
@@ -97,9 +90,6 @@ namespace sym2 {
     bool isPowerHeader(Blob header) noexcept;
     bool isFunctionHeader(Blob header) noexcept;
 
-    // Does not require the argument to refer to remote Blobs, i.e. returns zero for
-    // self-contained single-blob objects like small rationals.
-    std::uint16_t offsetToRemote(Blob header) noexcept;
     // The remote extent is the number of blobs stored externally, i.e., in addition, to the root
     // header.
     std::uint32_t remoteExtent(const Blob* header) noexcept;
@@ -107,8 +97,6 @@ namespace sym2 {
     // functions, the number of summands for a sum etc.
     std::uint16_t nOperands(const Blob* header) noexcept;
 
-    // Compares the values, not the pointers, but must be passed by pointer because the
-    // implementation needs access to linked remote Blobs.
     bool equal(const Blob* lhs, const Blob* rhs) noexcept;
 
     std::int16_t getSmallInt(Blob header) noexcept;
