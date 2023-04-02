@@ -240,7 +240,7 @@ sym2::Expr sym2::FromChibiToExpr::nonEmptyListToExpr(std::span<const PreservedSe
 sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
   CompositeType kind, std::span<const PreservedSexp> operands)
 {
-    std::vector<Expr> converted;
+    std::pmr::vector<Expr> converted;
 
     converted.reserve(operands.size());
 
@@ -434,9 +434,9 @@ sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(
     return serializeListWithLeadingSymbol(symbol, OperandsView::operandsOf(composite));
 }
 
-std::vector<sym2::Expr> sym2::convertFromList(sexp ctx, sexp list)
+std::pmr::vector<sym2::Expr> sym2::convertFromList(sexp ctx, sexp list)
 {
-    std::vector<Expr> result;
+    std::pmr::vector<Expr> result;
     FromChibiToExpr individual{ctx};
 
     while (!sexp_nullp(list)) {

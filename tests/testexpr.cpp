@@ -266,7 +266,7 @@ TEST_CASE("Construction and retrieval")
 
     SUBCASE("Complex number roundtrip")
     {
-        const std::vector<Expr> args{Expr{2, mr}, Expr{3, 7, mr}};
+        const std::pmr::vector<Expr> args{{Expr{2, mr}, Expr{3, 7, mr}}, mr};
         const Expr cx{CompositeType::complexNumber, args, mr};
 
         CHECK(get<std::int16_t>(real(cx)) == 2);

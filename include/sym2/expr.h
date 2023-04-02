@@ -53,7 +53,7 @@ namespace sym2 {
         // Convenience overload for composites with two operands:
         Expr(CompositeType composite, ExprView<> op1, ExprView<> op2, allocator_type allocator);
 
-        Expr(const Expr& other, allocator_type allocator = {});
+        Expr(const Expr& other, allocator_type allocator);
         Expr& operator=(const Expr& other) = default;
         Expr(Expr&& other, allocator_type allocator); // Can't be noexcept when allocators differ
         Expr& operator=(Expr&& other) = default; // Can't be noexcept when allocators differ

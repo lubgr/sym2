@@ -1,7 +1,7 @@
 
 #include <array>
-#include "sym2/constants.h"
 #include "doctest/doctest.h"
+#include "sym2/constants.h"
 #include "sym2/expr.h"
 #include "testutils.h"
 
@@ -25,24 +25,24 @@ TEST_CASE("Equality")
 
     SUBCASE("Scalar Equality by value")
     {
-        CHECK(Expr{"a", mr} == "a"_ex);
-        CHECK(Expr{42, mr} == 42_ex);
-        CHECK(Expr{0, mr} == 0_ex);
-        CHECK(Expr{1, mr} == 1_ex);
+        CHECK_EQ(Expr{"a", mr}, "a"_ex);
+        CHECK_EQ(Expr{42, mr}, 42_ex);
+        CHECK_EQ(Expr{0, mr}, 0_ex);
+        CHECK_EQ(Expr{1, mr}, 1_ex);
     }
 
     SUBCASE("Composite equality")
     {
-        CHECK(s == s);
-        CHECK(pr == pr);
-        CHECK(pw == pw);
+        CHECK_EQ(s, s);
+        CHECK_EQ(pr, pr);
+        CHECK_EQ(pw, pw);
 
         // TODO complex cases
     }
 
     SUBCASE("Scalar inequality")
     {
-        CHECK(Expr{"a", mr} != "b"_ex);
-        CHECK(Expr{42, mr} != 43_ex);
+        CHECK_NE(Expr{"a", mr}, "b"_ex);
+        CHECK_NE(Expr{42, mr}, 43_ex);
     }
 }

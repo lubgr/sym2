@@ -1,7 +1,7 @@
 
+#include "doctest/doctest.h"
 #include "sym2/autosimpl.h"
 #include "sym2/constants.h"
-#include "doctest/doctest.h"
 #include "sym2/expr.h"
 #include "sym2/predicates.h"
 #include "sym2/query.h"
@@ -41,7 +41,7 @@ TEST_CASE("Type queries for simple types")
 
         CHECK(is<floatingPoint>(fp));
 
-        for (ExprView<> n : {fp, sr, li, lr})
+        for (ExprView<> n : std::initializer_list<ExprView<>>{fp, sr, li, lr})
             CHECK(is < realDomain && number > (n));
 
         CHECK(is < complexDomain && number > (cx));
@@ -80,8 +80,8 @@ TEST_CASE("Type queries for simple types")
 
     SUBCASE("Integer")
     {
-        for (ExprView<> number : {n, Expr{li, mr}})
-            CHECK(is<integer>(number));
+        CHECK(is<integer>(n));
+        CHECK(is<integer>(Expr{li, mr}));
 
         for (ExprView<> e :
           std::initializer_list<ExprView<>>{pi, euler, a, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
@@ -143,7 +143,8 @@ TEST_CASE("Type queries for simple types")
         for (ExprView<> e : std::initializer_list<ExprView<>>{a, pi, euler, atan2Ab, sinA})
             CHECK(is < symbol || function || constant > (e));
 
-        for (ExprView<> e : {n, fp, sr, lr, cx, s, pr, pw, sinA, atan2Ab})
+        for (ExprView<> e :
+          std::initializer_list<ExprView<>>{n, fp, sr, lr, cx, s, pr, pw, sinA, atan2Ab})
             CHECK_FALSE(is < symbol || constant > (e));
     }
 

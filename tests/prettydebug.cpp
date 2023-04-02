@@ -1,5 +1,6 @@
 
 #include <cmath>
+#include <initializer_list>
 #include <memory_resource>
 #include "sym2/expr.h"
 #include "trigonometric.h"
@@ -41,7 +42,8 @@ int main(int, char**)
     const Expr f2{"atan2", "a"_ex, li, std::atan2, mr};
     const Expr f3{"sin", sr, std::sin, mr};
 
-    for (ExprView<> v : {si, sr, li, otherLi, lr, fp, cx, cst, ss, ls, sum, pro, pw, f1, f2, f3})
+    for (ExprView<> v : std::initializer_list<ExprView<>>{
+           si, sr, li, otherLi, lr, fp, cx, cst, ss, ls, sum, pro, pw, f1, f2, f3})
         check(v);
 
     return 0;

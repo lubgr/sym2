@@ -1,7 +1,6 @@
 
 #include "cohenautosimpl.h"
 #include <array>
-#include <boost/iterator/transform_iterator.hpp>
 #include <cassert>
 #include <cmath>
 #include <complex>
@@ -12,12 +11,6 @@
 #include "sym2/query.h"
 
 namespace sym2 {
-    template <class Iter>
-    auto constructIter(Iter op, std::pmr::memory_resource* mr)
-    {
-        return boost::make_transform_iterator(op, [mr](auto arg) { return Expr{arg, mr}; });
-    }
-
     std::optional<LargeInt> exactPower(const LargeInt& n, const std::uint32_t expDenom)
     {
         const double exact = std::pow(static_cast<double>(n), 1.0 / static_cast<double>(expDenom));
@@ -137,10 +130,22 @@ template <class View, class BinarySimplMember>
 std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::merge(
   OperandsView p, View q, BinarySimplMember reduce)
 {
+    const auto construct = [this](const auto& from) {
+        std::pmr::vector<sym2::Expr> to{mr};
+
+        to.reserve(from.size());
+
+        for (const auto& op : from) {
+            to.emplace_back(op);
+        }
+
+        return to;
+    };
+
     if (p.empty())
-        return {constructIter(q.begin(), mr), constructIter(q.end(), mr), mr};
+        return construct(q);
     else if (q.empty())
-        return {constructIter(p.begin(), mr), constructIter(p.end(), mr), mr};
+        return construct(p);
     else
         return mergeNonEmpty(p, q, reduce);
 }
@@ -357,7 +362,7 @@ sym2::Expr sym2::CohenAutoSimpl::computePowerRationalToInt(
     assert(is<rational>(forPositiveExp));
 
     if (exp > 0)
-        return forPositiveExp;
+        return {std::move(forPositiveExp), mr};
     else if (is<small>(forPositiveExp)) {
         const auto r = get<SmallRational>(forPositiveExp);
         return Expr{r.denom, r.num, mr};
@@ -388,7 +393,7 @@ sym2::Expr sym2::CohenAutoSimpl::computePowerRationalToUnsigned(
         increasingBase = simplifyProduct(increasingBase, increasingBase);
     }
 
-    return result;
+    return {std::move(result), mr};
 }
 
 sym2::Expr sym2::CohenAutoSimpl::simplPowerRationalToRational(

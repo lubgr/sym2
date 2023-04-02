@@ -42,7 +42,7 @@ sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
     auto bundle = createSimplificationBundle(&mr);
     const Expr result = bundle.simplifier.simplifySum(ops);
 
-    return Expr{result};
+    return Expr{result, {}};
 }
 
 sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
@@ -56,7 +56,7 @@ sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
     auto bundle = createSimplificationBundle(&mr);
     const Expr result = bundle.simplifier.simplifyProduct(ops);
 
-    return Expr{result};
+    return Expr{result, {}};
 }
 
 sym2::Expr sym2::autoMinus(ExprView<> arg)
@@ -70,7 +70,7 @@ sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
     auto bundle = createSimplificationBundle(&mr);
     const Expr result = bundle.simplifier.simplifyPower(base, exp);
 
-    return Expr{result};
+    return Expr{result, {}};
 }
 
 sym2::Expr sym2::autoOneOver(ExprView<> arg)

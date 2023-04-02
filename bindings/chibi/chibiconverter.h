@@ -7,8 +7,8 @@
 #include <stack>
 #include <stdexcept>
 #include <vector>
-#include "sym2/expr.h"
 #include "operandsview.h"
+#include "sym2/expr.h"
 #include "sym2/predicates.h"
 
 namespace sym2 {
@@ -99,6 +99,6 @@ namespace sym2 {
         std::pmr::polymorphic_allocator<> alloc;
     };
 
-    std::vector<Expr> convertFromList(sexp ctx, sexp list);
+    std::pmr::vector<Expr> convertFromList(sexp ctx, sexp list);
     sexp convertToList(sexp ctx, OperandsView operands);
 }
