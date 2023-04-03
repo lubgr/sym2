@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/stl_interfaces/iterator_interface.hpp>
-#include "sym2/exprview.h"
+#include "exprview.h"
 
 namespace sym2 {
     class ChildIterator : public boost::stl_interfaces::proxy_iterator_interface<ChildIterator,

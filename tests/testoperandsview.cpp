@@ -1,7 +1,7 @@
 
 #include <boost/range/algorithm.hpp>
 #include "doctest/doctest.h"
-#include "operandsview.h"
+#include "sym2/operandsview.h"
 #include "sym2/autosimpl.h"
 #include "sym2/expr.h"
 #include "testutils.h"

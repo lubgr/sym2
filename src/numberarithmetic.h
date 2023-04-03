@@ -1,6 +1,6 @@
 #pragma once
 
-#include "largerational.h"
+#include "sym2/largerational.h"
 #include "sym2/expr.h"
 #include "sym2/exprview.h"
 #include "sym2/predicates.h"

@@ -2,7 +2,7 @@
 
 #include <deque>
 #include <utility>
-#include "operandsview.h"
+#include "sym2/operandsview.h"
 #include "sym2/expr.h"
 #include "sym2/exprview.h"
 #include "sym2/predicates.h"

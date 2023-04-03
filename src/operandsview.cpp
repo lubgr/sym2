@@ -1,5 +1,5 @@
 
-#include "operandsview.h"
+#include "sym2/operandsview.h"
 #include <boost/range/algorithm/equal.hpp>
 #include <cassert>
 #include "sym2/query.h"

@@ -9,11 +9,11 @@
 #include "blob.h"
 #include "largeint.h"
 #include "largerational.h"
-#include "sym2/compositetype.h"
-#include "sym2/domainflag.h"
-#include "sym2/doublefctptr.h"
-#include "sym2/allocator.h"
-#include "sym2/smallrational.h"
+#include "compositetype.h"
+#include "domainflag.h"
+#include "doublefctptr.h"
+#include "allocator.h"
+#include "smallrational.h"
 
 namespace sym2 {
     struct alignas(double) Blob {

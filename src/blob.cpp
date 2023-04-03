@@ -1,5 +1,5 @@
 
-#include "blob.h"
+#include "sym2/blob.h"
 #include <algorithm>
 #include <bit>
 #include <boost/iterator/function_output_iterator.hpp>
@@ -9,7 +9,6 @@
 #include <numeric>
 #include <stdexcept>
 #include <type_traits>
-#include "blob.h"
 
 namespace sym2 {
     enum class Type : std::uint8_t {

@@ -3,9 +3,9 @@
 #include <cassert>
 #include <functional>
 #include <ranges>
-#include "blob.h"
-#include "childiterator.h"
-#include "operandsview.h"
+#include "sym2/blob.h"
+#include "sym2/childiterator.h"
+#include "sym2/operandsview.h"
 #include "sym2/expr.h"
 #include "sym2/exprview.h"
 #include "sym2/get.h"

@@ -1,5 +1,5 @@
 
-#include "childiterator.h"
+#include "sym2/childiterator.h"
 #include "doctest/doctest.h"
 #include "sym2/expr.h"
 #include "sym2/get.h"

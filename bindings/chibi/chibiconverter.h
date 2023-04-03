@@ -6,7 +6,7 @@
 #include <stack>
 #include <stdexcept>
 #include <vector>
-#include "operandsview.h"
+#include "sym2/operandsview.h"
 #include "sym2/expr.h"
 #include "sym2/predicates.h"
 

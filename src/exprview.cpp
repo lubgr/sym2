@@ -1,6 +1,6 @@
 
 #include "sym2/exprview.h"
-#include "blob.h"
+#include "sym2/blob.h"
 
 bool sym2::operator==(ExprView<> lhs, ExprView<> rhs)
 {

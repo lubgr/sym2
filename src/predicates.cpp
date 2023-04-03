@@ -2,8 +2,8 @@
 #include "sym2/predicates.h"
 #include <cassert>
 #include <queue>
-#include "blob.h"
-#include "operandsview.h"
+#include "sym2/blob.h"
+#include "sym2/operandsview.h"
 #include "sym2/eval.h"
 #include "sym2/expr.h"
 #include "sym2/get.h"

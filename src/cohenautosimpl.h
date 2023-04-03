@@ -2,7 +2,7 @@
 
 #include <span>
 #include <vector>
-#include "operandsview.h"
+#include "sym2/operandsview.h"
 #include "sym2/expr.h"
 #include "sym2/functionview.h"
 #include "sym2/predicates.h"

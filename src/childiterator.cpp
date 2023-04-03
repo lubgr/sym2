@@ -1,6 +1,6 @@
 
-#include "childiterator.h"
-#include "blob.h"
+#include "sym2/childiterator.h"
+#include "sym2/blob.h"
 
 sym2::ChildIterator::ChildIterator(const Blob* op)
     : op{op}

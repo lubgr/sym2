@@ -11,7 +11,7 @@
 #include "exprview.h"
 #include "largerational.h"
 #include "allocator.h"
-#include "sym2/domainflag.h"
+#include "domainflag.h"
 
 namespace sym2 {
     class Expr {

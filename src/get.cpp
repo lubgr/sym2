@@ -1,7 +1,7 @@
 
 #include "sym2/get.h"
 #include <cassert>
-#include "blob.h"
+#include "sym2/blob.h"
 #include "sym2/eval.h"
 #include "sym2/predicates.h"
 #include "sym2/query.h"

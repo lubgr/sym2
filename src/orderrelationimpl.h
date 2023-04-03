@@ -2,7 +2,7 @@
 
 #include <boost/logic/tribool_fwd.hpp>
 #include "sym2/exprview.h"
-#include "operandsview.h"
+#include "sym2/operandsview.h"
 #include "sym2/predicates.h"
 
 namespace sym2 {

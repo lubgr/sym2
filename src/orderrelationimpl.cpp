@@ -8,7 +8,7 @@
 #include "sym2/eval.h"
 #include "sym2/expr.h"
 #include "sym2/get.h"
-#include "operandsview.h"
+#include "sym2/operandsview.h"
 #include "orderrelation.h"
 #include "sym2/query.h"
 
