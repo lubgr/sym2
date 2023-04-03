@@ -5,7 +5,7 @@ import os
 class DoctestConan(ConanFile):
     name = "doctest"
     url = "https://github.com/conan-io/conan-center-index"
-    version = "2.4.9"
+    version = "2.4.11"
     homepage = "https://github.com/onqtam/doctest"
     description = "C++11/14/17/20 single header testing framework"
     topics = ("doctest", "header-only", "unit-test", "tdd")

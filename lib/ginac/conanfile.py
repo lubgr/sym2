@@ -5,7 +5,7 @@ import os
 
 class GinacConan(ConanFile):
     name = "ginac"
-    version = "1.8.5"
+    version = "1.8.6"
     url = "https://www.ginac.de"
     license = "GPL"
     description = "C++ library for symbolic mathematical calculations"
