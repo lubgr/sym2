@@ -1,85 +1,92 @@
 
 #include "sym2/autosimpl.h"
-#include <array>
 #include <functional>
-#include <memory_resource>
 #include <vector>
-#include "allocator.h"
 #include "cohenautosimpl.h"
-#include "sym2/get.h"
 #include "numberarithmetic.h"
 #include "orderrelation.h"
+#include "sym2/get.h"
 #include "sym2/predicates.h"
 
 namespace sym2 {
     template <class NumericAddFct, class NumericMultiplyFct>
     struct SimplificationBundle {
-        std::pmr::memory_resource* mr;
+        Expr::allocator_type allocator;
         NumericAddFct numericAdd;
         NumericMultiplyFct numericMultiply;
 
         CohenAutoSimpl::Dependencies callbacks{orderLessThan, numericAdd, numericMultiply};
-        CohenAutoSimpl simplifier{callbacks, mr};
+        CohenAutoSimpl simplifier{callbacks, allocator};
     };
 
-    auto createSimplificationBundle(std::pmr::memory_resource* mr)
+    auto createSimplificationBundle(Expr::allocator_type allocator)
     {
-        NumberArithmetic numerics{mr};
+        NumberArithmetic numerics{allocator};
 
-        return SimplificationBundle{mr, std::bind_front(&NumberArithmetic::add, numerics),
+        return SimplificationBundle{allocator, std::bind_front(&NumberArithmetic::add, numerics),
           std::bind_front(&NumberArithmetic::multiply, numerics)};
     }
 }
 
-sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs)
+sym2::Expr sym2::autoSum(ExprView<> lhs, ExprView<> rhs, Expr::allocator_type allocator)
 {
-    return autoSum({{lhs, rhs}});
+    return autoSum({{lhs, rhs}}, allocator);
 }
 
-sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops)
+sym2::Expr sym2::autoSum(std::span<const ExprView<>> ops, Expr::allocator_type allocator)
 {
-    auto [_, mr] = monotonicStackPmrResource<ByteSize{1000}>();
-    auto bundle = createSimplificationBundle(&mr);
+    StackBuffer<1024> arena;
+    auto bundle = createSimplificationBundle(&arena);
     const Expr result = bundle.simplifier.simplifySum(ops);
 
-    return Expr{result, {}};
+    return Expr{result, allocator};
 }
 
-sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs)
+sym2::Expr sym2::autoSum(std::initializer_list<ExprView<>> ops, Expr::allocator_type allocator)
 {
-    return autoProduct({{lhs, rhs}});
+    return autoSum(std::span<const ExprView<>>{ops}, allocator);
 }
 
-sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops)
+sym2::Expr sym2::autoProduct(ExprView<> lhs, ExprView<> rhs, Expr::allocator_type allocator)
 {
-    auto [_, mr] = monotonicStackPmrResource<ByteSize{1000}>();
-    auto bundle = createSimplificationBundle(&mr);
+    return autoProduct({{lhs, rhs}}, allocator);
+}
+
+sym2::Expr sym2::autoProduct(std::span<const ExprView<>> ops, Expr::allocator_type allocator)
+{
+    StackBuffer<1024> arena;
+    auto bundle = createSimplificationBundle(&arena);
     const Expr result = bundle.simplifier.simplifyProduct(ops);
 
-    return Expr{result, {}};
+    return Expr{result, allocator};
 }
 
-sym2::Expr sym2::autoMinus(ExprView<> arg)
+sym2::Expr sym2::autoProduct(std::initializer_list<ExprView<>> ops, Expr::allocator_type allocator)
 {
-    return autoProduct(FixedExpr<1>{-1}, arg);
+    return autoProduct(std::span<const ExprView<>>{ops}, allocator);
 }
 
-sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp)
+sym2::Expr sym2::autoMinus(ExprView<> arg, Expr::allocator_type allocator)
 {
-    auto [_, mr] = monotonicStackPmrResource<ByteSize{1000}>();
-    auto bundle = createSimplificationBundle(&mr);
+    return autoProduct(FixedExpr<1>{-1}, arg, allocator);
+}
+
+sym2::Expr sym2::autoPower(ExprView<> base, ExprView<> exp, Expr::allocator_type allocator)
+{
+    StackBuffer<1024> arena;
+    auto bundle = createSimplificationBundle(&arena);
     const Expr result = bundle.simplifier.simplifyPower(base, exp);
 
-    return Expr{result, {}};
+    return Expr{result, allocator};
 }
 
-sym2::Expr sym2::autoOneOver(ExprView<> arg)
+sym2::Expr sym2::autoOneOver(ExprView<> arg, Expr::allocator_type allocator)
 {
-    return autoPower(arg, FixedExpr<1>{-1});
+    return autoPower(arg, FixedExpr<1>{-1}, allocator);
 }
 
-sym2::Expr sym2::autoComplex(ExprView<> real, ExprView<> imag)
+sym2::Expr sym2::autoComplex(ExprView<> real, ExprView<> imag, Expr::allocator_type allocator)
 {
     // TODO
-    return Expr{CompositeType::complexNumber, real, imag, {}};
+    return Expr{CompositeType::complexNumber, real, imag, allocator};
 }

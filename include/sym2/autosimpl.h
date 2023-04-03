@@ -1,32 +1,22 @@
 #pragma once
 
-#include <array>
-#include <memory_resource>
+#include <initializer_list>
 #include <span>
 #include "expr.h"
 #include "exprview.h"
 
 namespace sym2 {
-    Expr autoSum(ExprView<> lhs, ExprView<> rhs);
-    Expr autoSum(std::span<const ExprView<>> ops);
-    template <class... T>
-    Expr autoSum(ExprView<> first, ExprView<> second, ExprView<> third, const T&... args)
-    {
-        return autoSum(std::array<ExprView<>, 3 + sizeof...(T)>{{first, second, third, args...}});
-    }
+    Expr autoSum(ExprView<> lhs, ExprView<> rhs, Expr::allocator_type allocator);
+    Expr autoSum(std::span<const ExprView<>> ops, Expr::allocator_type allocator);
+    Expr autoSum(std::initializer_list<ExprView<>> ops, Expr::allocator_type allocator);
 
-    Expr autoProduct(ExprView<> lhs, ExprView<> rhs);
-    Expr autoProduct(std::span<const ExprView<>> ops);
-    template <class... T>
-    Expr autoProduct(ExprView<> first, ExprView<> second, ExprView<> third, const T&... args)
-    {
-        return autoProduct(
-          std::array<ExprView<>, 3 + sizeof...(T)>{{first, second, third, args...}});
-    }
-    Expr autoMinus(ExprView<> arg);
+    Expr autoProduct(ExprView<> lhs, ExprView<> rhs, Expr::allocator_type allocator);
+    Expr autoProduct(std::span<const ExprView<>> ops, Expr::allocator_type allocator);
+    Expr autoProduct(std::initializer_list<ExprView<>> ops, Expr::allocator_type allocator);
+    Expr autoMinus(ExprView<> arg, Expr::allocator_type allocator);
 
-    Expr autoPower(ExprView<> base, ExprView<> exp);
-    Expr autoOneOver(ExprView<> arg);
+    Expr autoPower(ExprView<> base, ExprView<> exp, Expr::allocator_type allocator);
+    Expr autoOneOver(ExprView<> arg, Expr::allocator_type allocator);
 
-    Expr autoComplex(ExprView<> real, ExprView<> imag);
+    Expr autoComplex(ExprView<> real, ExprView<> imag, Expr::allocator_type allocator);
 }

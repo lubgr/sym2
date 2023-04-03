@@ -23,24 +23,24 @@ namespace sym2 {
     }
 }
 
-sym2::CohenAutoSimpl::CohenAutoSimpl(Dependencies callbacks, std::pmr::memory_resource* mr)
+sym2::CohenAutoSimpl::CohenAutoSimpl(Dependencies callbacks, Expr::allocator_type allocator)
     : callbacks{std::move(callbacks)}
-    , mr{mr}
+    , allocator{allocator}
 {}
 
 sym2::Expr sym2::CohenAutoSimpl::simplifySum(std::span<const ExprView<>> ops)
 {
     if (ops.size() == 1)
-        return Expr{ops.front(), mr};
+        return Expr{ops.front(), allocator};
 
     const auto res = simplSumIntermediate(ops);
 
     if (res.empty())
-        return Expr{0, mr};
+        return Expr{0, allocator};
     else if (res.size() == 1)
-        return Expr{res.front(), mr};
+        return Expr{res.front(), allocator};
     else
-        return {CompositeType::sum, std::move(res), mr};
+        return {CompositeType::sum, std::move(res), allocator};
 }
 
 sym2::Expr sym2::CohenAutoSimpl::simplifySum(ExprView<> lhs, ExprView<> rhs)
@@ -48,7 +48,7 @@ sym2::Expr sym2::CohenAutoSimpl::simplifySum(ExprView<> lhs, ExprView<> rhs)
     return simplifySum({{lhs, rhs}});
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplSumIntermediate(
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::simplSumIntermediate(
   std::span<const ExprView<>> ops)
 {
     if (ops.size() == 2)
@@ -57,7 +57,8 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplSumIntermediate(
         return simplMoreThanTwoSummands(ops);
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplTwoSummands(ExprView<> lhs, ExprView<> rhs)
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::simplTwoSummands(
+  ExprView<> lhs, ExprView<> rhs)
 {
     static const auto asSumOperands = [](ExprView<> e) {
         return is<sum>(e) ? OperandsView::operandsOf(e) : OperandsView::singleOperand(e);
@@ -69,7 +70,8 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplTwoSummands(ExprView<> l
         return binarySum(lhs, rhs);
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::binarySum(ExprView<!sum> lhs, ExprView<!sum> rhs)
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::binarySum(
+  ExprView<!sum> lhs, ExprView<!sum> rhs)
 {
     const auto haveEqualNonConstTerm = [lhs, rhs]() {
         if (isOneOf<number>(lhs, rhs))
@@ -77,7 +79,7 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::binarySum(ExprView<!sum> lhs,
         else
             return splitConstTerm(lhs).term == splitConstTerm(rhs).term;
     };
-    std::pmr::vector<Expr> result{mr};
+    ScopedLocalVec<Expr> result{allocator};
 
     if (lhs == 0_ex)
         result.emplace_back(rhs);
@@ -110,13 +112,13 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::binarySum(ExprView<!sum> lhs,
     return result;
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplMoreThanTwoSummands(
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::simplMoreThanTwoSummands(
   std::span<const ExprView<>> ops)
 {
     assert(ops.size() > 2);
 
     const auto [u1, rest] = frontAndRest(ops);
-    const std::pmr::vector<Expr> simplifiedRest = simplSumIntermediate(rest);
+    const ScopedLocalVec<Expr> simplifiedRest = simplSumIntermediate(rest);
 
     if (is<sum>(u1))
         return merge(
@@ -127,11 +129,11 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplMoreThanTwoSummands(
 }
 
 template <class View, class BinarySimplMember>
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::merge(
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::merge(
   OperandsView p, View q, BinarySimplMember reduce)
 {
     const auto construct = [this](const auto& from) {
-        std::pmr::vector<sym2::Expr> to{mr};
+        ScopedLocalVec<sym2::Expr> to{allocator};
 
         to.reserve(from.size());
 
@@ -151,12 +153,12 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::merge(
 }
 
 template <class View, class BinarySimplMember>
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::mergeNonEmpty(
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::mergeNonEmpty(
   OperandsView p, View q, BinarySimplMember reduce)
 {
     const auto [p1, pRest] = frontAndRest(p);
     const auto [q1, qRest] = frontAndRest(q);
-    const std::pmr::vector<Expr> firstTwo = std::invoke(reduce, this, p1, q1);
+    const ScopedLocalVec<Expr> firstTwo = std::invoke(reduce, this, p1, q1);
 
     if (firstTwo.empty())
         return merge(pRest, qRest, reduce);
@@ -175,10 +177,10 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::mergeNonEmpty(
         return prepend(q1, merge(p, qRest, reduce));
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::prepend(
-  ExprView<> first, std::pmr::vector<Expr>&& rest)
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::prepend(
+  ExprView<> first, ScopedLocalVec<Expr>&& rest)
 {
-    std::pmr::vector<Expr> result{mr};
+    ScopedLocalVec<Expr> result{allocator};
 
     result.reserve(rest.size() + 1);
 
@@ -191,18 +193,18 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::prepend(
 sym2::Expr sym2::CohenAutoSimpl::simplifyProduct(std::span<const ExprView<>> ops)
 {
     if (ops.size() == 1)
-        return Expr{ops.front(), mr};
+        return Expr{ops.front(), allocator};
     else if (std::any_of(ops.begin(), ops.end(), [](const ExprView<> op) { return op == 0_ex; }))
-        return Expr{0, mr};
+        return Expr{0, allocator};
 
-    const std::pmr::vector<Expr> res = simplProductIntermediate(ops);
+    const ScopedLocalVec<Expr> res = simplProductIntermediate(ops);
 
     if (res.empty())
-        return Expr{1, mr};
+        return Expr{1, allocator};
     else if (res.size() == 1)
-        return Expr{res.front(), mr};
+        return Expr{res.front(), allocator};
     else
-        return {CompositeType::product, std::move(res), mr};
+        return {CompositeType::product, std::move(res), allocator};
 }
 
 sym2::Expr sym2::CohenAutoSimpl::simplifyProduct(ExprView<> lhs, ExprView<> rhs)
@@ -212,7 +214,7 @@ sym2::Expr sym2::CohenAutoSimpl::simplifyProduct(ExprView<> lhs, ExprView<> rhs)
 
 sym2::Expr sym2::CohenAutoSimpl::simplifyProduct(ExprView<> first, OperandsView rest)
 {
-    std::pmr::vector<ExprView<>> allOperands{mr};
+    ScopedLocalVec<ExprView<>> allOperands{allocator};
     allOperands.reserve(rest.size() + 1);
 
     allOperands.emplace_back(first);
@@ -221,7 +223,7 @@ sym2::Expr sym2::CohenAutoSimpl::simplifyProduct(ExprView<> first, OperandsView 
     return simplifyProduct(allOperands);
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplProductIntermediate(
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::simplProductIntermediate(
   std::span<const ExprView<>> ops)
 {
     if (ops.size() == 2)
@@ -230,7 +232,8 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplProductIntermediate(
         return simplMoreThanTwoFactors(ops);
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplTwoFactors(ExprView<> lhs, ExprView<> rhs)
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::simplTwoFactors(
+  ExprView<> lhs, ExprView<> rhs)
 {
     static const auto asProductOperands = [](ExprView<> e) {
         return is<product>(e) ? OperandsView::operandsOf(e) : OperandsView::singleOperand(e);
@@ -243,10 +246,10 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplTwoFactors(ExprView<> lh
         return binaryProduct(lhs, rhs);
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::binaryProduct(
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::binaryProduct(
   ExprView<!product> lhs, ExprView<!product> rhs)
 {
-    std::pmr::vector<Expr> result{mr};
+    ScopedLocalVec<Expr> result{allocator};
 
     if (areAll<number>(lhs, rhs)) {
         Expr numProduct = callbacks.numericMultiply(lhs, rhs);
@@ -274,13 +277,13 @@ std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::binaryProduct(
     return result;
 }
 
-std::pmr::vector<sym2::Expr> sym2::CohenAutoSimpl::simplMoreThanTwoFactors(
+sym2::ScopedLocalVec<sym2::Expr> sym2::CohenAutoSimpl::simplMoreThanTwoFactors(
   std::span<const ExprView<>> ops)
 {
     assert(ops.size() > 2);
 
     const auto [u1, rest] = frontAndRest(ops);
-    const std::pmr::vector<Expr> simplifiedRest = simplProductIntermediate(rest);
+    const ScopedLocalVec<Expr> simplifiedRest = simplProductIntermediate(rest);
 
     if (is<product>(u1))
         return merge(
@@ -295,36 +298,36 @@ sym2::Expr sym2::CohenAutoSimpl::simplifyPower(ExprView<> base, ExprView<> exp)
     // This might not be fully compliant with Cohen's algorithm outline, but needs to take complex
     // numbers into account and hence some more logic. Trivial cases first...
     if (base == 1_ex)
-        return Expr{base, mr};
+        return Expr{base, allocator};
     else if (base == 0_ex && exp == 0_ex)
         throw std::invalid_argument{"Invalid power with zero base and zero exponent"};
     else if (exp == 0_ex)
-        return Expr{1_ex, mr};
+        return Expr{1_ex, allocator};
     else if (exp == 1_ex)
-        return Expr{base, mr};
+        return Expr{base, allocator};
     // ... now error our on division by zero ...
     else if (base == 0_ex && is < number && realDomain && negative > (exp))
         throw std::invalid_argument{
           "Invalid power with zero base and real-valued negative exponent"};
     // ... but if zero is not in the denomiator, return it as is...
     else if (base == 0_ex)
-        return Expr{base, mr};
+        return Expr{base, allocator};
     // ... from here on, don't simplify anything with a complex number...
     else if (isOneOf < number && complexDomain > (base, exp))
-        return Expr{CompositeType::power, base, exp, mr};
+        return Expr{CompositeType::power, base, exp, allocator};
     // ... (-1.2345)^6.789 results in a complex number with floating point real/imag parts...
     else if (is < number && realDomain && negative > (base) && is<floatingPoint>(exp)) {
         const std::complex<double> numeric =
           std::pow(std::complex<double>{get<double>(base)}, std::complex<double>{get<double>(exp)});
         const FixedExpr<2> realPart{std::real(numeric)};
         const FixedExpr<2> imagPart{std::imag(numeric)};
-        return Expr{CompositeType::complexNumber, realPart, imagPart, mr};
+        return Expr{CompositeType::complexNumber, realPart, imagPart, allocator};
     }
     // ... but otherwise, numeric power expressions with a real floating point part are just
     // evaluated...
     else if (isOneOf<floatingPoint>(base, exp) && areAll < realDomain && number > (base, exp)) {
         const double numericResult = std::pow(get<double>(base), get<double>(exp));
-        return Expr{numericResult, mr};
+        return Expr{numericResult, allocator};
     }
     // ... evaluate expressions like (2/3)^7 (can result in big integers)...
     else if (is<rational>(base) && is < integer && small > (exp))
@@ -344,11 +347,11 @@ sym2::Expr sym2::CohenAutoSimpl::simplifyPower(ExprView<> base, ExprView<> exp)
         if (is < realDomain && positive > (baseOfBase))
             return simplifyPower(baseOfBase, simplifyProduct(expOfBase, exp));
         else
-            return Expr{CompositeType::power, base, exp, mr};
+            return Expr{CompositeType::power, base, exp, allocator};
     }
 
     // ... and finally don't simplify anything.
-    return Expr{CompositeType::power, base, exp, mr};
+    return Expr{CompositeType::power, base, exp, allocator};
 }
 
 sym2::Expr sym2::CohenAutoSimpl::computePowerRationalToInt(
@@ -362,15 +365,15 @@ sym2::Expr sym2::CohenAutoSimpl::computePowerRationalToInt(
     assert(is<rational>(forPositiveExp));
 
     if (exp > 0)
-        return {std::move(forPositiveExp), mr};
+        return {std::move(forPositiveExp), allocator};
     else if (is<small>(forPositiveExp)) {
         const auto r = get<SmallRational>(forPositiveExp);
-        return Expr{r.denom, r.num, mr};
+        return Expr{r.denom, r.num, allocator};
     } else {
         assert(is < large && rational > (forPositiveExp));
         const auto r = get<LargeRational>(forPositiveExp);
         const LargeRational inverted{denominator(r), numerator(r)};
-        return Expr{inverted, mr};
+        return Expr{inverted, allocator};
     }
 }
 
@@ -378,8 +381,8 @@ sym2::Expr sym2::CohenAutoSimpl::computePowerRationalToUnsigned(
   ExprView<rational> base, std::uint16_t exp)
 {
     // Copied and adjusted from https://stackoverflow.com/questions/101439.
-    Expr increasingBase{base, mr};
-    Expr result{1, mr};
+    Expr increasingBase{base, allocator};
+    Expr result{1, allocator};
 
     while (true) {
         if (exp & 1)
@@ -393,7 +396,7 @@ sym2::Expr sym2::CohenAutoSimpl::computePowerRationalToUnsigned(
         increasingBase = simplifyProduct(increasingBase, increasingBase);
     }
 
-    return {std::move(result), mr};
+    return {std::move(result), allocator};
 }
 
 sym2::Expr sym2::CohenAutoSimpl::simplPowerRationalToRational(
@@ -410,26 +413,26 @@ sym2::Expr sym2::CohenAutoSimpl::simplPowerRationalToRational(
 
     // First, don't get tangled up the attempt to compute powers with huge values
     if (!fitsInto<std::int32_t>(expNum) || !fitsInto<std::uint32_t>(expDenom))
-        return Expr{CompositeType::power, base, exp, mr};
+        return Expr{CompositeType::power, base, exp, allocator};
 
     // Then handle sqrt(r), where r is negative. This simplifies sqrt(-1) to i or sqrt(-1/4) to
     // 1/2*i, but returns cases as is where simplifying sqrt(|base|) is not a rational number...
     if (baseNum < 0 && expNum == 1 && expDenom == 2) {
-        const Expr positiveBase{-rationalBase, mr};
+        const Expr positiveBase{-rationalBase, allocator};
         const Expr result = simplPowerRationalToRational(positiveBase, exp);
 
         // Only construct a complex number when sqrt(|base|) results in a rational number. That
         // doesn't have to be the case, e.g. for sqrt(-1/3) we will have evaluated sqrt(1/3) which
         // is not simplified. In this case, we return sqrt(-1/3) as it is.
         if (is<rational>(result))
-            return Expr{CompositeType::complexNumber, 0_ex, result, mr};
+            return Expr{CompositeType::complexNumber, 0_ex, result, allocator};
 
-        return Expr{CompositeType::power, base, exp, mr};
+        return Expr{CompositeType::power, base, exp, allocator};
     }
 
     // Any other negative base won't be simplified.
     if (rationalBase < 0)
-        return Expr{CompositeType::power, base, exp, mr};
+        return Expr{CompositeType::power, base, exp, allocator};
 
     const auto primitiveExpDenom = static_cast<std::uint32_t>(expDenom);
     const std::optional<LargeInt> numDenomPart = exactPower(baseNum, primitiveExpDenom);
@@ -443,9 +446,9 @@ sym2::Expr sym2::CohenAutoSimpl::simplPowerRationalToRational(
 
         if (primitiveExpNum < 0) {
             // Constructor takes care of negative a numerator
-            return Expr{LargeRational{newDenom, newNum}, mr};
+            return Expr{LargeRational{newDenom, newNum}, allocator};
         } else
-            return Expr{LargeRational{newNum, newDenom}, mr};
+            return Expr{LargeRational{newNum, newDenom}, allocator};
     } else
-        return Expr{CompositeType::power, base, exp, mr};
+        return Expr{CompositeType::power, base, exp, allocator};
 }

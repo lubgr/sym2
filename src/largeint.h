@@ -3,7 +3,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/integer.hpp>
 #include <limits>
-#include "allocator.h"
 
 namespace sym2 {
     // Note that I have tried to use pmr allocators together with cpp_int_backend. This didn't work,

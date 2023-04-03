@@ -212,8 +212,7 @@ sym2::Blob sym2::construct(const std::string_view symbolName, const DomainFlag d
     return toBlob(result);
 }
 
-std::pmr::vector<sym2::Blob> sym2::constructSequence(
-  double value, std::pmr::polymorphic_allocator<> alloc)
+sym2::LocalVec<sym2::Blob> sym2::constructSequence(double value, LocalAlloc<> alloc)
 {
     return {{toBlob(DataLayout{.classified = {.classifier = Type::floatingPoint,
                                  .pre0 = {.byte = '\0'},
@@ -252,7 +251,7 @@ namespace sym2 {
         // This function allocates exactly once. This is important to meet assumptions for
         // expressions backed by a fixed-size buffer.
         void appendLargeSymbol(std::string_view longName, DomainFlag domain,
-          const std::size_t where, std::pmr::vector<Blob>& dest)
+          const std::size_t where, LocalVec<Blob>& dest)
         {
             // In the general case, we operate on an output containter that might have existing
             // elements, but potentially also not enough elements to assign to dest[where]. Also,
@@ -289,8 +288,8 @@ namespace sym2 {
         }
 
         // Identical to appendLargeSymbol, but also covers the single-blob small symbol case
-        void appendSmallOrLargeSymbol(std::string_view name, DomainFlag domain,
-          const std::size_t where, std::pmr::vector<Blob>& dest)
+        void appendSmallOrLargeSymbol(
+          std::string_view name, DomainFlag domain, const std::size_t where, LocalVec<Blob>& dest)
         {
             if (name.length() <= DataLayout::smallSymbolNameLength)
                 dest[where] = construct(name, domain);
@@ -300,24 +299,24 @@ namespace sym2 {
     } // namespace
 } // namespace sym2
 
-std::pmr::vector<sym2::Blob> sym2::constructSequence(
-  std::string_view symbolName, DomainFlag domain, std::pmr::polymorphic_allocator<> alloc)
+sym2::LocalVec<sym2::Blob> sym2::constructSequence(
+  std::string_view symbolName, DomainFlag domain, LocalAlloc<> alloc)
 {
-    std::pmr::vector<Blob> result{alloc};
+    LocalVec<Blob> result{alloc};
 
     appendLargeSymbol(symbolName, domain, 0, result);
 
     return result;
 }
 
-std::pmr::vector<sym2::Blob> sym2::constructSequence(
-  std::string_view constantName, double value, std::pmr::polymorphic_allocator<> alloc)
+sym2::LocalVec<sym2::Blob> sym2::constructSequence(
+  std::string_view constantName, double value, LocalAlloc<> alloc)
 {
     const std::uint16_t nBlobsForSymbol = 1 + numRemoteBlobsForSymbolName(constantName);
     // Double blob + symbol blobs:
     const std::uint32_t remoteExtent = 1 + nBlobsForSymbol;
 
-    std::pmr::vector<Blob> result{1 + remoteExtent, alloc};
+    LocalVec<Blob> result{1 + remoteExtent, alloc};
 
     result[0] = toBlob(DataLayout{.classified = {.classifier = Type::constant,
                                     .pre0 = {.byte = '\0'},
@@ -335,7 +334,7 @@ std::pmr::vector<sym2::Blob> sym2::constructSequence(
 
 namespace sym2 {
     namespace {
-        std::uint16_t appendLargeIntData(const LargeInt& n, std::pmr::vector<Blob>& dest)
+        std::uint16_t appendLargeIntData(const LargeInt& n, LocalVec<Blob>& dest)
         {
             static_assert(sizeof(decltype(*n.backend().limbs())) == sizeof(Blob));
 
@@ -369,10 +368,9 @@ namespace sym2 {
     } // namespace
 } // namespace sym2
 
-std::pmr::vector<sym2::Blob> sym2::constructSequence(
-  const LargeInt& n, std::pmr::polymorphic_allocator<> alloc)
+sym2::LocalVec<sym2::Blob> sym2::constructSequence(const LargeInt& n, LocalAlloc<> alloc)
 {
-    std::pmr::vector<Blob> result{alloc};
+    LocalVec<Blob> result{alloc};
 
     assert(!fitsInto<std::int16_t>(n));
 
@@ -395,8 +393,7 @@ std::pmr::vector<sym2::Blob> sym2::constructSequence(
     return result;
 }
 
-std::pmr::vector<sym2::Blob> sym2::constructSequence(
-  const LargeRational& n, std::pmr::polymorphic_allocator<> alloc)
+sym2::LocalVec<sym2::Blob> sym2::constructSequence(const LargeRational& n, LocalAlloc<> alloc)
 {
     const auto num = numerator(n);
     const auto denom = denominator(n);
@@ -405,7 +402,7 @@ std::pmr::vector<sym2::Blob> sym2::constructSequence(
 
     const std::size_t requiredSize = num.backend().size() + denom.backend().size();
 
-    std::pmr::vector<Blob> result{alloc};
+    LocalVec<Blob> result{alloc};
     // Make sure we only allocate once, no matter what callees reserve below.
     result.reserve(1 + requiredSize + 2);
 
@@ -459,8 +456,8 @@ std::pmr::vector<sym2::Blob> sym2::constructSequence(
     return result;
 }
 
-std::pmr::vector<sym2::Blob> sym2::constructSequence(std::string_view function, const Blob* arg,
-  UnaryDoubleFctPtr eval, std::pmr::polymorphic_allocator<> allocator)
+sym2::LocalVec<sym2::Blob> sym2::constructSequence(
+  std::string_view function, const Blob* arg, UnaryDoubleFctPtr eval, LocalAlloc<> allocator)
 {
     // Single-arg function blobs look like this:
     // 0: Root header
@@ -473,7 +470,7 @@ std::pmr::vector<sym2::Blob> sym2::constructSequence(std::string_view function, 
     const auto [argOffset, argExtent] = offsetAndRemoteExtent(arg);
     const std::uint32_t remoteExtent = 3 + argExtent + numRemoteBlobsForSymbolName(function);
 
-    std::pmr::vector<Blob> result{allocator};
+    LocalVec<Blob> result{allocator};
     // We account for root header, function pointer, symbol blob, plus the argument root blob.
     result.reserve(remoteExtent + 1);
     result.resize(4);
@@ -493,10 +490,10 @@ std::pmr::vector<sym2::Blob> sym2::constructSequence(std::string_view function, 
     return result;
 }
 
-std::pmr::vector<sym2::Blob> sym2::constructSequence(std::string_view function, const Blob* arg1,
-  const Blob* arg2, BinaryDoubleFctPtr eval, std::pmr::polymorphic_allocator<> allocator)
+sym2::LocalVec<sym2::Blob> sym2::constructSequence(std::string_view function, const Blob* arg1,
+  const Blob* arg2, BinaryDoubleFctPtr eval, LocalAlloc<> allocator)
 {
-    std::pmr::vector<Blob> result{allocator};
+    LocalVec<Blob> result{allocator};
     const auto [offset1, extent1] = offsetAndRemoteExtent(arg1);
     const auto [offset2, extent2] = offsetAndRemoteExtent(arg2);
     // Function header, function pointer, symbol root blob, both argument root blobs, and optionally
@@ -574,18 +571,17 @@ namespace sym2 {
     }
 }
 
-std::pmr::vector<sym2::Blob> sym2::constructDuplicateSequence(
-  const Blob* from, std::pmr::polymorphic_allocator<> allocator)
+sym2::LocalVec<sym2::Blob> sym2::constructDuplicateSequence(
+  const Blob* from, LocalAlloc<> allocator)
 {
-    std::pmr::vector<Blob> result{allocator};
+    LocalVec<Blob> result{allocator};
 
     appendDuplicateSequence(from, 0, result);
 
     return result;
 }
 
-void sym2::appendDuplicateSequence(
-  const Blob* from, std::size_t where, std::pmr::vector<Blob>& output)
+void sym2::appendDuplicateSequence(const Blob* from, std::size_t where, LocalVec<Blob>& output)
 {
     if (output.size() < where + 1)
         output.resize(where + 1);

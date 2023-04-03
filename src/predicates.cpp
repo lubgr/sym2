@@ -2,7 +2,6 @@
 #include "sym2/predicates.h"
 #include <cassert>
 #include <queue>
-#include "allocator.h"
 #include "blob.h"
 #include "operandsview.h"
 #include "sym2/eval.h"
@@ -75,9 +74,8 @@ namespace sym2 {
         template <std::size_t staticQueueSize, class Fct>
         bool bfs(ExprView<> root, Fct callback, const bool expected, const bool earlyReturn)
         {
-            auto [_, mr] =
-              monotonicStackPmrResource<ByteSize{staticQueueSize * sizeof(ExprView<>)}>();
-            std::queue<ExprView<>, std::pmr::deque<ExprView<>>> lookAt{&mr};
+            StackBuffer<staticQueueSize * sizeof(ExprView<>)> arena;
+            std::queue<ExprView<>, std::deque<ExprView<>, LocalAlloc<ExprView<>>>> lookAt{&arena};
 
             if (callback(root) != expected)
                 return earlyReturn;

@@ -53,9 +53,9 @@ sym2::Expr::Expr(double n, allocator_type allocator)
 }
 
 sym2::Expr::Expr(const LargeInt& n, allocator_type allocator)
-    : buffer{[=]() -> std::pmr::vector<Blob> {
+    : buffer{[=]() -> LocalVec<Blob> {
                  if (fitsInto<std::int16_t>(n))
-                     return {construct(static_cast<std::int16_t>(n))};
+                     return {{construct(static_cast<std::int16_t>(n))}, allocator};
                  else
                      return constructSequence(n, allocator);
              }(),
@@ -63,7 +63,7 @@ sym2::Expr::Expr(const LargeInt& n, allocator_type allocator)
 {}
 
 sym2::Expr::Expr(const LargeRational& n, allocator_type allocator)
-    : buffer{[=]() -> std::pmr::vector<Blob> {
+    : buffer{[=]() -> LocalVec<Blob> {
         const auto num = numerator(n);
         const auto denom = denominator(n);
 
@@ -80,7 +80,7 @@ sym2::Expr::Expr(std::string_view symbol, allocator_type allocator)
 {}
 
 sym2::Expr::Expr(std::string_view symbol, DomainFlag domain, allocator_type allocator)
-    : buffer{[=]() -> std::pmr::vector<Blob> {
+    : buffer{[=]() -> LocalVec<Blob> {
         if (isSmallName(symbol))
             return {{construct(symbol, domain)}, allocator};
         else
@@ -92,7 +92,7 @@ sym2::Expr::Expr(std::string_view symbol, DomainFlag domain, allocator_type allo
 }
 
 sym2::Expr::Expr(std::string_view constant, double value, allocator_type allocator)
-    : buffer{[=]() -> std::pmr::vector<Blob> {
+    : buffer{[=]() -> LocalVec<Blob> {
         if (constant.empty())
             throw std::invalid_argument{"Constant name must be non-empty"};
         if (!std::isfinite(value))
@@ -120,7 +120,7 @@ namespace sym2 {
     namespace {
         template <class T, class BlobRetrieveFct>
         void constructComposite(CompositeType composite, const std::span<const T> ops,
-          std::pmr::vector<Blob>& buffer, BlobRetrieveFct&& get)
+          LocalVec<Blob>& buffer, BlobRetrieveFct&& get)
         {
             if (composite == CompositeType::complexNumber
               && (ops.size() != 2

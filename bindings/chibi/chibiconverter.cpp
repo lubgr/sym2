@@ -93,7 +93,7 @@ const sexp& sym2::PreservedSexp::get() const
     return handle->preserved;
 }
 
-sym2::FromChibiToExpr::FromChibiToExpr(sexp ctx, std::pmr::polymorphic_allocator<> allocator)
+sym2::FromChibiToExpr::FromChibiToExpr(sexp ctx, Expr::allocator_type allocator)
     : ctx{ctx}
     , alloc{allocator}
 {}
@@ -240,7 +240,7 @@ sym2::Expr sym2::FromChibiToExpr::nonEmptyListToExpr(std::span<const PreservedSe
 sym2::Expr sym2::FromChibiToExpr::compositeToExpr(
   CompositeType kind, std::span<const PreservedSexp> operands)
 {
-    std::pmr::vector<Expr> converted;
+    ScopedLocalVec<Expr> converted{alloc};
 
     converted.reserve(operands.size());
 
@@ -281,7 +281,7 @@ sym2::Expr sym2::FromChibiToExpr::attemptConstantToExpr(
     return Expr{name, value, alloc};
 }
 
-sym2::FromExprToChibi::FromExprToChibi(sexp ctx, std::pmr::polymorphic_allocator<> allocator)
+sym2::FromExprToChibi::FromExprToChibi(sexp ctx, Expr::allocator_type allocator)
     : ctx{ctx}
     , alloc{allocator}
 {}
@@ -434,9 +434,10 @@ sexp sym2::FromExprToChibi::compositeFromSumProductOrPower(
     return serializeListWithLeadingSymbol(symbol, OperandsView::operandsOf(composite));
 }
 
-std::pmr::vector<sym2::Expr> sym2::convertFromList(sexp ctx, sexp list)
+sym2::ScopedLocalVec<sym2::Expr> sym2::convertFromList(
+  sexp ctx, sexp list, Expr::allocator_type alloc)
 {
-    std::pmr::vector<Expr> result;
+    ScopedLocalVec<Expr> result{alloc};
     FromChibiToExpr individual{ctx};
 
     while (!sexp_nullp(list)) {

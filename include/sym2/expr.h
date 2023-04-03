@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <initializer_list>
-#include <memory_resource>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -11,12 +10,13 @@
 #include "doublefctptr.h"
 #include "exprview.h"
 #include "largerational.h"
+#include "allocator.h"
 #include "sym2/domainflag.h"
 
 namespace sym2 {
     class Expr {
       public:
-        using allocator_type = std::pmr::polymorphic_allocator<>;
+        using allocator_type = LocalAlloc<>;
 
         explicit Expr(allocator_type allocator); // Equivalent to Expr(0, allocator);
         Expr(std::int16_t n, allocator_type allocator);
@@ -67,42 +67,43 @@ namespace sym2 {
         }
 
       private:
-        std::pmr::vector<Blob> buffer;
+        LocalVec<Blob> buffer;
     };
 
     template <std::size_t N>
     class SmallExpr {
       public:
-        using allocator_type = typename Expr::allocator_type;
+        using allocator_type = LocalAlloc<>;
 
         explicit SmallExpr(allocator_type allocator)
-            : mr{initBuffer(allocator)}
-            , expression{&mr}
+            : storage{allocator.getBuffer()}
+            , expression{&storage}
         {}
 
         template <class T>
         SmallExpr(T&& arg, allocator_type allocator)
-            : mr{initBuffer(allocator)}
-            , expression{std::forward<T>(arg), &mr}
+            : storage{allocator.getBuffer()}
+            , expression{std::forward<T>(arg), &storage}
         {}
 
         template <class T, class U>
         SmallExpr(T&& arg1, U&& arg2, allocator_type allocator)
-            : mr{initBuffer(allocator)}
-            , expression{std::forward<T>(arg1), std::forward<U>(arg2), &mr}
+            : storage{allocator.getBuffer()}
+            , expression{std::forward<T>(arg1), std::forward<U>(arg2), &storage}
         {}
 
         template <class T, class U, class V>
         SmallExpr(T&& arg1, U&& arg2, V&& arg3, allocator_type allocator)
-            : mr{initBuffer(allocator)}
-            , expression{std::forward<T>(arg1), std::forward<U>(arg2), std::forward<V>(arg3), &mr}
+            : storage{allocator.getBuffer()}
+            , expression{
+                std::forward<T>(arg1), std::forward<U>(arg2), std::forward<V>(arg3), &storage}
         {}
 
         template <class T, class U, class V, class W>
         SmallExpr(T&& arg1, U&& arg2, V&& arg3, W&& arg4, allocator_type allocator)
-            : mr{initBuffer(allocator)}
+            : storage{allocator.getBuffer()}
             , expression{std::forward<T>(arg1), std::forward<U>(arg2), std::forward<V>(arg3),
-                std::forward<V>(arg4), &mr}
+                std::forward<V>(arg4), &storage}
         {}
 
         template <PredicateTag auto tag>
@@ -112,14 +113,7 @@ namespace sym2 {
         }
 
       private:
-        auto initBuffer(allocator_type upstream)
-        {
-            return std::pmr::monotonic_buffer_resource{
-              storage.data(), storage.size() * sizeof(Blob), upstream.resource()};
-        }
-
-        std::array<Blob, N> storage;
-        std::pmr::monotonic_buffer_resource mr;
+        StackBuffer<N * sizeof(Blob), alignof(Blob)> storage{};
         Expr expression;
     };
 
@@ -128,8 +122,8 @@ namespace sym2 {
       public:
         template <class... T>
         explicit FixedExpr(T&&... args)
-            : mr{storage.data(), storage.size() * sizeof(Blob), std::pmr::null_memory_resource()}
-            , expression{std::forward<T>(args)..., &mr}
+            : storage{nullptr, false}
+            , expression{std::forward<T>(args)..., LocalAlloc{&storage}}
         {}
 
         template <PredicateTag auto tag>
@@ -139,8 +133,7 @@ namespace sym2 {
         }
 
       private:
-        std::array<Blob, N> storage;
-        std::pmr::monotonic_buffer_resource mr;
+        StackBuffer<N * sizeof(Blob), alignof(Blob)> storage;
         Expr expression;
     };
 

@@ -5,13 +5,13 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
-#include "sym2/autosimpl.h"
 #include "chibiconverter.h"
 #include "orderrelation.h"
-#include "sym2/polynomial.h"
 #include "prettyprinter.h"
-#include "sym2/query.h"
+#include "sym2/autosimpl.h"
+#include "sym2/polynomial.h"
 #include "sym2/printengine.h"
+#include "sym2/query.h"
 
 using namespace sym2;
 
@@ -69,9 +69,9 @@ sexp auto_times(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
     assert(n == 1 && sexp_listp(ctx, args));
 
     return wrappedTryCatch(ctx, self, [&]() {
-        const auto convertedArgs = convertFromList(ctx, args);
+        const auto convertedArgs = convertFromList(ctx, args, nullptr);
         const auto views = expressionsToViews(convertedArgs);
-        const Expr result = autoProduct(views);
+        const Expr result = autoProduct(views, {});
 
         return FromExprToChibi{ctx}.convert(result);
     });
@@ -85,9 +85,9 @@ sexp auto_plus(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp args)
     assert(sexp_unbox_fixnum(sexp_length(ctx, args)) >= 2);
 
     return wrappedTryCatch(ctx, self, [&]() {
-        const auto convertedArgs = convertFromList(ctx, args);
+        const auto convertedArgs = convertFromList(ctx, args, nullptr);
         const auto views = expressionsToViews(convertedArgs);
-        const Expr result = autoSum(views);
+        const Expr result = autoSum(views, {});
 
         return FromExprToChibi{ctx}.convert(result);
     });
@@ -104,7 +104,7 @@ sexp auto_power(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp base, 
         const Expr convertedBase = conv.convert(base);
         const Expr convertedExp = conv.convert(exponent);
 
-        const Expr result = autoPower(convertedBase, convertedExp);
+        const Expr result = autoPower(convertedBase, convertedExp, {});
 
         FromExprToChibi back{ctx};
 
@@ -185,7 +185,7 @@ sexp to_string(sexp ctx, sexp self, [[maybe_unused]] sexp_sint_t n, sexp arg)
 
         FromChibiToExpr conv{ctx};
 
-        PrettyPrinter printer{engine, PrettyPrinter::PowerAsFraction::asFraction};
+        PrettyPrinter printer{engine, PrettyPrinter::PowerAsFraction::asFraction, {}};
 
         printer.print(conv.convert(arg));
 

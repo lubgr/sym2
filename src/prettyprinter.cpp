@@ -33,10 +33,10 @@ namespace sym2 {
 }
 
 sym2::PrettyPrinter::PrettyPrinter(
-  PrintEngine& engine, PowerAsFraction opt, std::pmr::memory_resource* resource)
+  PrintEngine& engine, PowerAsFraction opt, Expr::allocator_type allocator)
     : engine{engine}
     , powerAsFraction{opt}
-    , resource{resource}
+    , allocator{allocator}
 {}
 
 void sym2::PrettyPrinter::print(ExprView<> e)
@@ -108,11 +108,11 @@ void sym2::PrettyPrinter::printNumber(ExprView<number> e)
     } else if (is<complexDomain>(e)) {
         printNumber(real(e));
 
-        Expr imaginaryPart{imag(e), resource};
+        Expr imaginaryPart{imag(e), allocator};
 
         if (is<negative>(imag(e))) {
             engine.minusSign();
-            imaginaryPart = autoMinus(imaginaryPart);
+            imaginaryPart = autoMinus(imaginaryPart, allocator);
         } else
             engine.plusSign();
 
@@ -144,7 +144,7 @@ void sym2::PrettyPrinter::printPowerWithNegativeNumericExp(
 
     engine.openNumerator().integer(1).closeNumerator().openDenominator(denomNeedsParentheses);
 
-    print(autoPower(base, autoMinus(exp)));
+    print(autoPower(base, autoMinus(exp, allocator), allocator));
 
     engine.closeDenominator(denomNeedsParentheses);
 }
@@ -194,7 +194,7 @@ void sym2::PrettyPrinter::printSum(ExprView<sum> e)
     for (ExprView<!sum> summand : rest) {
         if (is_product_with_negative_numeric_first(summand)) {
             engine.minusSign();
-            const Expr positive = autoMinus(summand);
+            const Expr positive = autoMinus(summand, allocator);
             print(positive);
         } else {
             engine.plusSign();
@@ -244,23 +244,25 @@ void sym2::PrettyPrinter::printProductAsFraction(OperandsView factors)
         print(denom.front());
     else {
         engine.openParentheses();
-        const std::pmr::vector<ExprView<>> denomFactors{denom.cbegin(), denom.cend(), resource};
-        print(autoProduct(denomFactors));
+        const LocalVec<ExprView<>> denomFactors{denom.cbegin(), denom.cend(), allocator};
+        print(autoProduct(denomFactors, allocator));
         engine.closeParentheses();
     }
 }
 
-std::pair<std::pmr::deque<sym2::Expr>, std::pmr::deque<sym2::Expr>>
+std::pair<std::deque<sym2::Expr, sym2::ScopedLocalAlloc<sym2::Expr>>,
+  std::deque<sym2::Expr, sym2::ScopedLocalAlloc<sym2::Expr>>>
   sym2::PrettyPrinter::collectProductFractions(OperandsView originalFactors)
 {
-    std::pair<std::pmr::deque<Expr>, std::pmr::deque<Expr>> frac{resource, resource};
+    std::pair<std::deque<Expr, ScopedLocalAlloc<Expr>>, std::deque<Expr, ScopedLocalAlloc<Expr>>>
+      frac{allocator, allocator};
     auto& [num, denom] = frac;
 
     for (const ExprView<> originalFactor : originalFactors) {
         const auto [base, exp] = splitAsPower(originalFactor);
 
         if (is < number && negative > (exp))
-            denom.push_back(autoPower(base, autoMinus(exp)));
+            denom.push_back(autoPower(base, autoMinus(exp, allocator), allocator));
         else
             num.emplace_back(originalFactor);
     }
@@ -271,11 +273,11 @@ std::pair<std::pmr::deque<sym2::Expr>, std::pmr::deque<sym2::Expr>>
 
     if (is < small && rational > (num.front())) {
         const auto sr = get<SmallRational>(num.front());
-        num.front() = Expr{sr.num, resource};
+        num.front() = Expr{sr.num, allocator};
         denom.emplace_front(sr.denom);
     } else if (is < large && rational > (num.front())) {
         const auto lr = get<LargeRational>(num.front());
-        num.front() = Expr{numerator(lr), resource};
+        num.front() = Expr{numerator(lr), allocator};
         denom.emplace_front(denominator(lr));
     }
 

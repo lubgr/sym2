@@ -1,10 +1,10 @@
 #pragma once
 
 #include <deque>
-#include <memory_resource>
 #include <utility>
-#include "sym2/exprview.h"
 #include "operandsview.h"
+#include "sym2/expr.h"
+#include "sym2/exprview.h"
 #include "sym2/predicates.h"
 #include "sym2/printengine.h"
 
@@ -15,8 +15,7 @@ namespace sym2 {
       public:
         enum class PowerAsFraction : bool { asFraction, asPower };
 
-        PrettyPrinter(PrintEngine& engine, PowerAsFraction opt,
-          std::pmr::memory_resource* resource = std::pmr::get_default_resource());
+        PrettyPrinter(PrintEngine& engine, PowerAsFraction opt, Expr::allocator_type allocator);
 
         void print(ExprView<> e);
 
@@ -32,14 +31,15 @@ namespace sym2 {
         bool isProductWithNegativeNumeric(ExprView<!sum> summand);
         void printProduct(ExprView<product> e);
         void printProductAsFraction(OperandsView factors);
-        std::pair<std::pmr::deque<Expr>, std::pmr::deque<Expr>> collectProductFractions(
-          OperandsView originalFactors);
+        std::pair<std::deque<Expr, ScopedLocalAlloc<Expr>>,
+          std::deque<Expr, ScopedLocalAlloc<Expr>>>
+          collectProductFractions(OperandsView originalFactors);
         template <class View>
         void printProductWithoutFractions(View&& factors);
         void printFunction(ExprView<function> e);
 
         PrintEngine& engine;
         PowerAsFraction powerAsFraction;
-        std::pmr::memory_resource* resource;
+        Expr::allocator_type allocator;
     };
 }

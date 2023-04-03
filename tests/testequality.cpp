@@ -9,10 +9,10 @@ using namespace sym2;
 
 TEST_CASE("Equality")
 {
-    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
-    const Expr s = directSum(mr, 42_ex, "a"_ex, "b"_ex);
-    const Expr pr = directProduct(mr, 42_ex, "a"_ex, "b"_ex);
-    const Expr pw = directPower(mr, 42_ex, "a"_ex);
+    const Expr::allocator_type alloc{};
+    const Expr s = directSum({42_ex, "a"_ex, "b"_ex}, alloc);
+    const Expr pr = directProduct({42_ex, "a"_ex, "b"_ex}, alloc);
+    const Expr pw = directPower(42_ex, "a"_ex, alloc);
 
     SUBCASE("Identity equality")
     {
@@ -25,10 +25,10 @@ TEST_CASE("Equality")
 
     SUBCASE("Scalar Equality by value")
     {
-        CHECK_EQ(Expr{"a", mr}, "a"_ex);
-        CHECK_EQ(Expr{42, mr}, 42_ex);
-        CHECK_EQ(Expr{0, mr}, 0_ex);
-        CHECK_EQ(Expr{1, mr}, 1_ex);
+        CHECK_EQ(Expr{"a", alloc}, "a"_ex);
+        CHECK_EQ(Expr{42, alloc}, 42_ex);
+        CHECK_EQ(Expr{0, alloc}, 0_ex);
+        CHECK_EQ(Expr{1, alloc}, 1_ex);
     }
 
     SUBCASE("Composite equality")
@@ -42,7 +42,7 @@ TEST_CASE("Equality")
 
     SUBCASE("Scalar inequality")
     {
-        CHECK_NE(Expr{"a", mr}, "b"_ex);
-        CHECK_NE(Expr{42, mr}, 43_ex);
+        CHECK_NE(Expr{"a", alloc}, "b"_ex);
+        CHECK_NE(Expr{42, alloc}, 43_ex);
     }
 }

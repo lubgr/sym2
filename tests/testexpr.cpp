@@ -13,21 +13,21 @@ using namespace std::literals::string_view_literals;
 
 TEST_CASE("Construction and retrieval")
 {
-    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
+    const Expr::allocator_type alloc{};
 
     SUBCASE("Small int")
     {
         SUBCASE("Zero")
         {
-            const Expr zero{mr};
+            const Expr zero{alloc};
 
             CHECK(get<std::int16_t>(zero) == 0);
         }
 
         SUBCASE("Successful roundtrip")
         {
-            const Expr positive{123, mr};
-            const Expr negative{-123, mr};
+            const Expr positive{123, alloc};
+            const Expr negative{-123, alloc};
 
             CHECK(get<std::int16_t>(positive) == 123);
             CHECK(get<std::int16_t>(negative) == -123);
@@ -35,7 +35,7 @@ TEST_CASE("Construction and retrieval")
 
         SUBCASE("Small int > 16bit throws")
         {
-            CHECK_THROWS(Expr{std::numeric_limits<std::int16_t>::max() + 10, mr});
+            CHECK_THROWS(Expr{std::numeric_limits<std::int16_t>::max() + 10, alloc});
         }
     }
 
@@ -43,7 +43,7 @@ TEST_CASE("Construction and retrieval")
     {
         SUBCASE("Num/denom are retained")
         {
-            const Expr n{-3, 7, mr};
+            const Expr n{-3, 7, alloc};
 
             CHECK(get<SmallRational>(n).num == -3);
             CHECK(get<SmallRational>(n).denom == 7);
@@ -51,7 +51,7 @@ TEST_CASE("Construction and retrieval")
 
         SUBCASE("Normalization")
         {
-            const Expr n{4, 8, mr};
+            const Expr n{4, 8, alloc};
 
             CHECK(get<SmallRational>(n).num == 1);
             CHECK(get<SmallRational>(n).denom == 2);
@@ -59,7 +59,7 @@ TEST_CASE("Construction and retrieval")
 
         SUBCASE("Sign swap with negative denominator")
         {
-            const Expr n{1, -42, mr};
+            const Expr n{1, -42, alloc};
 
             CHECK(get<SmallRational>(n).num == -1);
             CHECK(get<SmallRational>(n).denom == 42);
@@ -67,7 +67,7 @@ TEST_CASE("Construction and retrieval")
 
         SUBCASE("Zero denominator throws")
         {
-            CHECK_THROWS(Expr{123, 0, mr});
+            CHECK_THROWS(Expr{123, 0, alloc});
         }
     }
 
@@ -75,15 +75,15 @@ TEST_CASE("Construction and retrieval")
     {
         SUBCASE("Roundtrip")
         {
-            const Expr n{-123.456789, mr};
+            const Expr n{-123.456789, alloc};
 
             CHECK(get<double>(n) == doctest::Approx(-123.456789));
         }
 
         SUBCASE("NaN floating point argument throws")
         {
-            CHECK_THROWS(Expr{std::numeric_limits<double>::quiet_NaN(), mr});
-            CHECK_THROWS(Expr{std::numeric_limits<double>::signaling_NaN(), mr});
+            CHECK_THROWS(Expr{std::numeric_limits<double>::quiet_NaN(), alloc});
+            CHECK_THROWS(Expr{std::numeric_limits<double>::signaling_NaN(), alloc});
         }
     }
 
@@ -92,7 +92,7 @@ TEST_CASE("Construction and retrieval")
         SUBCASE("Positive roundtrip")
         {
             const LargeInt expected{"2323498273984729837498234029380492839489234902384"};
-            const Expr n{expected, mr};
+            const Expr n{expected, alloc};
 
             const LargeInt actual = get<LargeInt>(n);
 
@@ -102,7 +102,7 @@ TEST_CASE("Construction and retrieval")
         SUBCASE("Negative roundtrip")
         {
             const LargeInt expected{"-2323498273984729837498234029380492839489234902384"};
-            const Expr n{expected, mr};
+            const Expr n{expected, alloc};
 
             const LargeInt actual = get<LargeInt>(n);
 
@@ -112,7 +112,7 @@ TEST_CASE("Construction and retrieval")
         SUBCASE("Large int to small int")
         {
             const LargeInt fits{"12345"};
-            const Expr n{fits, mr};
+            const Expr n{fits, alloc};
 
             CHECK(get<std::int16_t>(n) == 12345);
         }
@@ -123,7 +123,7 @@ TEST_CASE("Construction and retrieval")
         SUBCASE("Large to small rational")
         {
             const LargeRational fits{17, 31};
-            const Expr n{fits, mr};
+            const Expr n{fits, alloc};
 
             CHECK(get<SmallRational>(n).num == 17);
             CHECK(get<SmallRational>(n).denom == 31);
@@ -136,14 +136,14 @@ TEST_CASE("Construction and retrieval")
 
             SUBCASE("Positive")
             {
-                const Expr n{lr, mr};
+                const Expr n{lr, alloc};
 
                 CHECK(get<LargeRational>(n) == lr);
             }
 
             SUBCASE("Negative")
             {
-                const Expr n{-lr, mr};
+                const Expr n{-lr, alloc};
 
                 CHECK(get<LargeRational>(n) == -lr);
             }
@@ -154,13 +154,13 @@ TEST_CASE("Construction and retrieval")
     {
         SUBCASE("Empty symbol name throws")
         {
-            CHECK_THROWS(Expr{"", mr});
+            CHECK_THROWS(Expr{"", alloc});
         }
 
         SUBCASE("Short symbol roundtrip")
         {
-            const Expr oneByte{"a", mr};
-            const Expr sevenBytes{"a_{b}^c", mr};
+            const Expr oneByte{"a", alloc};
+            const Expr sevenBytes{"a_{b}^c", alloc};
 
             CHECK(get<std::string_view>(oneByte) == "a");
             CHECK(get<std::string_view>(sevenBytes) == "a_{b}^c");
@@ -170,7 +170,7 @@ TEST_CASE("Construction and retrieval")
         {
             const std::string_view name{
               "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"};
-            const Expr symbol{name, mr};
+            const Expr symbol{name, alloc};
 
             CHECK(get<std::string_view>(symbol) == name);
         }
@@ -178,7 +178,7 @@ TEST_CASE("Construction and retrieval")
         SUBCASE("Long symbol null byte on next Blob")
         {
             const std::string_view name{"12345678"};
-            const Expr symbol{name, mr};
+            const Expr symbol{name, alloc};
 
             CHECK(get<std::string_view>(symbol) == name);
         }
@@ -188,12 +188,12 @@ TEST_CASE("Construction and retrieval")
     {
         SUBCASE("Empty constant name throws")
         {
-            CHECK_THROWS(Expr{"", 1.2345, mr});
+            CHECK_THROWS(Expr{"", 1.2345, alloc});
         }
 
         SUBCASE("Short constant roundtrip")
         {
-            const Expr pi{"pi", 3.14, mr};
+            const Expr pi{"pi", 3.14, alloc};
 
             CHECK(get<std::string_view>(pi) == "pi");
             CHECK(get<double>(pi) == doctest::Approx(3.14));
@@ -202,7 +202,7 @@ TEST_CASE("Construction and retrieval")
         SUBCASE("Long constant roundtrip")
         {
             const std::string_view name{"A-rather-long-name-that-needs-more-space"};
-            const Expr constant{name, 1.2345, mr};
+            const Expr constant{name, 1.2345, alloc};
 
             CHECK(get<std::string_view>(constant) == name);
             CHECK(get<double>(constant) == doctest::Approx(1.2345));
@@ -211,7 +211,7 @@ TEST_CASE("Construction and retrieval")
 
     SUBCASE("Unary function roundtrip")
     {
-        const Expr sinA{"sin", "a"_ex, std::sin, mr};
+        const Expr sinA{"sin", "a"_ex, std::sin, alloc};
 
         CHECK(is<function>(sinA));
 
@@ -230,8 +230,8 @@ TEST_CASE("Construction and retrieval")
     SUBCASE("Unary function roundtrip with long name")
     {
         const std::string_view longName = "abcdefghijklmnopqrstuvwxyz0123456789";
-        const Expr symbol{"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", mr};
-        const Expr sinOfLongSymbol{longName, symbol, std::sin, mr};
+        const Expr symbol{"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", alloc};
+        const Expr sinOfLongSymbol{longName, symbol, std::sin, alloc};
 
         CHECK(is<function>(sinOfLongSymbol));
 
@@ -247,7 +247,7 @@ TEST_CASE("Construction and retrieval")
 
     SUBCASE("Binary function roundtrip")
     {
-        const Expr atan2ab{"atan2", "a"_ex, "b"_ex, std::atan2, mr};
+        const Expr atan2ab{"atan2", "a"_ex, "b"_ex, std::atan2, alloc};
 
         CHECK(is<function>(atan2ab));
 
@@ -266,8 +266,8 @@ TEST_CASE("Construction and retrieval")
 
     SUBCASE("Complex number roundtrip")
     {
-        const std::pmr::vector<Expr> args{{Expr{2, mr}, Expr{3, 7, mr}}, mr};
-        const Expr cx{CompositeType::complexNumber, args, mr};
+        const ScopedLocalVec<Expr> args{{Expr{2, alloc}, Expr{3, 7, alloc}}, alloc};
+        const Expr cx{CompositeType::complexNumber, args, alloc};
 
         CHECK(get<std::int16_t>(real(cx)) == 2);
         CHECK(get<SmallRational>(imag(cx)).num == 3);
@@ -276,13 +276,22 @@ TEST_CASE("Construction and retrieval")
 
     SUBCASE("Small expression")
     {
-        auto* nullMr = std::pmr::null_memory_resource();
+        // We setup a buffer so that no actual space is left; the fact that construction of the
+        // SmallExpr objects doesn't throw shows that the fixed in-object storage is sufficient.
+        StackBuffer<sizeof(Blob), alignof(Blob)> full{nullptr, false};
+        Expr::allocator_type alloc{&full};
+
+        {
+            alloc.allocate(1); // No buffer space left from now on
+
+            CHECK_THROWS_AS((Expr{123, alloc}), std::bad_alloc);
+        }
 
         SUBCASE("Small rational numbers")
         {
-            const SmallExpr<1> zero{nullMr};
-            const SmallExpr<1> integer{42, nullMr};
-            const SmallExpr<2> rational{1, 7, nullMr};
+            const SmallExpr<1> zero{alloc};
+            const SmallExpr<1> integer{42, alloc};
+            const SmallExpr<2> rational{1, 7, alloc};
 
             CHECK(get<std::int16_t>(zero) == 0);
             CHECK(get<std::int16_t>(integer) == 42);
@@ -292,13 +301,13 @@ TEST_CASE("Construction and retrieval")
 
         SUBCASE("Symbols")
         {
-            const SmallExpr<1> symbol{"abc", nullMr};
-            const SmallExpr<3> longer{"0123456789abcde", nullMr};
+            const SmallExpr<1> symbol{"abc", alloc};
+            const SmallExpr<3> longer{"0123456789abcde", alloc};
 
             CHECK(get<std::string_view>(symbol) == "abc");
             CHECK(get<std::string_view>(longer) == "0123456789abcde");
 
-            CHECK_THROWS_AS(SmallExpr<1>("0123456789abcde", nullMr), std::bad_alloc);
+            CHECK_THROWS_AS(SmallExpr<1>("0123456789abcde", alloc), std::bad_alloc);
         }
     }
 

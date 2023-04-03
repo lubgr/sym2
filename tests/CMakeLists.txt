@@ -6,6 +6,7 @@ add_executable(unit-tests
     testfunctionview.cpp
     testget.cpp
     testeval.cpp
+    testlocalalloc.cpp
     testoperandsview.cpp
     testorderrelationimpl.cpp
     testpredicates.cpp

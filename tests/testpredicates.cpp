@@ -11,20 +11,20 @@ using namespace sym2;
 
 TEST_CASE("Type queries for simple types")
 {
-    std::pmr::memory_resource* mr = std::pmr::get_default_resource();
-    const Expr fp{3.14, mr};
-    const Expr sr{7, 11, mr};
-    const Expr a{"a"_ex, mr};
-    const Expr n{42_ex, mr};
-    const LargeInt largeInt{"2323498273984729837498234029380492839489234902384", mr};
-    const Expr li{largeInt, mr};
-    const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}, mr};
-    const Expr cx = directComplex(mr, 2_ex, 3_ex);
-    const Expr s = directSum(mr, n, a, "b"_ex);
-    const Expr pr = directProduct(mr, n, a, "b"_ex);
-    const Expr pw = directPower(mr, n, a);
-    const Expr sinA{"sin", "a"_ex, std::sin, mr};
-    const Expr atan2Ab{"atan2", "a"_ex, "b"_ex, std::atan2, mr};
+    const Expr::allocator_type alloc{};
+    const Expr fp{3.14, alloc};
+    const Expr sr{7, 11, alloc};
+    const Expr a{"a"_ex, alloc};
+    const Expr n{42_ex, alloc};
+    const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
+    const Expr li{largeInt, alloc};
+    const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}, alloc};
+    const Expr cx = directComplex(2_ex, 3_ex, alloc);
+    const Expr s = directSum({n, a, "b"_ex}, alloc);
+    const Expr pr = directProduct({n, a, "b"_ex}, alloc);
+    const Expr pw = directPower(n, a, alloc);
+    const Expr sinA{"sin", "a"_ex, std::sin, alloc};
+    const Expr atan2Ab{"atan2", "a"_ex, "b"_ex, std::atan2, alloc};
 
     SUBCASE("Numeric subtypes")
     {
@@ -81,7 +81,7 @@ TEST_CASE("Type queries for simple types")
     SUBCASE("Integer")
     {
         CHECK(is<integer>(n));
-        CHECK(is<integer>(Expr{li, mr}));
+        CHECK(is<integer>(Expr{li, alloc}));
 
         for (ExprView<> e :
           std::initializer_list<ExprView<>>{pi, euler, a, s, pr, pw, fp, sr, lr, cx, sinA, atan2Ab})
@@ -111,27 +111,27 @@ TEST_CASE("Type queries for simple types")
     SUBCASE("Symbol domain and sign")
     {
         {
-            const Expr symbol{"a", mr};
+            const Expr symbol{"a", alloc};
             CHECK_FALSE(is < positive || negative || realDomain > (symbol));
             CHECK(is<complexDomain>(symbol));
         }
 
         {
-            const Expr symbol{"a", DomainFlag::positive, mr};
+            const Expr symbol{"a", DomainFlag::positive, alloc};
             CHECK(is<positive>(symbol));
             CHECK_FALSE(is < negative || complexDomain > (symbol));
             CHECK(is < positive && realDomain > (symbol));
         }
 
         {
-            const Expr symbol{"a", DomainFlag::real, mr};
+            const Expr symbol{"a", DomainFlag::real, alloc};
             CHECK(is<realDomain>(symbol));
             CHECK_FALSE(is < positive || negative || complexDomain > (symbol));
             CHECK(is<realDomain>(symbol));
         }
 
         {
-            const Expr symbol{"a", DomainFlag::none, mr};
+            const Expr symbol{"a", DomainFlag::none, alloc};
             CHECK(is<complexDomain>(symbol));
             CHECK_FALSE(is < positive || negative || realDomain > (symbol));
             CHECK(is<complexDomain>(symbol));

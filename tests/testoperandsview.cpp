@@ -1,9 +1,9 @@
 
 #include <boost/range/algorithm.hpp>
-#include "sym2/autosimpl.h"
 #include "doctest/doctest.h"
-#include "sym2/expr.h"
 #include "operandsview.h"
+#include "sym2/autosimpl.h"
+#include "sym2/expr.h"
 #include "testutils.h"
 #include "trigonometric.h"
 
@@ -11,14 +11,14 @@ using namespace sym2;
 
 TEST_CASE("Semantic traversal")
 {
-    auto* mr = std::pmr::get_default_resource();
+    const Expr::allocator_type alloc{};
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr li{largeInt, mr};
-    const Expr fp{0.123456789, mr};
-    const Expr p1 = directProduct(mr, 2_ex, directSum(mr, "a"_ex, "b"_ex));
-    const Expr p2 = directProduct(mr, "c"_ex, "d"_ex, "e"_ex, "f"_ex);
-    const Expr fct{"atan2", "a"_ex, "b"_ex, std::atan2, mr};
-    const Expr s = directSum(mr, li, fct, p1, p2);
+    const Expr li{largeInt, alloc};
+    const Expr fp{0.123456789, alloc};
+    const Expr p1 = directProduct({2_ex, directSum({"a"_ex, "b"_ex}, alloc)}, alloc);
+    const Expr p2 = directProduct({"c"_ex, "d"_ex, "e"_ex, "f"_ex}, alloc);
+    const Expr fct{"atan2", "a"_ex, "b"_ex, std::atan2, alloc};
+    const Expr s = directSum({li, fct, p1, p2}, alloc);
 
     SUBCASE("OperandsView")
     {

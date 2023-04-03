@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory_resource>
 #include "largerational.h"
 #include "sym2/expr.h"
 #include "sym2/exprview.h"
@@ -12,7 +11,7 @@ namespace sym2 {
     class NumberArithmetic {
       public:
         // The memory resource is used to construct return objects from member functions.
-        explicit NumberArithmetic(std::pmr::memory_resource* mr);
+        explicit NumberArithmetic(Expr::allocator_type allocator);
 
         Expr multiply(ExprView<number> lhs, ExprView<number> rhs);
         Expr add(ExprView<number> lhs, ExprView<number> rhs);
@@ -27,6 +26,6 @@ namespace sym2 {
         Expr addComplex(ExprView<number> lhs, ExprView<number> rhs);
         Expr subtractComplex(ExprView<number> lhs, ExprView<number> rhs);
 
-        std::pmr::memory_resource* mr;
+        Expr::allocator_type allocator;
     };
 }

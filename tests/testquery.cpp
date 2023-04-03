@@ -1,7 +1,7 @@
 
+#include "doctest/doctest.h"
 #include "sym2/autosimpl.h"
 #include "sym2/constants.h"
-#include "doctest/doctest.h"
 #include "sym2/expr.h"
 #include "sym2/predicates.h"
 #include "sym2/query.h"
@@ -12,18 +12,18 @@ using namespace sym2;
 
 TEST_CASE("Counters")
 {
-    auto* mr = std::pmr::get_default_resource();
-    const Expr fp{3.14, mr};
-    const Expr sr{7, 11, mr};
+    const Expr::allocator_type alloc{};
+    const Expr fp{3.14, alloc};
+    const Expr sr{7, 11, alloc};
     const LargeInt largeInt{"2323498273984729837498234029380492839489234902384"};
-    const Expr li{largeInt, mr};
-    const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}, mr};
-    const Expr cx = directComplex(mr, 2_ex, 3_ex);
-    const Expr s = directSum(mr, 42_ex, "a"_ex, "b"_ex);
-    const Expr pr = directProduct(mr, 42_ex, "a"_ex, "b"_ex);
-    const Expr pw = directPower(mr, 42_ex, "a"_ex);
-    const Expr sinA{"sin", "a"_ex, std::sin, mr};
-    const Expr atan2Ab{"atan2", "a"_ex, "b"_ex, std::atan2, mr};
+    const Expr li{largeInt, alloc};
+    const Expr lr{LargeRational{LargeInt{"1234528973498279834827384284"}, largeInt}, alloc};
+    const Expr cx = directComplex(2_ex, 3_ex, alloc);
+    const Expr s = directSum({42_ex, "a"_ex, "b"_ex}, alloc);
+    const Expr pr = directProduct({42_ex, "a"_ex, "b"_ex}, alloc);
+    const Expr pw = directPower(42_ex, "a"_ex, alloc);
+    const Expr sinA{"sin", "a"_ex, std::sin, alloc};
+    const Expr atan2Ab{"atan2", "a"_ex, "b"_ex, std::atan2, alloc};
 
     SUBCASE("Number of operands")
     {
@@ -45,12 +45,12 @@ TEST_CASE("Counters")
 
 TEST_CASE("Logical children queries")
 {
-    auto* mr = std::pmr::get_default_resource();
+    const Expr::allocator_type alloc{};
 
     SUBCASE("Sum with product")
     {
-        const Expr pr = directProduct(mr, 10, "b", "c");
-        const Expr s = directSum(mr, 42, "a", pr, "d");
+        const Expr pr = directProduct({10_ex, "b"_ex, "c"_ex}, alloc);
+        const Expr s = directSum({42_ex, "a"_ex, pr, "d"_ex}, alloc);
 
         CHECK(firstOperand(s) == 42_ex);
         CHECK(secondOperand(s) == "a"_ex);
@@ -60,7 +60,7 @@ TEST_CASE("Logical children queries")
 
     SUBCASE("Complex number")
     {
-        const Expr cx = directComplex(mr, 2, 3);
+        const Expr cx = directComplex(2_ex, 3_ex, alloc);
 
         CHECK(real(cx) == 2_ex);
         CHECK(imag(cx) == 3_ex);
@@ -68,9 +68,9 @@ TEST_CASE("Logical children queries")
         const LargeInt realPartInt{"1298374982734923434528973498279834827384284"};
         const LargeRational imagPartRational{
           "87234728489237/2938749283749823423423468923428429238649826482"};
-        const Expr realPart{realPartInt, mr};
-        const Expr imagPart{imagPartRational, mr};
-        const Expr largeCx = directComplex(mr, realPartInt, imagPartRational);
+        const Expr realPart{realPartInt, alloc};
+        const Expr imagPart{imagPartRational, alloc};
+        const Expr largeCx = directComplex(realPart, imagPart, alloc);
 
         CHECK(real(largeCx) == realPart);
         CHECK(imag(largeCx) == imagPart);
@@ -85,8 +85,8 @@ TEST_CASE("Logical children queries")
 
 TEST_CASE("Deconstruct as power")
 {
-    auto* const mr = std::pmr::get_default_resource();
-    const Expr pw = directPower(mr, "a", "b");
+    const Expr::allocator_type alloc{};
+    const Expr pw = directPower("a"_ex, "b"_ex, alloc);
 
     SUBCASE("Power bursts into base and exponent")
     {

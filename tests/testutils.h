@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <initializer_list>
 #include <string>
 #include "sym2/expr.h"
 
@@ -14,43 +15,33 @@
     }
 
 namespace sym2 {
-    inline ExprView<> view(const Expr& e)
+    inline auto directComposite(CompositeType type, std::initializer_list<ExprView<>> operands,
+      Expr::allocator_type allocator)
     {
-        return e;
+        assert(operands.size() >= 2);
+
+        return Expr{type, operands, allocator};
     }
 
-    template <class... T>
-    auto directComposite(CompositeType type, typename Expr::allocator_type allocator, T&&... args)
+    inline auto directProduct(
+      std::initializer_list<ExprView<>> operands, Expr::allocator_type allocator)
     {
-        static_assert(sizeof...(args) >= 2);
-        std::pmr::vector<Expr> operands{{Expr{args, allocator}...}, allocator};
-
-        return Expr{type, std::move(operands), allocator};
+        return directComposite(CompositeType::product, operands, allocator);
     }
 
-    template <class... T>
-    auto directProduct(typename Expr::allocator_type allocator, T&&... args)
+    inline auto directSum(
+      std::initializer_list<ExprView<>> operands, Expr::allocator_type allocator)
     {
-        return directComposite(CompositeType::product, allocator, std::forward<T>(args)...);
+        return directComposite(CompositeType::sum, operands, allocator);
     }
 
-    template <class... T>
-    auto directSum(typename Expr::allocator_type allocator, T&&... args)
+    inline auto directPower(ExprView<> base, ExprView<> exp, Expr::allocator_type allocator)
     {
-        return directComposite(CompositeType::sum, allocator, std::forward<T>(args)...);
+        return directComposite(CompositeType::power, {base, exp}, allocator);
     }
 
-    template <class T, class S>
-    auto directPower(typename Expr::allocator_type allocator, T&& base, S&& exponent)
+    inline auto directComplex(ExprView<> real, ExprView<> imag, Expr::allocator_type allocator)
     {
-        return directComposite(
-          CompositeType::power, allocator, std::forward<T>(base), std::forward<S>(exponent));
-    }
-
-    template <class T, class S>
-    auto directComplex(typename Expr::allocator_type allocator, T&& real, S&& imag)
-    {
-        return directComposite(
-          CompositeType::complexNumber, allocator, std::forward<T>(real), std::forward<S>(imag));
+        return directComposite(CompositeType::complexNumber, {real, imag}, allocator);
     }
 }

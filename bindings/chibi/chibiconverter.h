@@ -2,7 +2,6 @@
 
 #include <chibi/sexp.h>
 #include <memory>
-#include <memory_resource>
 #include <span>
 #include <stack>
 #include <stdexcept>
@@ -49,7 +48,7 @@ namespace sym2 {
 
     class FromChibiToExpr {
       public:
-        explicit FromChibiToExpr(sexp ctx, std::pmr::polymorphic_allocator<> allocator = {});
+        explicit FromChibiToExpr(sexp ctx, Expr::allocator_type allocator = {});
 
         Expr convert(sexp from);
 
@@ -72,13 +71,13 @@ namespace sym2 {
         Expr throwSexp(const char* msg, sexp irritant = nullptr);
 
         sexp ctx;
-        std::pmr::polymorphic_allocator<> alloc;
+        Expr::allocator_type alloc;
         std::stack<PreservedSexp> current; /* For getting the relevant bits into exceptions. */
     };
 
     class FromExprToChibi {
       public:
-        explicit FromExprToChibi(sexp ctx, std::pmr::polymorphic_allocator<> allocator = {});
+        explicit FromExprToChibi(sexp ctx, Expr::allocator_type alloc = {});
 
         sexp convert(ExprView<> from);
 
@@ -96,9 +95,9 @@ namespace sym2 {
         sexp compositeFromSumProductOrPower(ExprView<sum || product || power> composite);
 
         sexp ctx;
-        std::pmr::polymorphic_allocator<> alloc;
+        Expr::allocator_type alloc;
     };
 
-    std::pmr::vector<Expr> convertFromList(sexp ctx, sexp list);
+    ScopedLocalVec<Expr> convertFromList(sexp ctx, sexp list, Expr::allocator_type alloc);
     sexp convertToList(sexp ctx, OperandsView operands);
 }
