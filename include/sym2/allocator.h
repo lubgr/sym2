@@ -80,7 +80,7 @@ namespace sym2 {
             return (bytes + (align - 1)) & ~(align - 1);
         }
 
-        constexpr bool IsInBuffer(char* ptr) noexcept
+        bool IsInBuffer(char* ptr) noexcept
         {
             return std::uintptr_t(buffer) <= std::uintptr_t(ptr)
               && std::uintptr_t(ptr) <= std::uintptr_t(buffer) + n;
