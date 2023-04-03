@@ -24,7 +24,7 @@ class DoctestConan(ConanFile):
 
     def package(self):
         cmake = CMake(self)
-        cmake.definitions["CMAKE_CXX_FLAGS"] = "-Wno-error=redundant-decls"
+        cmake.definitions["CMAKE_CXX_FLAGS"] = "-Wno-error=redundant-decls -Wno-error=unsafe-buffer-usage"
         cmake.configure(source_folder="src")
         cmake.install()
         self.copy(pattern="LICENSE.txt", dst="licenses", src="src")
