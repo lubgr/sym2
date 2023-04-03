@@ -7,9 +7,9 @@ and expansion, trigonometric and logarithmiic functions, or arbitrary precision 
 algorithms are/will follow the techniques outlined in _Cohen, Computer Algebra and Symbolic
 Computation [2003]_.
 
-Primary target platforms are  64bit Linux, BSD and MacOS. This library is under development and
-_highly_ unusable at this point (apart from the tests). The code is MIT licensed, with a small
-Apache-2.0 exception. See LICENSE for more details.
+This library is under development and _highly_ unusable at this point. Primary target platforms are
+64bit Linux, BSD and MacOS. The code is MIT licensed, with a small Apache-2.0 exception. See LICENSE
+for more details.
 
 ## Planned features
 
